@@ -72,6 +72,18 @@ impl RowList {
     }
 }
 
+/// Keeps a dialog's owner alive while the dialog is open. The owner's buttons hold only weak references to it
+/// (a strong one would form a cycle through the dialog), so without this the owner is freed as soon as
+/// `present` returns and every button that needs it does nothing.
+struct OpenDialog;
+
+impl OpenDialog {
+    fn keep_alive<Owner: 'static>(dialog: &adw::PreferencesDialog, owner: &Rc<Owner>) {
+        let owner = RefCell::new(Some(Rc::clone(owner)));
+        dialog.connect_closed(move |_| drop(owner.take()));
+    }
+}
+
 /// Removes a profile's (or web app's) directories; missing directories are fine.
 struct ProfileFiles;
 
@@ -124,6 +136,7 @@ impl ProfilesDialog {
             }
         });
         manager.rebuild();
+        OpenDialog::keep_alive(&manager.dialog, &manager);
         manager.dialog.present(Some(parent));
     }
 
@@ -196,6 +209,7 @@ impl WebAppsDialog {
         dialog.add(&page);
         let manager = Rc::new(Self { context: Rc::clone(context), dialog, web_apps });
         manager.rebuild();
+        OpenDialog::keep_alive(&manager.dialog, &manager);
         manager.dialog.present(Some(parent));
     }
 

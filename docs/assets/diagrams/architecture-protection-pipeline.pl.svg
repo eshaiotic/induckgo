@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1300" height="780" viewBox="0 0 1300 780" font-family="DejaVu Sans, Noto Sans, sans-serif">
+<title>InDuckGo — jak dane ochrony DuckDuckGo stają się regułami WebKit w każdej stronie</title>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#37474f"/></marker><marker id="arrow-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#c62828"/></marker></defs>
+<rect width="1300" height="780" fill="#ffffff"/>
+<text x="650" y="34" font-size="18" font-weight="bold" text-anchor="middle" fill="#263238">InDuckGo — jak dane ochrony DuckDuckGo stają się regułami WebKit w każdej stronie</text>
+<rect x="30" y="70" width="270" height="120" rx="9" fill="#ffebee" stroke="#c62828" stroke-width="3" stroke-dasharray="7 4"/>
+<text x="42" y="92" font-size="14" font-weight="bold" text-anchor="start" fill="#263238">CDN DuckDuckGo</text>
+<text x="42" y="114" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">staticcdn.duckduckgo.com</text>
+<text x="42" y="133" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">macos-tds.json (CC BY-NC-SA)</text>
+<text x="42" y="152" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">macos-config.json (Apache-2.0)</text>
+<text x="42" y="171" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">Niezaufane wejście z sieci</text>
+<rect x="30" y="250" width="270" height="120" rx="9" fill="#e1f5fe" stroke="#0277bd" stroke-width="1.6"/>
+<text x="42" y="272" font-size="14" font-weight="bold" text-anchor="start" fill="#263238">HttpClient (libsoup)</text>
+<text x="42" y="294" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">bez cookies, limit 30 s</text>
+<text x="42" y="313" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">≤ 32 MiB, If-None-Match / ETag</text>
+<text x="42" y="332" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">odświeżanie co 12 h,</text>
+<text x="42" y="351" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">ponowienie co 30 s do ochrony</text>
+<rect x="30" y="430" width="270" height="100" rx="9" fill="#e0f2f1" stroke="#00897b" stroke-width="1.6"/>
+<text x="42" y="452" font-size="14" font-weight="bold" text-anchor="start" fill="#263238">ProtectionFeed</text>
+<text x="42" y="474" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">trzyma ostatnią kopię, która się</text>
+<text x="42" y="493" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">sparsowała i ma wymagany klucz</text>
+<text x="42" y="512" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">(„trackers” / „features”)</text>
+<path d="M165,190 L165,246" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<path d="M165,370 L165,426" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<rect x="330" y="56" width="380" height="632" rx="12" fill="none" stroke="#5e35b1" stroke-width="1.4" stroke-dasharray="3 4"/>
+<text x="342" y="74" font-size="12.5" font-weight="bold" text-anchor="start" fill="#5e35b1">induckgo-core — czysty Rust, bez GTK, z testami</text>
+<rect x="346" y="84" width="348" height="84" rx="9" fill="#ede7f6" stroke="#5e35b1" stroke-width="1.6"/>
+<text x="358" y="106" font-size="14" font-weight="bold" text-anchor="start" fill="#263238">TrackerDataSet + PrivacyConfiguration</text>
+<text x="358" y="128" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">trackery, podmioty, wyjątki per witryna,</text>
+<text x="358" y="147" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">przełączniki funkcji, listy dozwolone</text>
+<rect x="346" y="210" width="348" height="84" rx="9" fill="#ede7f6" stroke="#5e35b1" stroke-width="1.6"/>
+<text x="358" y="232" font-size="14" font-weight="bold" text-anchor="start" fill="#263238">ContentBlockerRulesBuilder</text>
+<text x="358" y="254" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">lista „trackers”: blokuje żądania</text>
+<text x="358" y="273" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">stron trzecich do znanych trackerów</text>
+<rect x="346" y="330" width="348" height="84" rx="9" fill="#ede7f6" stroke="#5e35b1" stroke-width="1.6"/>
+<text x="358" y="352" font-size="14" font-weight="bold" text-anchor="start" fill="#263238">HttpsUpgradePolicy</text>
+<text x="358" y="374" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">lista „https”: make-https, poza IP,</text>
+<text x="358" y="393" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">nazwami lokalnymi, wyjątkami, porażkami</text>
+<rect x="346" y="450" width="348" height="84" rx="9" fill="#ede7f6" stroke="#5e35b1" stroke-width="1.6"/>
+<text x="358" y="472" font-size="14" font-weight="bold" text-anchor="start" fill="#263238">TrackingParameterRemover</text>
+<text x="358" y="494" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">lista „links”: blokuje nawigację ramki</text>
+<text x="358" y="513" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">głównej z utm_*, fbclid …</text>
+<rect x="346" y="580" width="348" height="84" rx="9" fill="#ede7f6" stroke="#5e35b1" stroke-width="1.6"/>
+<text x="358" y="602" font-size="14" font-weight="bold" text-anchor="start" fill="#263238">ContentScopeScript</text>
+<text x="358" y="624" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">C-S-S 20.0.0 (w repo) + konfiguracja</text>
+<text x="358" y="643" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">+ preferencje (GPC wł., sekrety sesji)</text>
+<path d="M300,480 L318,480 L318,126 L342,126" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<path d="M370,168 L370,186 L336,186 L336,622" fill="none" stroke="#37474f" stroke-width="1.8"/>
+<path d="M336,252 L343,252" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<path d="M336,372 L343,372" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<path d="M336,492 L343,492" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<path d="M336,622 L343,622" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<rect x="740" y="56" width="260" height="632" rx="12" fill="none" stroke="#0277bd" stroke-width="1.4" stroke-dasharray="3 4"/>
+<text x="752" y="74" font-size="12.5" font-weight="bold" text-anchor="start" fill="#0277bd">induckgo — adaptery aplikacji</text>
+<rect x="756" y="84" width="228" height="110" rx="9" fill="#e1f5fe" stroke="#0277bd" stroke-width="1.6"/>
+<text x="768" y="106" font-size="14" font-weight="bold" text-anchor="start" fill="#263238">PageProtections</text>
+<text x="768" y="128" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">jeden na proces profilu,</text>
+<text x="768" y="147" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">przebudowa po zmianie</text>
+<text x="768" y="166" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">danych lub ustawień</text>
+<rect x="756" y="300" width="228" height="110" rx="9" fill="#e0f2f1" stroke="#00897b" stroke-width="1.6"/>
+<text x="768" y="322" font-size="14" font-weight="bold" text-anchor="start" fill="#263238">UserContentFilterStore</text>
+<text x="768" y="344" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">skompilowane listy na dysku,</text>
+<text x="768" y="363" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">używane ponownie, dopóki</text>
+<text x="768" y="382" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">odcisk źródła się nie zmieni</text>
+<rect x="756" y="516" width="228" height="110" rx="9" fill="#e1f5fe" stroke="#0277bd" stroke-width="1.6"/>
+<text x="768" y="538" font-size="14" font-weight="bold" text-anchor="start" fill="#263238">UserContentManager</text>
+<text x="768" y="560" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">3 skompilowane filtry</text>
+<text x="768" y="579" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">+ 1 skrypt w każdej ramce</text>
+<text x="768" y="598" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">na starcie dokumentu</text>
+<path d="M694,252 L722,252" fill="none" stroke="#37474f" stroke-width="1.8"/>
+<path d="M694,372 L722,372" fill="none" stroke="#37474f" stroke-width="1.8"/>
+<path d="M694,492 L722,492" fill="none" stroke="#37474f" stroke-width="1.8"/>
+<path d="M694,622 L722,622 L722,140 L752,140" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<path d="M870,194 L870,296" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<text x="880" y="250" font-size="12" font-weight="bold" text-anchor="start" fill="#37474f">kompilacja</text>
+<text x="880" y="266" font-size="12" font-weight="bold" text-anchor="start" fill="#37474f">lub odczyt</text>
+<path d="M870,410 L870,512" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<rect x="1030" y="516" width="240" height="110" rx="9" fill="#e1f5fe" stroke="#0277bd" stroke-width="1.6"/>
+<text x="1042" y="538" font-size="14" font-weight="bold" text-anchor="start" fill="#263238">Każda strona (WebView)</text>
+<text x="1042" y="560" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">WebKit stosuje reguły,</text>
+<text x="1042" y="579" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">zanim żądanie opuści</text>
+<text x="1042" y="598" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">komputer</text>
+<path d="M984,571 L1026,571" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<rect x="1030" y="270" width="240" height="130" rx="9" fill="#e1f5fe" stroke="#0277bd" stroke-width="1.6"/>
+<text x="1042" y="292" font-size="14" font-weight="bold" text-anchor="start" fill="#263238">Reakcje PageView</text>
+<text x="1042" y="314" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">zablokowany link śledzący →</text>
+<text x="1042" y="333" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">  wczytaj oczyszczony adres</text>
+<text x="1042" y="352" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">nieudany upgrade HTTPS →</text>
+<text x="1042" y="371" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">  baner, decyduje użytkownik</text>
+<path d="M1150,516 L1150,404" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<text x="1160" y="465" font-size="12" font-weight="bold" text-anchor="start" fill="#37474f">load-failed</text>
+<rect x="30" y="706" width="26" height="16" rx="4" fill="#ffebee" stroke="#c62828" stroke-width="3" stroke-dasharray="5 3"/>
+<text x="66" y="719" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">Niezaufane wejście z sieci (najwyższe ryzyko)</text>
+<rect x="30" y="730" width="26" height="16" rx="4" fill="#e1f5fe" stroke="#0277bd" stroke-width="1.6"/>
+<text x="66" y="743" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">Adaptery sieci i WebKit</text>
+<rect x="560" y="706" width="26" height="16" rx="4" fill="#ede7f6" stroke="#5e35b1" stroke-width="1.6"/>
+<text x="596" y="719" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">Logika domenowa (induckgo-core)</text>
+<rect x="560" y="730" width="26" height="16" rx="4" fill="#e0f2f1" stroke="#00897b" stroke-width="1.6"/>
+<text x="596" y="743" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">Dane trzymane na dysku</text>
+</svg>

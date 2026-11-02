@@ -1,12 +1,12 @@
 [workspace]
 resolver = "3"
-members = ["crates/induckgo-core"]
+members = ["crates/induckgo-core", "crates/induckgo"]
 
 [workspace.package]
 version = "1.0.0"
 edition = "2024"
 license = "Apache-2.0"
-rust-version = "1.90"
+rust-version = "1.92"
 
 [workspace.lints.rust]
 unsafe_code = "forbid"

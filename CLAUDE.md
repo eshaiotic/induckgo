@@ -8,13 +8,27 @@ This file is an index; the content lives in the linked documents.
 - [Engineering rules](docs/en/engineering-rules.md) — Object Oriented Programming First, OO Given/When/Then tests, crate boundaries, imports.
 - [Zasady inżynierskie (PL)](docs/pl/engineering-rules.md) — polish mirror of the engineering rules.
 
+## Architecture
+
+- [Architecture overview](docs/en/architecture/overview.md) — process per profile/web app, protection pipeline, WebKitGTK limits.
+- [Przegląd architektury (PL)](docs/pl/architecture/overview.md) — polish mirror of the architecture overview.
+- `docs/assets/diagrams/` — SVG + PNG diagrams, one file per language (`.en` / `.pl`).
+
 ## Code map
 
-- `crates/induckgo-core` — domain logic without GTK/WebKit: tracker rules, privacy config, navigation.
+- `crates/induckgo-core` — domain logic without GTK/WebKit: protection rules, profiles, web apps, launch, downloads.
 - `crates/induckgo-core/tests` — one OO scenario test file per domain type.
+- `crates/induckgo` — GTK 4 + libadwaita app: adapters that carry out core decisions in WebKitGTK/libsoup/GIO.
+- `assets/` — vendored Content Scope Scripts (Apache-2.0) and the app icons; the Tracker Data Set is never committed.
 
 ## Commands
 
 - `cargo test -p induckgo-core` — fast domain tests.
 - `cargo clippy --all-targets` — lints (pedantic, `unsafe_code` forbidden).
 - `cargo audit` — dependency vulnerability check (zero-vulnerability policy).
+- `cargo run -p induckgo -- [--profile NAME | --web-app ID] [URL…]` — run the browser or an installed web app.
+
+## Gotchas
+
+- Never call `soup::tld_get_base_domain` (soup3 0.9 binding reads freed memory); use `RegistrableDomainLookup`.
+- Manual GUI runs: isolate `XDG_DATA_HOME`/`XDG_CACHE_HOME`/`XDG_CONFIG_HOME` so the user's real profiles stay untouched.

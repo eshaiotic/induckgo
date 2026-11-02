@@ -1,4 +1,4 @@
-//! Parsing `DuckDuckGo`'s Tracker Data Set (TDS) JSON into domain values.
+//! Parsing DuckDuckGo's Tracker Data Set (TDS) JSON into domain values.
 
 use induckgo_core::protection::tracker_data_set::KnownTracker;
 use induckgo_core::protection::tracker_data_set::TrackerAction;
@@ -67,7 +67,10 @@ fn should_skip_malformed_rules_instead_of_rejecting_the_whole_tracker() {
 
     let tracker = scenario.when_looking_up_tracker("tracker.com");
 
-    assert_eq!(tracker.rules.iter().map(|rule| rule.pattern.as_str()).collect::<Vec<_>>(), ["tracker\\.com/script\\.js"]);
+    assert_eq!(
+        tracker.rules.iter().map(|rule| rule.pattern.as_str()).collect::<Vec<_>>(),
+        ["tracker\\.com/script\\.js"]
+    );
 }
 
 #[test]

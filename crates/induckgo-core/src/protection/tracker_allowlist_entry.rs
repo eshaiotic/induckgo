@@ -1,7 +1,7 @@
-//! A tracker URL that `DuckDuckGo` deliberately lets through because blocking it breaks sites.
+//! A tracker URL that DuckDuckGo deliberately lets through because blocking it breaks sites.
 
+use crate::document::lenient_json::LenientJson;
 use crate::protection::domain_name::DomainName;
-use crate::protection::lenient_json::LenientJson;
 
 /// `rule` is a plain `host/path` prefix (not a regex); `domains: None` means "on every site".
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -14,7 +14,7 @@ impl TrackerAllowlistEntry {
     /// The privacy configuration marks "every site" with this pseudo-domain.
     const ALL_SITES_MARKER: &'static str = "<all>";
 
-    /// Reads one `trackerAllowlist` rule; site domains are normalised to the form `WebKit` expects.
+    /// Reads one `trackerAllowlist` rule; site domains are normalised to the form WebKit expects.
     #[must_use]
     pub fn from_config_rule(node: LenientJson<'_>) -> Option<Self> {
         let rule = node.field("rule").as_str()?.to_owned();

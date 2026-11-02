@@ -1,12 +1,12 @@
-//! `DuckDuckGo`'s Tracker Data Set (TDS): which third-party domains track people and who owns them.
+//! DuckDuckGo's Tracker Data Set (TDS): which third-party domains track people and who owns them.
 //!
-//! The TDS is a JSON document published by `DuckDuckGo` (`macos-tds.json`). Each *tracker* is a domain with
+//! The TDS is a JSON document published by DuckDuckGo (`macos-tds.json`). Each *tracker* is a domain with
 //! a default action (block it everywhere, or ignore it unless a specific rule matches) and optional per-URL
 //! *rules*. Each *entity* is a company owning several domains; a company's own domains are never blocked on
 //! its own sites (loading `fbcdn.net` on `facebook.com` is first-party in spirit). *CNAMEs* map "cloaked"
 //! first-party subdomains that secretly point at a tracker.
 //!
-//! Parsing is deliberately lenient, mirroring `DuckDuckGo`'s Swift decoder: a malformed rule is skipped rather
+//! Parsing is deliberately lenient, mirroring DuckDuckGo's Swift decoder: a malformed rule is skipped rather
 //! than invalidating the whole data set, so one bad upstream entry cannot switch tracker blocking off.
 
 use std::collections::BTreeMap;
@@ -14,8 +14,8 @@ use std::collections::HashMap;
 
 use serde_json::Value;
 
+use crate::document::lenient_json::LenientJson;
 use crate::protection::domain_name::DomainName;
-use crate::protection::lenient_json::LenientJson;
 
 /// What to do with requests to a tracker when no more specific rule applies.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -43,7 +43,8 @@ pub struct RuleMatching {
 
 impl RuleMatching {
     fn parse(node: LenientJson<'_>) -> Option<Self> {
-        node.is_object().then(|| Self { domains: node.field("domains").strings(), types: node.field("types").strings() })
+        node.is_object()
+            .then(|| Self { domains: node.field("domains").strings(), types: node.field("types").strings() })
     }
 }
 

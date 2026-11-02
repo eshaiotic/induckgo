@@ -1,7 +1,7 @@
 //! A forgiving, read-only view of a JSON node.
 //!
-//! `DuckDuckGo`'s documents are large and evolve independently of `InDuckGo`. A missing or mistyped field reads
-//! as "absent" instead of failing the whole document, the same leniency as `DuckDuckGo`'s Swift decoders.
+//! DuckDuckGo's documents are large and evolve independently of InDuckGo. A missing or mistyped field reads
+//! as "absent" instead of failing the whole document, the same leniency as DuckDuckGo's Swift decoders.
 
 use serde_json::Value;
 

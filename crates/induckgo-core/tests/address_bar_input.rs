@@ -38,7 +38,9 @@ impl AddressBarOutcome {
 
 #[test]
 fn should_open_full_url_as_typed() {
-    AddressBarScenario::given_user_typed("https://mbank.pl/login").when_enter_is_pressed().then_opens("https://mbank.pl/login");
+    AddressBarScenario::given_user_typed("https://mbank.pl/login")
+        .when_enter_is_pressed()
+        .then_opens("https://mbank.pl/login");
 }
 
 #[test]
@@ -55,7 +57,9 @@ fn should_open_domain_with_path_ignoring_surrounding_spaces() {
 
 #[test]
 fn should_open_localhost_over_plain_http() {
-    AddressBarScenario::given_user_typed("localhost:8080/app").when_enter_is_pressed().then_opens("http://localhost:8080/app");
+    AddressBarScenario::given_user_typed("localhost:8080/app")
+        .when_enter_is_pressed()
+        .then_opens("http://localhost:8080/app");
 }
 
 #[test]

@@ -1,4 +1,4 @@
-//! What the user typed into the address bar: either an address to open or a `DuckDuckGo` search.
+//! What the user typed into the address bar: either an address to open or a DuckDuckGo search.
 //!
 //! Only `http`, `https`, `file` and `about` URLs are opened directly. Anything else, `javascript:` and
 //! `data:` included, becomes a search query, so pasting a malicious snippet into the address bar can never

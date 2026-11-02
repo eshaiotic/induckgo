@@ -1,13 +1,29 @@
 //! Strips tracking parameters (`fbclid`, `gclid`, `utm_*`, ...) from a link before the browser opens it.
 //!
-//! Port of `DuckDuckGo`'s `LinkCleaner.cleanTrackingParameters` and its byte-preserving filter: the query is
+//! Port of DuckDuckGo's `LinkCleaner.cleanTrackingParameters` and its byte-preserving filter: the query is
 //! split on every `&`, a parameter's name ends at the first `=`, names match exactly (case-sensitive), and
 //! everything else in the URL is kept byte for byte so signed or encoded links survive.
+//!
+//! In the browser, [`TrackingParameterRemover::content_rules`] stops a top-frame navigation that still
+//! carries a tracking parameter before its request is sent; the browser then opens [`cleaned`] instead.
+//! WebKitGTK cannot tell main-frame from iframe navigations in its navigation hook, but its content rules
+//! can (`load-context: top-frame`), and iframes keep their parameters as on macOS. One difference from
+//! macOS: rules see only the destination, so a link from an unprotected site to a protected one is cleaned.
+//!
+//! [`cleaned`]: TrackingParameterRemover::cleaned
 
+use std::collections::BTreeSet;
 use std::collections::HashSet;
 
 use url::Url;
 
+use crate::protection::content_blocker_rule::ContentBlockerRule;
+use crate::protection::content_blocker_rule::LoadContext;
+use crate::protection::content_blocker_rule::ResourceType;
+use crate::protection::content_blocker_rule::RuleAction;
+use crate::protection::content_blocker_rule::Trigger;
+use crate::protection::content_blocker_rule::UrlFilter;
+use crate::protection::domain_name::DomainName;
 use crate::protection::privacy_configuration::PrivacyConfiguration;
 
 const FEATURE: &str = "trackingParameters";
@@ -31,6 +47,45 @@ impl<'config> TrackingParameterRemover<'config> {
             return url.to_owned();
         }
         self.without_tracking_parameters(url).unwrap_or_else(|| url.to_owned())
+    }
+
+    /// WebKit rules that block top-frame navigations carrying a tracking parameter, except on sites where
+    /// cleaning is switched off. Parameter names that are not plain words are skipped: one bad regex would
+    /// make WebKit reject the whole rule list.
+    #[must_use]
+    pub fn content_rules(&self) -> Vec<ContentBlockerRule> {
+        if !self.configuration.is_enabled(FEATURE) {
+            return vec![];
+        }
+        let unprotected = self.unprotected_destinations();
+        let parameters: BTreeSet<&str> =
+            self.parameters.iter().map(String::as_str).filter(|name| Self::is_plain_word(name)).collect();
+        parameters
+            .into_iter()
+            .map(|parameter| {
+                let trigger = Trigger {
+                    unless_domain: (!unprotected.is_empty()).then(|| unprotected.clone()),
+                    resource_type: Some(vec![ResourceType::Document]),
+                    load_context: Some(vec![LoadContext::TopFrame]),
+                    ..Trigger::new(UrlFilter::carrying_query_parameter(parameter))
+                };
+                ContentBlockerRule::new(trigger, RuleAction::Block)
+            })
+            .collect()
+    }
+
+    /// WebKit `unless-domain` entries: `*site` covers subdomains (as the configuration lists do); the user's
+    /// own list is exact, as [`PrivacyConfiguration::is_enabled_for_site`] treats it.
+    fn unprotected_destinations(&self) -> Vec<String> {
+        let mut site_lists = self.configuration.temporary_unprotected_domains();
+        site_lists.extend(self.configuration.exception_domains(FEATURE));
+        let with_subdomains = site_lists.iter().map(|domain| format!("*{}", DomainName::new(domain)));
+        let exact = self.user_unprotected_domains.iter().map(|domain| DomainName::new(domain).to_string());
+        with_subdomains.chain(exact).collect::<BTreeSet<_>>().into_iter().collect()
+    }
+
+    fn is_plain_word(name: &str) -> bool {
+        !name.is_empty() && name.chars().all(|character| character.is_ascii_alphanumeric() || "_-.".contains(character))
     }
 
     /// Non-web URLs count as excluded, exactly as upstream.

@@ -1,4 +1,4 @@
-//! A host name in the form `WebKit` rules and URL hosts use.
+//! A host name in the form WebKit rules and URL hosts use.
 
 use std::borrow::Borrow;
 use std::fmt;
@@ -10,8 +10,8 @@ pub struct DomainName {
 }
 
 impl DomainName {
-    /// Name suffixes that only resolve inside a home or office network.
-    const LOCAL_NETWORK_SUFFIXES: [&'static str; 5] = [".local", ".localhost", ".lan", ".internal", ".home.arpa"];
+    /// Names (and their subdomains) that only resolve inside a home or office network.
+    pub const LOCAL_NETWORK_DOMAINS: [&'static str; 5] = ["localhost", "local", "lan", "internal", "home.arpa"];
 
     #[must_use]
     pub fn new(raw: &str) -> Self {
@@ -40,8 +40,9 @@ impl DomainName {
     #[must_use]
     pub fn is_local_network(&self) -> bool {
         !self.ascii.contains('.')
-            || self.ascii == "localhost"
-            || Self::LOCAL_NETWORK_SUFFIXES.iter().any(|suffix| self.ascii.ends_with(suffix))
+            || Self::LOCAL_NETWORK_DOMAINS.iter().any(|domain| {
+                self.ascii == *domain || self.ascii.strip_suffix(domain).is_some_and(|rest| rest.ends_with('.'))
+            })
     }
 }
 

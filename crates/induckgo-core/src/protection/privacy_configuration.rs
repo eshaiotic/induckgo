@@ -1,20 +1,20 @@
-//! `DuckDuckGo`'s remote privacy configuration (`macos-config.json`).
+//! DuckDuckGo's remote privacy configuration (`macos-config.json`).
 //!
 //! The configuration switches protections on and off without shipping a new app: each *feature* has a
 //! `state` and a list of *exception* sites where it is known to break pages. `unprotectedTemporary` lists
-//! sites where every protection is paused while `DuckDuckGo` fixes breakage.
+//! sites where every protection is paused while DuckDuckGo fixes breakage.
 //!
-//! Features may require a minimum app version (`minSupportedVersion`). `DuckDuckGo` compares it with the macOS
-//! app version; `InDuckGo` compares it with the *compatibility version*: the macOS release whose Content Scope
-//! Scripts are bundled with `InDuckGo`. Bump both together.
+//! Features may require a minimum app version (`minSupportedVersion`). DuckDuckGo compares it with the macOS
+//! app version; InDuckGo compares it with the *compatibility version*: the macOS release whose Content Scope
+//! Scripts are bundled with InDuckGo. Bump both together.
 
 use std::collections::HashSet;
 
 use serde_json::Value;
 
+use crate::document::lenient_json::LenientJson;
 use crate::protection::app_version::AppVersion;
 use crate::protection::domain_name::DomainName;
-use crate::protection::lenient_json::LenientJson;
 use crate::protection::site_list::SiteList;
 use crate::protection::tracker_allowlist_entry::TrackerAllowlistEntry;
 

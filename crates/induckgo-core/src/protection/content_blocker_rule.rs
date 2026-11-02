@@ -1,6 +1,6 @@
-//! One `WebKit` content-blocking rule, in the JSON format shared by Safari, `WKWebView` and `WebKitGTK`.
+//! One WebKit content-blocking rule, in the JSON format shared by Safari, `WKWebView` and `WebKitGTK`.
 //!
-//! `WebKit` compiles a list of such rules into a bytecode automaton and evaluates it for every sub-resource
+//! WebKit compiles a list of such rules into a bytecode automaton and evaluates it for every sub-resource
 //! request in its network process. Rule order matters: an `ignore-previous-rules` action cancels every
 //! earlier rule that matched the same request, which is how exceptions are layered on top of blocking.
 //!
@@ -23,7 +23,7 @@ pub enum ResourceType {
 }
 
 impl ResourceType {
-    /// Maps the TDS request-type vocabulary; types `WebKit` cannot distinguish (e.g. `ping`) have no mapping.
+    /// Maps the TDS request-type vocabulary; types WebKit cannot distinguish (e.g. `ping`) have no mapping.
     #[must_use]
     pub fn from_tds_name(name: &str) -> Option<Self> {
         match name {
@@ -88,6 +88,8 @@ impl LoadContext {
 pub enum RuleAction {
     Block,
     IgnorePreviousRules,
+    /// Rewrites `http://` to `https://` before the request is sent, in every frame.
+    MakeHttps,
 }
 
 impl RuleAction {
@@ -96,6 +98,7 @@ impl RuleAction {
         match self {
             Self::Block => "block",
             Self::IgnorePreviousRules => "ignore-previous-rules",
+            Self::MakeHttps => "make-https",
         }
     }
 }
@@ -107,7 +110,7 @@ pub struct UrlFilter {
 }
 
 impl UrlFilter {
-    /// Anchored, subdomain-tolerant prefix recommended by `WebKit` for fast domain matching:
+    /// Anchored, subdomain-tolerant prefix recommended by WebKit for fast domain matching:
     /// <https://webkit.org/blog/4062/targeting-domains-with-content-blockers/>
     pub const SUBDOMAIN_PREFIX: &'static str = "^[^:]+://+([^:/]+\\.)?";
     const DOMAIN_MATCH_SUFFIX: &'static str = "[:/]";
@@ -117,16 +120,58 @@ impl UrlFilter {
         Self { regex: ".*".to_owned() }
     }
 
+    /// Every plain-HTTP URL.
+    #[must_use]
+    pub fn plain_http() -> Self {
+        Self { regex: "^http://".to_owned() }
+    }
+
+    /// Plain-HTTP URLs whose host is an IPv4 address.
+    #[must_use]
+    pub fn plain_http_ipv4_host() -> Self {
+        Self { regex: "^http://[0-9.]+([:/?#].*)?$".to_owned() }
+    }
+
+    /// Plain-HTTP URLs whose host is an IPv6 address.
+    #[must_use]
+    pub fn plain_http_ipv6_host() -> Self {
+        Self { regex: "^http://\\[".to_owned() }
+    }
+
+    /// Plain-HTTP URLs whose host has no dot (`http://nas/`), which only resolve on a local network.
+    #[must_use]
+    pub fn plain_http_single_label_host() -> Self {
+        Self { regex: "^http://[^/:?#.]+([:/?#].*)?$".to_owned() }
+    }
+
+    /// Every URL on exactly `host`, subdomains excluded.
+    #[must_use]
+    pub fn matching_exact_host(host: &str) -> Self {
+        Self { regex: format!("^[^:]+://+{}[:/]", Self::regex_escaped(host)) }
+    }
+
+    /// URLs whose query (not fragment) contains the parameter `name`, with or without a value.
+    #[must_use]
+    pub fn carrying_query_parameter(name: &str) -> Self {
+        Self { regex: format!("^[^#]*[?&]{}([=&#].*)?$", Self::regex_escaped(name)) }
+    }
+
     /// Every URL on `domain` or its subdomains.
     #[must_use]
     pub fn matching_domain(domain: &str) -> Self {
-        Self { regex: format!("{}{}{}", Self::SUBDOMAIN_PREFIX, Self::regex_escaped(domain), Self::DOMAIN_MATCH_SUFFIX) }
+        Self {
+            regex: format!("{}{}{}", Self::SUBDOMAIN_PREFIX, Self::regex_escaped(domain), Self::DOMAIN_MATCH_SUFFIX),
+        }
     }
 
     /// A TDS rule pattern, which is already a regex; relative patterns are anchored on any subdomain.
     #[must_use]
     pub fn matching_tds_pattern(pattern: &str) -> Self {
-        let regex = if pattern.starts_with("http") { pattern.to_owned() } else { format!("{}{pattern}", Self::SUBDOMAIN_PREFIX) };
+        let regex = if pattern.starts_with("http") {
+            pattern.to_owned()
+        } else {
+            format!("{}{pattern}", Self::SUBDOMAIN_PREFIX)
+        };
         Self { regex }
     }
 

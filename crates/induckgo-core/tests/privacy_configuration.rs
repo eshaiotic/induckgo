@@ -1,4 +1,4 @@
-//! Reading `DuckDuckGo`'s remote privacy configuration (which protections are on, and where not).
+//! Reading DuckDuckGo's remote privacy configuration (which protections are on, and where not).
 
 use induckgo_core::protection::privacy_configuration::PrivacyConfiguration;
 use induckgo_core::protection::tracker_allowlist_entry::TrackerAllowlistEntry;
@@ -79,7 +79,9 @@ fn should_expose_configuration_version() {
 
 #[test]
 fn should_report_feature_with_enabled_state_as_enabled() {
-    RemoteConfigurationScenario::given_remote_configuration().when_checking_feature("contentBlocking").then_is_enabled();
+    RemoteConfigurationScenario::given_remote_configuration()
+        .when_checking_feature("contentBlocking")
+        .then_is_enabled();
 }
 
 #[test]

@@ -3,6 +3,7 @@
 //! The expected rules follow DuckDuckGo's `TrackerRadarKit.ContentBlockerRulesBuilder` (Swift), so a site
 //! behaves in InDuckGo exactly as it does in the DuckDuckGo macOS browser.
 
+use induckgo_core::protection::content_blocker_rule::ContentBlockerRule;
 use induckgo_core::protection::content_blocker_rules_builder::ContentBlockerRulesBuilder;
 use induckgo_core::protection::content_blocker_rules_builder::RuleExceptions;
 use induckgo_core::protection::tracker_allowlist_entry::TrackerAllowlistEntry;
@@ -25,7 +26,9 @@ impl RulesBuilderScenario {
     }
 
     fn given_ads_corp_tracker_blocked_by_default() -> Self {
-        Self::given_trackers(json!({"ads.com": {"domain": "ads.com", "owner": {"name": "Ads Corp"}, "default": "block"}}))
+        Self::given_trackers(
+            json!({"ads.com": {"domain": "ads.com", "owner": {"name": "Ads Corp"}, "default": "block"}}),
+        )
     }
 
     fn with_cname(mut self, alias: &str, target: &str) -> Self {
@@ -56,7 +59,7 @@ impl RulesBuilderScenario {
             "cnames": self.cnames
         }));
         let rules = ContentBlockerRulesBuilder::new(&data_set).build_rules(&self.exceptions);
-        BuiltRules { rules: rules.iter().map(|rule| rule.to_json()).collect() }
+        BuiltRules { rules: rules.iter().map(ContentBlockerRule::to_json).collect() }
     }
 }
 
@@ -91,7 +94,11 @@ impl BuiltRules {
     }
 
     fn url_filters_without_subdomain_prefix(&self) -> Vec<&str> {
-        self.rules.iter().filter_map(|rule| rule["trigger"]["url-filter"].as_str()).map(|filter| filter.trim_start_matches(SUBDOMAIN_PREFIX)).collect()
+        self.rules
+            .iter()
+            .filter_map(|rule| rule["trigger"]["url-filter"].as_str())
+            .map(|filter| filter.trim_start_matches(SUBDOMAIN_PREFIX))
+            .collect()
     }
 }
 
@@ -128,9 +135,10 @@ fn should_let_user_open_tracker_domain_as_top_level_popup() {
 
 #[test]
 fn should_produce_no_rules_for_ignored_tracker_without_rules() {
-    let rules = RulesBuilderScenario::given_trackers(json!({"cdn.com": {"domain": "cdn.com", "default": "ignore"}})).when_rules_are_built();
+    let rules = RulesBuilderScenario::given_trackers(json!({"cdn.com": {"domain": "cdn.com", "default": "ignore"}}))
+        .when_rules_are_built();
 
-    assert!(rules.all().is_empty());
+    assert_eq!(rules.all(), &[] as &[Value]);
 }
 
 #[test]
@@ -235,7 +243,10 @@ fn should_block_cname_cloaked_tracker_also_as_first_party() {
         .with_cname("metrics.shop.com", "eu.ads.com")
         .when_rules_are_built();
 
-    assert_eq!(rules.first_rule_filtering("metrics\\.shop\\.com")["trigger"]["load-type"], json!(["first-party", "third-party"]));
+    assert_eq!(
+        rules.first_rule_filtering("metrics\\.shop\\.com")["trigger"]["load-type"],
+        json!(["first-party", "third-party"])
+    );
 }
 
 #[test]

@@ -1,10 +1,12 @@
-//! Stripping tracking parameters (fbclid, gclid, utm_*, ...) from links, like `DuckDuckGo`'s `LinkCleaner`.
+//! Stripping tracking parameters (fbclid, gclid, utm_*, ...) from links, like DuckDuckGo's `LinkCleaner`.
 
+use induckgo_core::protection::content_blocker_rule::ContentBlockerRule;
 use induckgo_core::protection::privacy_configuration::PrivacyConfiguration;
 use induckgo_core::protection::tracking_parameter_remover::TrackingParameterRemover;
+use serde_json::Value;
 use serde_json::json;
 
-/// Given: `DuckDuckGo`'s configuration strips `fbclid` and `utm_source`, except on `needs-utm.com`.
+/// Given: DuckDuckGo's configuration strips `fbclid` and `utm_source`, except on `needs-utm.com`.
 struct LinkCleaningScenario {
     configuration: PrivacyConfiguration,
     user_unprotected_domains: Vec<String>,
@@ -32,6 +34,20 @@ impl LinkCleaningScenario {
     fn with_link_clicked_on_page(mut self, page: &str) -> Self {
         self.clicked_on_page = Some(page.to_owned());
         self
+    }
+
+    fn given_configuration(document: Value) -> Self {
+        Self {
+            configuration: PrivacyConfiguration::new(document, "1.214.0"),
+            user_unprotected_domains: vec![],
+            clicked_on_page: None,
+        }
+    }
+
+    /// The WebKit rules that stop top-frame navigations still carrying tracking parameters.
+    fn when_navigation_rules_are_built(&self) -> Vec<Value> {
+        let remover = TrackingParameterRemover::new(&self.configuration, &self.user_unprotected_domains);
+        remover.content_rules().iter().map(ContentBlockerRule::to_json).collect()
     }
 
     fn when_link_is_opened(&self, url: &str) -> OpenedLink {
@@ -111,4 +127,44 @@ fn should_ignore_non_web_urls() {
     LinkCleaningScenario::given_tracking_parameters_protection()
         .when_link_is_opened("file:///home/me/page.html?fbclid=1")
         .then_opens_unchanged();
+}
+
+#[test]
+fn should_stop_top_frame_navigations_that_carry_tracking_parameters() {
+    let rules = LinkCleaningScenario::given_tracking_parameters_protection()
+        .with_protection_switched_off_by_user_on("blog.pl")
+        .when_navigation_rules_are_built();
+
+    assert_eq!(
+        rules,
+        ["fbclid", "utm_source"].map(|parameter| json!({
+            "trigger": {
+                "url-filter": format!("^[^#]*[?&]{parameter}([=&#].*)?$"),
+                "unless-domain": ["*needs-utm.com", "blog.pl"],
+                "resource-type": ["document"],
+                "load-context": ["top-frame"]
+            },
+            "action": {"type": "block"}
+        }))
+    );
+}
+
+#[test]
+fn should_build_no_navigation_rules_when_feature_is_disabled() {
+    let rules = LinkCleaningScenario::given_configuration(json!({"features": {"trackingParameters": {
+        "state": "disabled", "settings": {"parameters": ["fbclid"]}
+    }}}))
+    .when_navigation_rules_are_built();
+
+    assert_eq!(rules, [Value::Null; 0]);
+}
+
+#[test]
+fn should_skip_parameter_names_that_could_break_the_rule_list() {
+    let rules = LinkCleaningScenario::given_configuration(json!({"features": {"trackingParameters": {
+        "state": "enabled", "settings": {"parameters": ["fbclid", "a(b", ""]}
+    }}}))
+    .when_navigation_rules_are_built();
+
+    assert_eq!(rules.len(), 1);
 }

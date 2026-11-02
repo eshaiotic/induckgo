@@ -8,10 +8,10 @@
 //! failure (address, host, the `GLib` message) is escaped, the template forbids scripts and every remote load with
 //! a Content Security Policy, and retry links are only emitted for `http`, `https` and `file` addresses.
 
-use crate::navigation::address_bar_input::AddressBarInput;
 use crate::navigation::load_failure::CertificateProblem;
 use crate::navigation::load_failure::FailureCause;
 use crate::navigation::load_failure::LoadFailure;
+use crate::navigation::search_engine::SearchEngine;
 
 /// How the browser around the page looks, so the page matches it.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -31,10 +31,10 @@ impl ErrorPage {
         Self { template: template.to_owned() }
     }
 
-    /// The complete HTML document explaining `failure`.
+    /// The complete HTML document explaining `failure`; a mistyped name is searched with `search_engine`.
     #[must_use]
-    pub fn render(&self, failure: &LoadFailure, appearance: &PageAppearance) -> String {
-        let explanation = Explanation::of(failure);
+    pub fn render(&self, failure: &LoadFailure, appearance: &PageAppearance, search_engine: SearchEngine) -> String {
+        let explanation = Explanation::of(failure, search_engine);
         let [red, green, blue] = appearance.accent;
         Template::fill(&self.template, |placeholder| match placeholder {
             "scheme" => Some(if appearance.is_dark { "dark" } else { "light" }.to_owned()),
@@ -55,6 +55,7 @@ impl ErrorPage {
 /// What the page says and offers for one failure.
 struct Explanation<'failure> {
     failure: &'failure LoadFailure,
+    search_engine: SearchEngine,
     /// The host as markup, ready to be placed into the lead.
     host: String,
     tab_title: String,
@@ -72,7 +73,7 @@ struct Explanation<'failure> {
 }
 
 struct PageAction {
-    label: &'static str,
+    label: String,
     address: String,
     is_primary: bool,
 }
@@ -86,9 +87,10 @@ impl<'failure> Explanation<'failure> {
         "If you use a VPN, firewall or proxy, check that it isn’t blocking the site.";
     const TRY_LATER: &'static str = "Try again in a few minutes.";
 
-    fn of(failure: &'failure LoadFailure) -> Self {
+    fn of(failure: &'failure LoadFailure, search_engine: SearchEngine) -> Self {
         let mut explanation = Self {
             failure,
+            search_engine,
             host: Markup::strong(&failure.host()),
             tab_title: failure.host(),
             title: "This site can’t be reached",
@@ -250,7 +252,7 @@ impl<'failure> Explanation<'failure> {
         self.detail = format!("HTTP {status}");
         self.offer_retry(Self::RELOAD);
         if let Some(address) = self.failure.site_home() {
-            self.actions.push(PageAction { label: "Go to Home Page", address, is_primary: false });
+            self.actions.push(PageAction { label: "Go to Home Page".to_owned(), address, is_primary: false });
         }
     }
 
@@ -285,14 +287,16 @@ impl<'failure> Explanation<'failure> {
 
     fn offer_retry(&mut self, label: &'static str) {
         if self.failure.can_be_retried() {
-            self.actions.push(PageAction { label, address: self.failure.address.clone(), is_primary: true });
+            let address = self.failure.address.clone();
+            self.actions.push(PageAction { label: label.to_owned(), address, is_primary: true });
         }
     }
 
     /// A mistyped name is most often found by searching for it.
     fn offer_search(&mut self) {
-        let address = AddressBarInput::new(&self.failure.host()).search_url();
-        self.actions.push(PageAction { label: "Search DuckDuckGo", address, is_primary: false });
+        let address = self.search_engine.search_url(&self.failure.host());
+        let label = format!("Search {}", self.search_engine.name());
+        self.actions.push(PageAction { label, address, is_primary: false });
     }
 
     fn points_markup(&self) -> String {
@@ -319,7 +323,7 @@ impl<'failure> Explanation<'failure> {
             let opening =
                 if action.is_primary { "<a class=\"button primary\" href=\"" } else { "<a class=\"button\" href=\"" };
             Markup::push_element(&mut markup, opening, &action.address, "\">");
-            markup.push_str(action.label);
+            markup.push_str(&action.label);
             markup.push_str("</a>");
         }
         markup.push_str("</div>");

@@ -3,7 +3,7 @@
 //! Each InDuckGo process serves exactly one profile (or one web app's private profile), so a session owns:
 //! a WebKit `NetworkSession` with its own cookie jar, storage, cache and HSTS list; the page protections;
 //! and the state that feeds them (privacy configuration, Tracker Data Set, sites the user unprotected); and the
-//! zoom the user gave each site.
+//! zoom the user gave each site and the search engine the user chose.
 //!
 //! Pages must not load before tracker blocking is active: [`ProfileSession::when_protected`] holds a load
 //! back until rule lists are active. Building the tracker list from the Tracker Data Set costs a few tenths of
@@ -19,6 +19,7 @@ use std::sync::Arc;
 use std::time::Instant;
 
 use induckgo_core::navigation::https_upgrade_policy::HttpsUpgradePolicy;
+use induckgo_core::navigation::search_engine::SearchEngine;
 use induckgo_core::profile::profile_directories::ProfileLocation;
 use induckgo_core::profile::profile_id::ProfileId;
 use induckgo_core::profile::unprotected_sites::UnprotectedSites;
@@ -87,6 +88,8 @@ pub struct ProfileSession {
     http: Rc<HttpClient>,
     unprotected_sites_file: StoredFile,
     zoom: SiteZoom,
+    search_engine_file: StoredFile,
+    search_engine: Cell<SearchEngine>,
     inputs: RefCell<ProtectionInputs>,
     readiness: RefCell<Readiness>,
     /// Bumped by every rebuild; a slower, older rebuild never overwrites a newer one.
@@ -105,6 +108,8 @@ impl ProfileSession {
         let location = paths.profile(&profile);
         let network_session = Self::isolated_network_session(&location);
         let unprotected_sites_file = StoredFile::new(location.data.join("unprotected-sites.json"));
+        let search_engine_file = StoredFile::new(location.data.join("search-engine.json"));
+        let search_engine = search_engine_file.read_json().map(|document| SearchEngine::from_json(&document));
         let unprotected_sites = unprotected_sites_file
             .read_json()
             .map(|document| UnprotectedSites::from_json(&document))
@@ -119,6 +124,8 @@ impl ProfileSession {
             http,
             unprotected_sites_file,
             zoom: SiteZoom::load(StoredFile::new(location.data.join("site-zoom-levels.json"))),
+            search_engine_file,
+            search_engine: Cell::new(search_engine.unwrap_or_default()),
             inputs: RefCell::new(ProtectionInputs {
                 tracker_data: None,
                 configuration: None,
@@ -142,6 +149,19 @@ impl ProfileSession {
 
     pub fn zoom(&self) -> &SiteZoom {
         &self.zoom
+    }
+
+    /// What the address bar searches with and where new tabs open.
+    pub fn search_engine(&self) -> SearchEngine {
+        self.search_engine.get()
+    }
+
+    /// Makes `engine` the profile's search engine, and saves the choice.
+    pub fn choose_search_engine(&self, engine: SearchEngine) {
+        self.search_engine.set(engine);
+        if let Err(error) = self.search_engine_file.write_json(&engine.to_json()) {
+            glib::g_warning!(Self::LOG_DOMAIN, "cannot save the search engine: {error}");
+        }
     }
 
     /// A new top-level web view in this profile.

@@ -271,6 +271,11 @@ przez wskaźnik do tymczasowego, już zwolnionego napisu i wywracało aplikacje 
   jest dozwolona, wszystko inne odrzucane.
 - **Inne schematy** (`mailto:`, `tel:`, `zoommtg:` …) są przekazywane do pulpitu tylko po prawdziwym geście
   użytkownika, więc strona nie może sama otwierać aplikacji.
+- **Wyszukiwarka**: domyślnie DuckDuckGo; w każdym profilu można wybrać Brave Search albo Google (menu okna →
+  Search Engine, zapis w `search-engine.json` profilu). `SearchEngine` decyduje, dokąd trafia wyszukiwanie
+  wpisane w pasek adresu lub podane w wierszu poleceń, jaką stronę główną otwiera nowa karta i jaką wyszukiwarkę
+  strona błędu proponuje dla błędnie wpisanej nazwy. Wyszukiwanie jest zwykłą nawigacją, więc ochrona działa też
+  na stronach samej wyszukiwarki. Zapisana wyszukiwarka, której InDuckGo nie oferuje, jest czytana jako DuckDuckGo.
 - **Zoom strony** przechodzi przez rozmiary DuckDuckGo (`ZoomLevel`: 50, 75, 85, 100, 115, 125, 150, 175, 200, 250
   i 300 %) skrótami Ctrl `+`/`-`/`0` (także na klawiaturze numerycznej), Ctrl z kółkiem myszy albo rzędem zoomu
   w menu okna. Rozmiar inny niż 100 % widać jako znaczek obok paska adresu (w aplikacji webowej w nagłówku);

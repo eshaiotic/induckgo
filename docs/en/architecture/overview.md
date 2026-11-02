@@ -267,6 +267,11 @@ temporary string that has already been freed, and it crashed web apps on their f
   denied.
 - **Other schemes** (`mailto:`, `tel:`, `zoommtg:` …) are handed to the desktop only after a real user
   gesture, so a page cannot open applications by itself.
+- **Search engine**: DuckDuckGo by default; Brave Search or Google can be chosen per profile (window menu →
+  Search Engine, saved in the profile's `search-engine.json`). `SearchEngine` decides where a search typed into
+  the address bar or passed on the command line goes, which home page a new tab opens, and which engine an error
+  page offers for a mistyped name. A search is an ordinary navigation, so the protections apply to the engine's
+  own pages too. A stored engine InDuckGo does not offer reads as DuckDuckGo.
 - **Page zoom** steps through DuckDuckGo's sizes (`ZoomLevel`: 50, 75, 85, 100, 115, 125, 150, 175, 200, 250 and
   300 %) with Ctrl `+`/`-`/`0` (also on the keypad), Ctrl with the scroll wheel, or the zoom row of the window
   menu. A size other than 100 % shows as a badge next to the address bar (in a web app, in the header); clicking

@@ -15,7 +15,9 @@ use gio::prelude::ApplicationExt;
 use gio::prelude::ApplicationExtManual;
 use gtk::prelude::GtkApplicationExt;
 use gtk::prelude::GtkWindowExt;
+use gtk::prelude::ToVariant;
 use induckgo_core::launch::launch_request::LaunchRequest;
+use induckgo_core::navigation::search_engine::SearchEngine;
 use induckgo_core::profile::profile_id::ProfileId;
 
 use crate::app_context::AppContext;
@@ -139,7 +141,7 @@ impl InDuckGoApplication {
         }
         match context.browser_windows.active(application).filter(|_| !request.addresses().is_empty()) {
             Some(browser) => {
-                request.addresses().iter().for_each(|address| browser.open_tab(address));
+                browser.open_typed(request.addresses());
                 browser.window().present();
             }
             None => Self::open_browser_window(application, context, request.addresses()),
@@ -175,13 +177,28 @@ impl InDuckGoApplication {
                 }
             })
             .build();
+        let process = Rc::downgrade(self);
+        let current = self.context.get().map(|context| context.session.search_engine()).unwrap_or_default();
+        let search_engine = gio::ActionEntry::builder("search-engine")
+            .parameter_type(Some(glib::VariantTy::STRING))
+            .state(current.id().to_variant())
+            .activate(move |_: &adw::Application, action, parameter| {
+                let (Some(process), Some(parameter)) = (process.upgrade(), parameter) else { return };
+                let Some(engine) = parameter.str().and_then(SearchEngine::from_id) else { return };
+                if let Some(context) = process.context.get() {
+                    context.session.choose_search_engine(engine);
+                    context.browser_windows.open().iter().for_each(|browser| browser.show_search_engine());
+                }
+                action.set_state(parameter);
+            })
+            .build();
         let about = gio::ActionEntry::builder("about")
             .activate(|application: &adw::Application, _, _| Self::present_about(application))
             .build();
         let quit = gio::ActionEntry::builder("quit")
             .activate(|application: &adw::Application, _, _| application.quit())
             .build();
-        application.add_action_entries([new_window, open_profile, about, quit]);
+        application.add_action_entries([new_window, open_profile, search_engine, about, quit]);
     }
 
     fn open_browser_window(application: &adw::Application, context: &Rc<AppContext>, addresses: &[String]) {

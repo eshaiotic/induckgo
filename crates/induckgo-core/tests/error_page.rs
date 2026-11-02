@@ -8,10 +8,12 @@ use induckgo_core::navigation::error_page::PageAppearance;
 use induckgo_core::navigation::load_failure::CertificateProblem;
 use induckgo_core::navigation::load_failure::FailureCause;
 use induckgo_core::navigation::load_failure::LoadFailure;
+use induckgo_core::navigation::search_engine::SearchEngine;
 
 struct ErrorPageScenario {
     failure: LoadFailure,
     appearance: PageAppearance,
+    search_engine: SearchEngine,
 }
 
 impl ErrorPageScenario {
@@ -23,6 +25,7 @@ impl ErrorPageScenario {
         Self {
             failure: LoadFailure::new(address, cause, detail),
             appearance: PageAppearance { is_dark: false, accent: [0x35, 0x84, 0xe4] },
+            search_engine: SearchEngine::DUCKDUCKGO,
         }
     }
 
@@ -31,10 +34,17 @@ impl ErrorPageScenario {
         self
     }
 
+    fn with_search_engine(mut self, engine: SearchEngine) -> Self {
+        self.search_engine = engine;
+        self
+    }
+
     fn when_rendered(&self) -> RenderedErrorPage {
         let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../assets/error-page/error-page.html");
         let template = std::fs::read_to_string(path).expect("the vendored error page template");
-        RenderedErrorPage { html: ErrorPage::new(&template).render(&self.failure, &self.appearance) }
+        RenderedErrorPage {
+            html: ErrorPage::new(&template).render(&self.failure, &self.appearance, self.search_engine),
+        }
     }
 }
 
@@ -221,4 +231,12 @@ fn should_match_the_dark_browser_and_its_accent_colour() {
         .then_says("<html lang=\"en\" class=\"dark tone-accent glyph-alert\">")
         .then_says("<meta name=\"color-scheme\" content=\"dark\">")
         .then_says("--accent: #9a6aff;");
+}
+
+#[test]
+fn should_offer_to_search_with_the_chosen_engine() {
+    ErrorPageScenario::given_failure("https://exmaple.com/", FailureCause::HostNotFound)
+        .with_search_engine(SearchEngine::GOOGLE)
+        .when_rendered()
+        .then_secondary_action_opens("Search Google", "https://www.google.com/search?q=exmaple.com");
 }

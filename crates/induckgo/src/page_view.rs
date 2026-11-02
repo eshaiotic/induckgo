@@ -292,7 +292,7 @@ impl PageView {
 
     fn show_error_page(&self, failure: &LoadFailure) {
         self.error_page.replace(ErrorPageState::Loading(failure.address.clone()));
-        ErrorPageView::show(&self.web_view, failure);
+        ErrorPageView::show(&self.web_view, failure, self.session.search_engine());
     }
 
     /// Whether the load in progress is the requested error page: it loads under the failed address.

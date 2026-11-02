@@ -1,18 +1,28 @@
 //! Turning what the user typed into the address bar into a URL to open.
 
 use induckgo_core::navigation::address_bar_input::AddressBarInput;
+use induckgo_core::navigation::search_engine::SearchEngine;
 
 struct AddressBarScenario {
     typed: String,
+    search_engine: SearchEngine,
 }
 
 impl AddressBarScenario {
     fn given_user_typed(text: &str) -> Self {
-        Self { typed: text.to_owned() }
+        Self { typed: text.to_owned(), search_engine: SearchEngine::DUCKDUCKGO }
+    }
+
+    fn with_search_engine(mut self, engine: SearchEngine) -> Self {
+        self.search_engine = engine;
+        self
     }
 
     fn when_enter_is_pressed(&self) -> AddressBarOutcome {
-        AddressBarOutcome { typed: self.typed.clone(), destination: AddressBarInput::new(&self.typed).destination() }
+        AddressBarOutcome {
+            typed: self.typed.clone(),
+            destination: AddressBarInput::new(&self.typed).destination(self.search_engine),
+        }
     }
 }
 
@@ -94,6 +104,22 @@ fn should_encode_search_terms_safely() {
     AddressBarScenario::given_user_typed("zażółć & gęślą")
         .when_enter_is_pressed()
         .then_opens("https://duckduckgo.com/?q=za%C5%BC%C3%B3%C5%82%C4%87+%26+g%C4%99%C5%9Bl%C4%85");
+}
+
+#[test]
+fn should_search_with_the_chosen_engine() {
+    AddressBarScenario::given_user_typed("privacy browser")
+        .with_search_engine(SearchEngine::BRAVE_SEARCH)
+        .when_enter_is_pressed()
+        .then_opens("https://search.brave.com/search?q=privacy+browser");
+}
+
+#[test]
+fn should_open_addresses_whatever_engine_is_chosen() {
+    AddressBarScenario::given_user_typed("mbank.pl")
+        .with_search_engine(SearchEngine::GOOGLE)
+        .when_enter_is_pressed()
+        .then_opens("https://mbank.pl/");
 }
 
 #[test]

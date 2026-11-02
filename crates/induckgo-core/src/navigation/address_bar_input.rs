@@ -1,4 +1,4 @@
-//! What the user typed into the address bar: either an address to open or a DuckDuckGo search.
+//! What the user typed into the address bar: either an address to open or a search with the chosen engine.
 //!
 //! Only `http`, `https`, `file` and `about` URLs are opened directly. Anything else, `javascript:` and
 //! `data:` included, becomes a search query, so pasting a malicious snippet into the address bar can never
@@ -8,7 +8,8 @@ use std::net::Ipv4Addr;
 
 use url::Url;
 
-const SEARCH_URL: &str = "https://duckduckgo.com/?q=";
+use crate::navigation::search_engine::SearchEngine;
+
 const DIRECT_SCHEMES: [&str; 4] = ["http://", "https://", "file://", "about:"];
 
 pub struct AddressBarInput {
@@ -21,13 +22,13 @@ impl AddressBarInput {
         Self { text: text.trim().to_owned() }
     }
 
-    /// The URL to open, or `None` for blank input.
+    /// The URL to open (an address, else a search with `search_engine`), or `None` for blank input.
     #[must_use]
-    pub fn destination(&self) -> Option<String> {
+    pub fn destination(&self, search_engine: SearchEngine) -> Option<String> {
         if self.text.is_empty() {
             return None;
         }
-        Some(self.address().unwrap_or_else(|| self.search_url()))
+        Some(self.address().unwrap_or_else(|| search_engine.search_url(&self.text)))
     }
 
     fn address(&self) -> Option<String> {
@@ -59,12 +60,5 @@ impl AddressBarInput {
         let has_real_top_level = top_level.chars().count() >= 2 && top_level.chars().all(char::is_alphabetic)
             || top_level.to_ascii_lowercase().starts_with("xn--");
         (labels.len() >= 2 && labels.iter().all(is_label) && has_real_top_level).then_some("https")
-    }
-
-    /// The DuckDuckGo search for the text, whatever it looks like.
-    #[must_use]
-    pub fn search_url(&self) -> String {
-        let query: String = form_urlencoded::byte_serialize(self.text.as_bytes()).collect();
-        format!("{SEARCH_URL}{query}")
     }
 }

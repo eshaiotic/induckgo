@@ -22,6 +22,7 @@ use gtk::prelude::ToVariant;
 use gtk::prelude::ToggleButtonExt;
 use gtk::prelude::WidgetExt;
 use induckgo_core::navigation::address_bar_input::AddressBarInput;
+use induckgo_core::navigation::search_engine::SearchEngine;
 use induckgo_core::page_zoom::zoom_level::ZoomLevel;
 use induckgo_core::web_app::installed_web_app::InstalledWebApp;
 use webkit6::WebView;
@@ -55,14 +56,12 @@ pub struct BrowserWindow {
 }
 
 impl BrowserWindow {
-    pub const HOME_PAGE: &'static str = "https://duckduckgo.com/";
     const PRODUCT: &'static str = "InDuckGo";
 
-    /// Opens a window with one tab per address (or the home page).
+    /// Opens a window with one tab per typed address (or the search engine's home page).
     pub fn open(application: &adw::Application, context: &Rc<AppContext>, addresses: &[String]) -> Rc<Self> {
         let tab_view = adw::TabView::new();
-        let address =
-            gtk::Entry::builder().hexpand(true).placeholder_text("Search DuckDuckGo or enter address").build();
+        let address = gtk::Entry::builder().hexpand(true).build();
         let toasts = adw::ToastOverlay::new();
         let find_bar = FindBar::new();
         let browser = Rc::new(Self {
@@ -92,13 +91,9 @@ impl BrowserWindow {
         browser.build_layout();
         browser.install_actions();
         browser.connect_signals();
-        let destinations: Vec<String> =
-            addresses.iter().filter_map(|typed| AddressBarInput::new(typed).destination()).collect();
-        if destinations.is_empty() {
-            browser.open_tab(Self::HOME_PAGE);
-        }
-        for destination in &destinations {
-            browser.open_tab(destination);
+        browser.show_search_engine();
+        if !browser.open_typed(addresses) {
+            browser.open_tab(browser.home_page());
         }
         let keep_alive = Rc::clone(&browser);
         browser.window.connect_destroy(move |_| keep_alive.pages.borrow_mut().clear());
@@ -108,6 +103,23 @@ impl BrowserWindow {
 
     pub fn window(&self) -> &adw::ApplicationWindow {
         &self.window
+    }
+
+    /// Opens a tab for each typed address or search, as if typed into the address bar; whether any opened.
+    pub fn open_typed(self: &Rc<Self>, typed: &[String]) -> bool {
+        let engine = self.context.session.search_engine();
+        let destinations: Vec<String> =
+            typed.iter().filter_map(|text| AddressBarInput::new(text).destination(engine)).collect();
+        for destination in &destinations {
+            self.open_tab(destination);
+        }
+        !destinations.is_empty()
+    }
+
+    /// Names the profile's search engine in the empty address bar.
+    pub fn show_search_engine(&self) {
+        let engine = self.context.session.search_engine();
+        self.address.set_placeholder_text(Some(&format!("Search {} or enter address", engine.name())));
     }
 
     /// Opens `address` in a new, selected tab.
@@ -139,7 +151,7 @@ impl BrowserWindow {
         let open_pages: Vec<adw::TabPage> =
             (0..self.tab_view.n_pages()).map(|index| self.tab_view.nth_page(index)).collect();
         self.pages.borrow_mut().clear();
-        self.open_tab(Self::HOME_PAGE);
+        self.open_tab(self.home_page());
         for page in &open_pages {
             self.tab_view.close_page(page);
         }
@@ -216,7 +228,14 @@ impl BrowserWindow {
         }
         profiles.append(Some("Manage Profiles…"), Some("win.manage-profiles"));
         menu.append_section(Some("Profiles"), &profiles);
+        let search_engines = gio::Menu::new();
+        for engine in SearchEngine::ALL {
+            let item = gio::MenuItem::new(Some(engine.name()), None);
+            item.set_action_and_target_value(Some("app.search-engine"), Some(&engine.id().to_variant()));
+            search_engines.append_item(&item);
+        }
         let about = gio::Menu::new();
+        about.append_submenu(Some("Search Engine"), &search_engines);
         about.append(Some("About InDuckGo"), Some("app.about"));
         menu.append_section(None, &about);
         menu
@@ -230,7 +249,7 @@ impl BrowserWindow {
                 browser.with_web_view(|view| if view.is_loading() { view.stop_loading() } else { view.reload() });
             }),
             ("new-tab", |browser| {
-                browser.open_tab(Self::HOME_PAGE);
+                browser.open_tab(browser.home_page());
                 browser.focus_address();
             }),
             ("close-tab", |browser| {
@@ -275,8 +294,9 @@ impl BrowserWindow {
         let browser = Rc::downgrade(self);
         self.address.connect_activate(move |entry| {
             let Some(browser) = browser.upgrade() else { return };
+            let engine = browser.context.session.search_engine();
             if let (Some(destination), Some(page)) =
-                (AddressBarInput::new(&entry.text()).destination(), browser.selected_page())
+                (AddressBarInput::new(&entry.text()).destination(engine), browser.selected_page())
             {
                 page.open(&destination);
                 page.web_view().grab_focus();
@@ -434,6 +454,10 @@ impl BrowserWindow {
                 browser.close_tabs_of(app, &installed_from);
             }
         });
+    }
+
+    fn home_page(&self) -> &'static str {
+        self.context.session.search_engine().home_page()
     }
 
     fn focus_address(self: &Rc<Self>) {

@@ -12,6 +12,7 @@ use induckgo_core::navigation::error_page::PageAppearance;
 use induckgo_core::navigation::load_failure::CertificateProblem;
 use induckgo_core::navigation::load_failure::FailureCause;
 use induckgo_core::navigation::load_failure::LoadFailure;
+use induckgo_core::navigation::search_engine::SearchEngine;
 use webkit6::NetworkError;
 use webkit6::PolicyError;
 use webkit6::WebView;
@@ -22,9 +23,10 @@ pub struct ErrorPageView;
 impl ErrorPageView {
     const TEMPLATE: &'static str = include_str!("../../../assets/error-page/error-page.html");
 
-    /// Shows the page explaining `failure` under the failed address.
-    pub fn show(web_view: &WebView, failure: &LoadFailure) {
-        let html = ErrorPage::new(Self::TEMPLATE).render(failure, &Self::appearance());
+    /// Shows the page explaining `failure` under the failed address; a mistyped name is searched with
+    /// `search_engine`.
+    pub fn show(web_view: &WebView, failure: &LoadFailure, search_engine: SearchEngine) {
+        let html = ErrorPage::new(Self::TEMPLATE).render(failure, &Self::appearance(), search_engine);
         web_view.load_alternate_html(&html, &failure.address, None);
     }
 

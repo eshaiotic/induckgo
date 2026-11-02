@@ -1,7 +1,7 @@
 # Maintainer: Michał Ligus <eshaiotic@eshaiotic.io>
 #
 # Builds InDuckGo from the repository this file lives in: the working tree as it is, uncommitted changes
-# included. Usually run through ./install.sh or packaging/release.sh; by hand: cd packaging/arch && makepkg -si
+# included. Usually run through ./install or packaging/release.sh; by hand: cd packaging/arch && makepkg -si
 # The flags of /etc/makepkg.conf apply, so the package may be tuned for this machine's processor.
 
 pkgname=induckgo

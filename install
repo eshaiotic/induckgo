@@ -5,7 +5,7 @@
 #   checkout and installs it with pacman.
 #   Debian, Ubuntu / Fedora: installs the newest .deb / .rpm from dist/ (built by packaging/release.sh).
 #
-# Usage: ./install.sh
+# Usage: ./install
 set -eu
 
 repository=$(cd "$(dirname "$0")" && pwd -P)

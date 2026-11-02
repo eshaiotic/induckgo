@@ -36,12 +36,12 @@ cookie-consent handling, translations. The full list with reasons is in the arch
 On Arch Linux and its derivatives (CachyOS, EndeavourOS, Manjaro):
 
 ```sh
-./install.sh             # builds the pacman package from this checkout and installs it
-./uninstall.sh           # removes the package; profiles and web apps are kept
-./uninstall.sh --purge   # also deletes all InDuckGo data and web app launchers
+./install                 # builds the pacman package from this checkout and installs it
+./uninstall               # removes the package; profiles and web apps are kept
+./uninstall --purge       # also deletes all InDuckGo data and web app launchers
 ```
 
-On Debian 13, Ubuntu 24.04 LTS or newer and on Fedora 44, `./install.sh` installs the `.deb` / `.rpm` that
+On Debian 13, Ubuntu 24.04 LTS or newer and on Fedora 44, `./install` installs the `.deb` / `.rpm` that
 `packaging/release.sh` built into `dist/`. On any other distribution, use the AppImage:
 `chmod +x InDuckGo-*-x86_64.AppImage && ./InDuckGo-*-x86_64.AppImage`. It uses the system's WebKitGTK 6.0,
 GTK ≥ 4.14 and libadwaita ≥ 1.5 (oldest tested: Ubuntu 24.04 LTS). Those must be installed, but in return the browser engine keeps receiving

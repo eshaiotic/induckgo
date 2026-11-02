@@ -29,7 +29,7 @@ This file is an index; the content lives in the linked documents.
 - `cargo audit` — dependency vulnerability check (zero-vulnerability policy).
 - `cargo run -p induckgo -- [--profile NAME | --web-app ID] [URL…]` — run the browser or an installed web app.
 - `packaging/release.sh [arch] [deb] [appimage] [rpm]` — release packages into `dist/` (deb/AppImage/rpm in podman).
-- `./install.sh` / `./uninstall.sh [--purge]` — install or remove the system package (Arch: built with makepkg).
+- `./install` / `./uninstall [--purge]` — install or remove the system package (Arch: built with makepkg).
 
 ## Gotchas
 

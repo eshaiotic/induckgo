@@ -4,7 +4,7 @@
 #   --purge   also deletes your InDuckGo data: every profile (cookies, logins, history, site data), the
 #             protection cache and the launchers of installed web apps. This cannot be undone.
 #
-# Usage: ./uninstall.sh [--purge]
+# Usage: ./uninstall [--purge]
 set -eu
 
 purge=false

@@ -83,6 +83,7 @@ impl InDuckGoApplication {
     }
 
     fn start(self: &Rc<Self>, application: &adw::Application) {
+        Self::switch_off_animations();
         let paths = InstallationPaths::from_environment();
         let http = Rc::new(HttpClient::new());
         let icons = AppIcons::new(&paths);
@@ -94,6 +95,15 @@ impl InDuckGoApplication {
             application.set_accels_for_action(action, accelerators);
         }
         self.install_actions(application);
+    }
+
+    /// Tabs, dialogs, banners, toasts and the find bar appear at once instead of sliding and fading: the
+    /// interface reacts immediately, and on a busy machine animations are the first thing to stutter. Set by
+    /// the application, this outranks the desktop's own animation setting for InDuckGo's processes.
+    fn switch_off_animations() {
+        if let Some(settings) = gtk::Settings::default() {
+            settings.set_gtk_enable_animations(false);
+        }
     }
 
     fn handle(

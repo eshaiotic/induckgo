@@ -6,6 +6,7 @@ mod browser_window;
 mod browser_windows;
 mod catalog_files;
 mod download_tracker;
+mod error_page_view;
 mod external_launcher;
 mod find_bar;
 mod http_client;

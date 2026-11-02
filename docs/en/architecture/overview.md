@@ -151,6 +151,45 @@ The rules act before a request leaves the machine. Two of them need help from th
   failed hosts, the `https` list rebuilt and `http://` loaded. Falling back silently would let an attacker on
   the network force any site down to plain HTTP by breaking its HTTPS.
 
+**Error pages.** Every other failure gets an InDuckGo error page instead of WebKit's built-in one, which is a
+bare heading on white. WebKit, libsoup and GLib report failures as error codes from several domains: the
+resolver, I/O, TLS, and WebKit's own network and policy errors. `ErrorPageView` (app) turns these codes into a
+few causes a person can act on (`FailureCause` in core):
+
+- offline;
+- host not found;
+- connection refused, timed out or interrupted;
+- restricted port;
+- untrusted certificate, with each reason;
+- page crashed or out of memory;
+- an HTTP error status with an empty body;
+- file not found.
+
+The page names the problem in one heading, says which site it concerns and lists what to check. It offers
+only actions that help: Try Again or Reload, Search DuckDuckGo for a host that does not exist, and Go to Home
+Page for an empty 404. It is drawn in the browser's current light or dark style with the desktop's accent
+colour. The page is loaded as WebKit's *alternate HTML* for the failed address, so the address bar, Reload and
+Back behave as for the page that failed.
+
+Four details matter:
+
+- An error status with `Content-Length: 0` is stopped at the response policy. The load then fails and its
+  error page takes the history entry, like any other failed load. Shown after the empty page, it would add a
+  second entry, and Back would return to the empty page and explain it again, forever.
+- Certificate failures arrive through `load-failed-with-tls-errors` with every reason GLib found. The page
+  lists them all. There is no "proceed anyway": WebKit never loads such a page, and offering a bypass would
+  train users to click through the warning an attacker relies on.
+- A connection to a server that never answers is cancelled by libsoup (`G_IO_ERROR_CANCELLED`), not timed out.
+  It is therefore explained as a time-out, while a load the user stopped (`WEBKIT_NETWORK_ERROR_CANCELLED`)
+  shows nothing.
+- The address bar shows no padlock and no install button over an error page, since nothing on it comes from
+  the site.
+
+The page runs in the failed site's origin, so it must not be able to harm anyone. Everything taken from the
+failure is HTML-escaped: the address, the host and GLib's message. The template is filled in one pass, so a
+value containing `{{…}}` is never expanded. A Content Security Policy (`default-src 'none'`) forbids scripts,
+forms and every remote load. Retry links are only emitted for `http`, `https` and `file` addresses.
+
 ### 5.4 Content Scope Scripts, GPC and cookies
 
 `ContentScopeScript` fills the C-S-S template with the privacy configuration, the user's unprotected sites

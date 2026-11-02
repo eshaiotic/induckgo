@@ -61,7 +61,9 @@ impl AddressBarInput {
         (labels.len() >= 2 && labels.iter().all(is_label) && has_real_top_level).then_some("https")
     }
 
-    fn search_url(&self) -> String {
+    /// The DuckDuckGo search for the text, whatever it looks like.
+    #[must_use]
+    pub fn search_url(&self) -> String {
         let query: String = form_urlencoded::byte_serialize(self.text.as_bytes()).collect();
         format!("{SEARCH_URL}{query}")
     }

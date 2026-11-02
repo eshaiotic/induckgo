@@ -152,6 +152,47 @@ Reguły działają, zanim żądanie opuści komputer. Dwie z nich potrzebują po
   do nieudanych hostów profilu, lista `https` jest przebudowana i wczytywany jest `http://`. Ciche cofnięcie do
   HTTP pozwoliłoby atakującemu w sieci zepsuć HTTPS dowolnej witryny i zmusić ją do zwykłego HTTP.
 
+**Strony błędów.** Każda inna porażka dostaje stronę błędu InDuckGo zamiast wbudowanej strony WebKita, która
+jest gołym nagłówkiem na białym tle. WebKit, libsoup i GLib zgłaszają porażki kodami błędów z kilku domen:
+resolvera, wejścia-wyjścia, TLS oraz własnych błędów sieci i polityk WebKita. `ErrorPageView` (aplikacja)
+zamienia te kody na kilka przyczyn, na które człowiek może zareagować (`FailureCause` w rdzeniu):
+
+- brak sieci;
+- nieznany host;
+- połączenie odrzucone, przekroczony czas albo przerwane połączenie;
+- zastrzeżony port;
+- niezaufany certyfikat, z każdym powodem;
+- awaria strony albo brak pamięci;
+- status błędu HTTP z pustą treścią;
+- brak pliku.
+
+Strona nazywa problem jednym nagłówkiem, mówi, której witryny dotyczy, i podaje, co sprawdzić. Oferuje tylko
+pomocne akcje: Try Again albo Reload, Search DuckDuckGo dla nieistniejącego hosta i Go to Home Page dla
+pustego 404. Jest rysowana w bieżącym jasnym albo ciemnym stylu przeglądarki, w kolorze akcentu pulpitu.
+Strona jest wczytywana jako *alternate HTML* WebKita dla nieudanego adresu, więc pasek adresu, Reload i Wstecz
+działają jak dla strony, która zawiodła.
+
+Ważne są cztery szczegóły:
+
+- Status błędu z `Content-Length: 0` jest zatrzymywany na etapie polityki odpowiedzi. Wczytanie wtedy się
+  nie udaje, a jego strona błędu zajmuje wpis w historii jak przy każdym nieudanym wczytaniu. Pokazana dopiero
+  po pustej stronie, dodałaby drugi wpis, a Wstecz wracałoby do pustej strony i objaśniało ją od nowa, bez
+  końca.
+- Porażki certyfikatu przychodzą przez `load-failed-with-tls-errors` ze wszystkimi powodami znalezionymi przez
+  GLib. Strona wymienia je wszystkie. Nie ma „przejdź mimo to”: WebKit nigdy nie wczyta takiej strony, a
+  obejście uczyłoby użytkowników przeklikiwać ostrzeżenie, na którym polega atakujący.
+- Połączenie z serwerem, który nigdy nie odpowiada, libsoup anuluje (`G_IO_ERROR_CANCELLED`), zamiast zgłosić
+  przekroczenie czasu. Dlatego jest objaśniane jako przekroczony czas, a wczytanie zatrzymane przez
+  użytkownika (`WEBKIT_NETWORK_ERROR_CANCELLED`) nie pokazuje niczego.
+- Nad stroną błędu pasek adresu nie pokazuje kłódki ani przycisku instalacji, bo nic na niej nie pochodzi od
+  witryny.
+
+Strona działa w pochodzeniu nieudanej witryny, więc nie może nikomu zaszkodzić. Wszystko, co pochodzi z
+porażki, jest escapowane w HTML: adres, host i komunikat GLib. Szablon jest wypełniany w jednym przebiegu, więc
+wartość zawierająca `{{…}}` nigdy nie zostanie rozwinięta. Content Security Policy (`default-src 'none'`)
+zabrania skryptów, formularzy i wszelkich zdalnych wczytań. Linki ponowienia powstają tylko dla adresów
+`http`, `https` i `file`.
+
 ### 5.4 Content Scope Scripts, GPC i cookies
 
 `ContentScopeScript` wypełnia szablon C-S-S konfiguracją prywatności, niechronionymi witrynami użytkownika i

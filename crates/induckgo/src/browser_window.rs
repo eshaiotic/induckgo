@@ -358,6 +358,7 @@ impl BrowserWindow {
             browser.address.set_text(&address);
         }
         let security_icon = match address.split_once(':').map(|(scheme, _)| scheme) {
+            _ if page.shows_error_page() => None,
             Some("https") => Some("channel-secure-symbolic"),
             Some("http") => Some("channel-insecure-symbolic"),
             _ => None,

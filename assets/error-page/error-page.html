@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en" class="{{scheme}} tone-{{tone}} glyph-{{glyph}}">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; form-action 'none'; base-uri 'none'">
+<meta name="color-scheme" content="{{scheme}}">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{tab_title}}</title>
+<style>
+  :root {
+    --accent: {{accent}};
+    --on-accent: #ffffff;
+    --bg: #fafafb;
+    --fg: rgb(0 0 6 / 80%);
+    --muted: rgb(0 0 6 / 60%);
+    --ghost: rgb(0 0 6 / 7%);
+    --ghost-strong: rgb(0 0 6 / 26%);
+    --button: rgb(0 0 6 / 8%);
+    --button-hover: rgb(0 0 6 / 12%);
+    --button-active: rgb(0 0 6 / 22%);
+    --danger: #e01b24;
+    --danger-text: #c01c28;
+    --warning: #e5a50a;
+  }
+
+  html.dark {
+    --bg: #222226;
+    --fg: #ffffff;
+    --muted: rgb(255 255 255 / 62%);
+    --ghost: rgb(255 255 255 / 7%);
+    --ghost-strong: rgb(255 255 255 / 28%);
+    --button: rgb(255 255 255 / 10%);
+    --button-hover: rgb(255 255 255 / 15%);
+    --button-active: rgb(255 255 255 / 26%);
+    --danger: #c01c28;
+    --danger-text: #ff7b63;
+    --warning: #cd9309;
+  }
+
+  * { box-sizing: border-box; }
+
+  html {
+    background: var(--bg);
+    color: var(--fg);
+    font: 15px/1.55 system-ui, "Cantarell", "Noto Sans", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body { margin: 0; }
+
+  ::selection { background: color-mix(in srgb, var(--accent) 32%, transparent); }
+
+  main {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: max(12vh, 48px) 40px 64px;
+  }
+
+  .illustration {
+    display: block;
+    width: 104px;
+    height: 104px;
+    margin: 0 0 28px -6px;
+  }
+
+  .shield { fill: var(--ghost); }
+  .cutout { fill: var(--bg); }
+  .feature { fill: var(--ghost-strong); }
+  .eye-crossed { stroke: var(--ghost-strong); stroke-width: 3.5; stroke-linecap: round; display: none; }
+  .glyph-crash .eye { display: none; }
+  .glyph-crash .eye-crossed { display: inline; }
+
+  .badge-ring { fill: var(--bg); }
+  .badge { fill: var(--accent); }
+  .tone-danger .badge { fill: var(--danger); }
+  .tone-warning .badge { fill: var(--warning); }
+
+  .glyph { display: none; fill: none; stroke: var(--on-accent); stroke-width: 3.25; stroke-linecap: round; stroke-linejoin: round; }
+  .glyph .solid { fill: var(--on-accent); stroke: none; }
+  .tone-warning .glyph { stroke: rgb(0 0 0 / 80%); }
+  .tone-warning .glyph .solid { fill: rgb(0 0 0 / 80%); }
+  .glyph-search .g-search,
+  .glyph-offline .g-offline,
+  .glyph-alert .g-alert,
+  .glyph-clock .g-clock,
+  .glyph-lock .g-lock,
+  .glyph-file .g-file,
+  .glyph-blocked .g-blocked,
+  .glyph-crash .g-crash { display: inline; }
+
+  h1 {
+    margin: 0 0 12px;
+    font-size: 1.875rem;
+    line-height: 1.2;
+    font-weight: 750;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+
+  .lead {
+    margin: 0;
+    max-width: 62ch;
+    text-wrap: pretty;
+  }
+
+  .lead strong { font-weight: 700; overflow-wrap: anywhere; }
+
+  .points {
+    margin: 22px 0 0;
+    padding: 0;
+    list-style: none;
+    max-width: 62ch;
+  }
+
+  .points li {
+    position: relative;
+    margin: 0 0 8px;
+    padding-left: 22px;
+    color: var(--muted);
+    text-wrap: pretty;
+  }
+
+  .points li::before {
+    content: "";
+    position: absolute;
+    left: 4px;
+    top: 0.62em;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--ghost-strong);
+  }
+
+  .tone-danger .points li { color: var(--fg); }
+  .tone-danger .points li::before { background: var(--danger-text); }
+
+  .note {
+    margin: 18px 0 0;
+    max-width: 62ch;
+    color: var(--muted);
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 36px;
+  }
+
+  .button {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 9px 26px;
+    border-radius: 9999px;
+    background: var(--button);
+    color: var(--fg);
+    font-weight: 700;
+    text-decoration: none;
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
+
+  .button:hover { background: var(--button-hover); }
+  .button:active { background: var(--button-active); }
+
+  .button.primary {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+
+  .button.primary:hover { background: linear-gradient(rgb(255 255 255 / 10%), rgb(255 255 255 / 10%)) var(--accent); }
+  .button.primary:active { background: linear-gradient(rgb(0 0 0 / 20%), rgb(0 0 0 / 20%)) var(--accent); }
+
+  .button:focus-visible { outline-color: color-mix(in srgb, var(--accent) 55%, transparent); }
+
+  .detail {
+    margin: 44px 0 0;
+    max-width: 62ch;
+    color: var(--muted);
+    font: 12.5px/1.5 ui-monospace, "Source Code Pro", "Noto Sans Mono", monospace;
+    overflow-wrap: anywhere;
+  }
+
+  @media (max-width: 520px) {
+    main { padding: 40px 24px 48px; }
+    .illustration { width: 88px; height: 88px; margin-bottom: 22px; }
+    h1 { font-size: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <svg class="illustration" viewBox="0 0 128 128" aria-hidden="true">
+    <path class="shield" d="M64 11 L109 25.5 V60 C109 89 90 107.5 64 118 C38 107.5 19 89 19 60 V25.5 Z"/>
+    <path class="cutout" d="M36 84 C50 97 80 98 94 84 C88 103 44 106 36 84 Z"/>
+    <circle class="cutout" cx="60" cy="57" r="24"/>
+    <path class="feature" d="M79 52 L104 60 L79 69 Z"/>
+    <circle class="feature eye" cx="67" cy="50" r="4.5"/>
+    <path class="eye-crossed" d="M63 46 L71 54 M71 46 L63 54"/>
+    <circle class="badge-ring" cx="100" cy="98" r="26"/>
+    <circle class="badge" cx="100" cy="98" r="21"/>
+    <g class="glyph g-search"><circle cx="97" cy="95" r="7.5"/><path d="M102.5 100.5 L108.5 106.5"/></g>
+    <g class="glyph g-offline"><path d="M88 93.5 C95 87.5 105 87.5 112 93.5 M92.5 99 C97 95.5 103 95.5 107.5 99 M89.5 86.5 L110.5 109.5"/><circle class="solid" cx="100" cy="105" r="2.3"/></g>
+    <g class="glyph g-alert"><path d="M100 87.5 V100"/><circle class="solid" cx="100" cy="107.5" r="2.4"/></g>
+    <g class="glyph g-clock"><circle cx="100" cy="98" r="10"/><path d="M100 92 V98 L104.5 101"/></g>
+    <g class="glyph g-lock"><path d="M94.5 96 V92.5 A5.5 5.5 0 0 1 105.5 92.5 V96"/><rect class="solid" x="90.5" y="95.5" width="19" height="14" rx="3"/></g>
+    <g class="glyph g-file"><path d="M94 86.5 H102 L107 91.5 V109.5 H94 Z M102 86.5 V91.5 H107"/></g>
+    <g class="glyph g-blocked"><circle cx="100" cy="98" r="10"/><path d="M93 91 L107 105"/></g>
+    <g class="glyph g-crash"><path class="solid" d="M102.5 86 L91.5 100.5 H99.5 L97.5 110 L108.5 95.5 H100.5 Z"/></g>
+  </svg>
+  <h1>{{title}}</h1>
+  <p class="lead">{{lead}}</p>
+  {{points}}
+  {{actions}}
+  {{detail}}
+</main>
+</body>
+</html>

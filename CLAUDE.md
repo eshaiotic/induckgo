@@ -19,7 +19,7 @@ This file is an index; the content lives in the linked documents.
 - `crates/induckgo-core` — domain logic without GTK/WebKit: protection rules, profiles, web apps, launch, downloads.
 - `crates/induckgo-core/tests` — one OO scenario test file per domain type.
 - `crates/induckgo` — GTK 4 + libadwaita app: adapters that carry out core decisions in WebKitGTK/libsoup/GIO.
-- `assets/` — vendored Content Scope Scripts (Apache-2.0) and the app icons; the Tracker Data Set is never committed.
+- `assets/` — vendored Content Scope Scripts (Apache-2.0), app icons and the error page template; never the Tracker Data Set.
 - `packaging/` — PKGBUILD, rpm spec, deb/AppImage assembly, desktop entry and AppStream metadata.
 
 ## Commands

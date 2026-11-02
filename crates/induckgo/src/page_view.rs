@@ -6,7 +6,10 @@
 //!   offers to load it insecurely (never silently, so an attacker cannot force a downgrade).
 //! * Links to other applications (`mailto:`, `tel:`, ...) open outside, and only after a real click.
 //! * Permission requests are asked, never granted silently.
+//! * A page that cannot be shown (unknown host, refused connection, untrusted certificate, crash, an error
+//!   status with an empty body) is replaced by an InDuckGo error page that explains it.
 
+use std::cell::Cell;
 use std::cell::RefCell;
 use std::collections::VecDeque;
 use std::rc::Rc;
@@ -16,17 +19,21 @@ use adw::prelude::WidgetExt;
 use gtk::prelude::BoxExt;
 use gtk::prelude::Cast;
 use gtk::prelude::IsA;
+use induckgo_core::navigation::load_failure::FailureCause;
+use induckgo_core::navigation::load_failure::LoadFailure;
 use url::Url;
 use webkit6::LoadEvent;
 use webkit6::NavigationPolicyDecision;
-use webkit6::NetworkError;
 use webkit6::PolicyDecision;
 use webkit6::PolicyDecisionType;
 use webkit6::PolicyError;
+use webkit6::ResponsePolicyDecision;
+use webkit6::WebProcessTerminationReason;
 use webkit6::WebView;
 use webkit6::prelude::PolicyDecisionExt;
 use webkit6::prelude::WebViewExt;
 
+use crate::error_page_view::ErrorPageView;
 use crate::external_launcher::ExternalLauncher;
 use crate::permission_prompt::PermissionPrompt;
 use crate::profile_session::ProfileSession;
@@ -42,6 +49,18 @@ pub struct PageView {
     insecure_fallback: RefCell<Option<(String, String)>>,
     /// The last address this page cleaned, so a rule/cleaner mismatch can never loop.
     last_cleaned: RefCell<Option<String>>,
+    error_page: Cell<ErrorPageState>,
+    /// `(address, status)` of the empty error answer the page stopped, to explain when its load fails.
+    empty_error_answer: RefCell<Option<(String, u16)>>,
+}
+
+/// Whether the view shows one of InDuckGo's error pages instead of a page of the site.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum ErrorPageState {
+    Absent,
+    /// Requested; its own load (started and committed right after) is not a new navigation.
+    Loading,
+    Shown,
 }
 
 impl PageView {
@@ -63,6 +82,8 @@ impl PageView {
             recent_plain_http: RefCell::new(VecDeque::new()),
             insecure_fallback: RefCell::new(None),
             last_cleaned: RefCell::new(None),
+            error_page: Cell::new(ErrorPageState::Absent),
+            empty_error_answer: RefCell::new(None),
         });
         page.connect_signals();
         page
@@ -83,6 +104,11 @@ impl PageView {
         self.session.when_protected(move || web_view.load_uri(&address));
     }
 
+    /// Whether the view shows an InDuckGo error page rather than the site: nothing on it comes from the site.
+    pub fn shows_error_page(&self) -> bool {
+        self.error_page.get() == ErrorPageState::Shown
+    }
+
     /// Host of the current page, if it is a web page.
     pub fn host(&self) -> Option<String> {
         let address = self.web_view.uri()?;
@@ -93,18 +119,39 @@ impl PageView {
     fn connect_signals(self: &Rc<Self>) {
         let page = Rc::downgrade(self);
         self.web_view.connect_decide_policy(move |_, decision, kind| {
-            page.upgrade().is_some_and(|page| page.decide_navigation(decision, kind))
+            page.upgrade().is_some_and(|page| page.decide_policy(decision, kind))
         });
         let page = Rc::downgrade(self);
         self.web_view.connect_load_failed(move |_, _, failing_address, error| {
             page.upgrade().is_some_and(|page| page.recover_from_failed_load(failing_address, error))
         });
         let page = Rc::downgrade(self);
+        self.web_view.connect_load_failed_with_tls_errors(move |_, failing_address, certificate, errors| {
+            page.upgrade().is_some_and(|page| page.refuse_untrusted_certificate(failing_address, certificate, errors))
+        });
+        let page = Rc::downgrade(self);
         self.web_view.connect_load_changed(move |_, event| {
-            if event == LoadEvent::Started
-                && let Some(page) = page.upgrade()
+            let Some(page) = page.upgrade() else { return };
+            match event {
+                LoadEvent::Started => page.forget_failed_load(),
+                LoadEvent::Committed => page.error_page.set(match page.error_page.get() {
+                    ErrorPageState::Loading => ErrorPageState::Shown,
+                    ErrorPageState::Absent | ErrorPageState::Shown => ErrorPageState::Absent,
+                }),
+                _ => {}
+            }
+        });
+        let page = Rc::downgrade(self);
+        self.web_view.connect_web_process_terminated(move |web_view, reason| {
+            let cause = match reason {
+                WebProcessTerminationReason::Crashed => FailureCause::PageCrashed,
+                WebProcessTerminationReason::ExceededMemoryLimit => FailureCause::OutOfMemory,
+                _ => return,
+            };
+            if let Some(page) = page.upgrade()
+                && let Some(address) = web_view.uri()
             {
-                page.insecure_banner.set_revealed(false);
+                page.show_error_page(&LoadFailure::new(&address, cause, ""));
             }
         });
         let page = Rc::downgrade(self);
@@ -112,11 +159,19 @@ impl PageView {
         self.web_view.connect_permission_request(PermissionPrompt::ask);
     }
 
-    /// Remembers plain-HTTP targets and sends links to other applications outside; WebKit decides the rest.
-    fn decide_navigation(&self, decision: &PolicyDecision, kind: PolicyDecisionType) -> bool {
-        if !matches!(kind, PolicyDecisionType::NavigationAction | PolicyDecisionType::NewWindowAction) {
-            return false;
+    /// Remembers plain-HTTP targets, sends links to other applications outside and stops empty error answers;
+    /// WebKit decides the rest.
+    fn decide_policy(&self, decision: &PolicyDecision, kind: PolicyDecisionType) -> bool {
+        match kind {
+            PolicyDecisionType::NavigationAction | PolicyDecisionType::NewWindowAction => {
+                self.decide_navigation(decision)
+            }
+            PolicyDecisionType::Response => self.stop_empty_error_answer(decision),
+            _ => false,
         }
+    }
+
+    fn decide_navigation(&self, decision: &PolicyDecision) -> bool {
         let Some(navigation) = decision.downcast_ref::<NavigationPolicyDecision>() else { return false };
         let Some(action) = navigation.navigation_action() else { return false };
         let Some(address) = action.request().and_then(|request| request.uri()) else { return false };
@@ -138,10 +193,34 @@ impl PageView {
         true
     }
 
-    fn recover_from_failed_load(&self, failing_address: &str, error: &glib::Error) -> bool {
-        if error.matches(NetworkError::Cancelled) || error.matches(PolicyError::FrameLoadInterruptedByPolicyChange) {
+    /// A server that answers an error status with an empty body (`Content-Length: 0`) would leave a blank page.
+    /// Stopping the response makes the load fail, so its error page replaces it in the history like the page of
+    /// any failed load (shown later, it would be a history entry Back returns to and re-explains forever).
+    fn stop_empty_error_answer(&self, decision: &PolicyDecision) -> bool {
+        let Some(decision) = decision.downcast_ref::<ResponsePolicyDecision>() else { return false };
+        let Some(response) = decision.response() else { return false };
+        let status = u16::try_from(response.status_code()).ok().filter(|status| *status >= 400);
+        let length = response.http_headers().and_then(|headers| headers.one("Content-Length"));
+        let is_empty = length.is_some_and(|length| length.trim() == "0");
+        let (Some(status), true, true, Some(address)) =
+            (status, is_empty, decision.is_main_frame_main_resource(), response.uri())
+        else {
             return false;
+        };
+        self.empty_error_answer.replace(Some((address.to_string(), status)));
+        decision.ignore();
+        true
+    }
+
+    /// Opens the cleaned address of a navigation stopped for its tracking parameters; explains any other failure.
+    fn recover_from_failed_load(&self, failing_address: &str, error: &glib::Error) -> bool {
+        if let Some((address, status)) = self.empty_error_answer.take()
+            && address == failing_address
+        {
+            self.show_error_page(&LoadFailure::new(failing_address, FailureCause::HttpStatus(status), ""));
+            return true;
         }
+        let Some(cause) = ErrorPageView::cause_of(error) else { return false };
         if error.kind::<PolicyError>().is_some()
             && self.last_cleaned.borrow().as_deref() != Some(failing_address)
             && let Some(cleaned) = self.session.cleaned_address(failing_address)
@@ -150,6 +229,39 @@ impl PageView {
             self.web_view.load_uri(&cleaned);
             return true;
         }
+        self.offer_insecure_page(failing_address);
+        self.show_error_page(&LoadFailure::new(failing_address, cause, error.message()));
+        true
+    }
+
+    /// WebKit never loads a page whose certificate fails verification; this explains why, and there is no way
+    /// past it.
+    fn refuse_untrusted_certificate(
+        &self,
+        failing_address: &str,
+        certificate: &gio::TlsCertificate,
+        errors: gio::TlsCertificateFlags,
+    ) -> bool {
+        self.offer_insecure_page(failing_address);
+        let detail = ErrorPageView::certificate_detail(certificate);
+        self.show_error_page(&LoadFailure::new(failing_address, ErrorPageView::certificate_cause(errors), &detail));
+        true
+    }
+
+    fn show_error_page(&self, failure: &LoadFailure) {
+        self.error_page.set(ErrorPageState::Loading);
+        ErrorPageView::show(&self.web_view, failure);
+    }
+
+    /// A new load hides the banner about the last failure, unless it is that failure's error page.
+    fn forget_failed_load(&self) {
+        if self.error_page.get() != ErrorPageState::Loading {
+            self.insecure_banner.set_revealed(false);
+        }
+    }
+
+    /// When the failed load was an HTTPS upgrade of a plain-HTTP address, offers to load that address insecurely.
+    fn offer_insecure_page(&self, failing_address: &str) {
         let upgraded_from = self
             .recent_plain_http
             .borrow()
@@ -163,7 +275,6 @@ impl PageView {
             self.insecure_banner.set_revealed(true);
             self.insecure_fallback.replace(Some((failing_address.to_owned(), plain_http)));
         }
-        false
     }
 
     fn load_insecurely(page: &Weak<Self>) {

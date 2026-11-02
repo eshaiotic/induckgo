@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1340" height="760" viewBox="0 0 1340 760" font-family="DejaVu Sans, Noto Sans, sans-serif">
+<title>InDuckGo Guard — generic element hiding, applied lazily</title>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#37474f"/></marker></defs>
+<rect width="1340" height="760" fill="#ffffff"/>
+<text x="670" y="34" font-size="18" font-weight="bold" text-anchor="middle" fill="#263238">InDuckGo Guard — generic element hiding, applied lazily</text>
+<rect x="470" y="60" width="400" height="118" rx="9" fill="#ede7f6" stroke="#5e35b1" stroke-width="1.6"/>
+<text x="482" y="82" font-size="14" font-weight="bold" fill="#263238" xml:space="preserve">GuardRuleList (core)</text>
+<text x="482" y="101" font-size="12.5" fill="#263238" xml:space="preserve">converts each Guard list with adblock;</text>
+<text x="482" y="120" font-size="12.5" fill="#263238" xml:space="preserve">generic hiding (##.ad, naming no site)</text>
+<text x="482" y="139" font-size="12.5" fill="#263238" xml:space="preserve">is split off: WebKit would match its</text>
+<text x="482" y="158" font-size="12.5" fill="#263238" xml:space="preserve">30 000 selectors on every restyle</text>
+<rect x="30" y="240" width="400" height="118" rx="9" fill="#e0f2f1" stroke="#00897b" stroke-width="1.6"/>
+<text x="42" y="262" font-size="14" font-weight="bold" fill="#263238" xml:space="preserve">Compiled WebKit list</text>
+<text x="42" y="281" font-size="12.5" fill="#263238" xml:space="preserve">blocking + site-specific hiding,</text>
+<text x="42" y="300" font-size="12.5" fill="#263238" xml:space="preserve">plus one probe rule per list:</text>
+<text x="42" y="319" font-size="12.5" font-family="DejaVu Sans Mono, monospace" fill="#263238" xml:space="preserve">induckgo-guard-probe.guard-ads</text>
+<text x="42" y="338" font-size="12.5" fill="#263238" xml:space="preserve">hidden wherever the list applies</text>
+<rect x="910" y="240" width="400" height="118" rx="9" fill="#e0f2f1" stroke="#00897b" stroke-width="1.6"/>
+<text x="922" y="262" font-size="14" font-weight="bold" font-family="DejaVu Sans Mono, monospace" fill="#263238" xml:space="preserve">guard-*.generic-hiding.json</text>
+<text x="922" y="281" font-size="12.5" fill="#263238" xml:space="preserve">selectors indexed by class or id;</text>
+<text x="922" y="300" font-size="12.5" fill="#263238" xml:space="preserve">the rest are tested on the page;</text>
+<text x="922" y="319" font-size="12.5" fill="#263238" xml:space="preserve">$generichide sites switched off;</text>
+<text x="922" y="338" font-size="12.5" fill="#263238" xml:space="preserve">#@# exceptions merged in</text>
+<path d="M560,178 L560,208 L230,208 L230,236" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<text x="240" y="200" font-size="12" font-weight="bold" text-anchor="start" fill="#37474f">WebKit part</text>
+<path d="M780,178 L780,208 L1110,208 L1110,236" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<text x="1100" y="200" font-size="12" font-weight="bold" text-anchor="end" fill="#37474f">generic part</text>
+<rect x="30" y="430" width="650" height="230" rx="9" fill="#ffebee" stroke="#c62828" stroke-width="3" stroke-dasharray="7 4"/>
+<text x="666" y="453" font-size="14" font-weight="bold" text-anchor="end" fill="#b71c1c">Page web process — renders hostile content</text>
+<rect x="50" y="468" width="610" height="176" rx="9" fill="#e1f5fe" stroke="#0277bd" stroke-width="1.6"/>
+<text x="62" y="490" font-size="14" font-weight="bold" fill="#263238" xml:space="preserve">Guard page script — isolated world "induckgo-guard"</text>
+<text x="62" y="509" font-size="12.5" fill="#263238" xml:space="preserve">1. at document start, before any page script: add the probe,</text>
+<text x="62" y="528" font-size="12.5" fill="#263238" xml:space="preserve">    keep the lists WebKit hides it for (exceptions, user shield)</text>
+<text x="62" y="547" font-size="12.5" fill="#263238" xml:space="preserve">2. report the classes and ids the page uses, as it grows</text>
+<text x="62" y="566" font-size="12.5" fill="#263238" xml:space="preserve">3. insert the answer into an adopted style sheet</text>
+<text x="62" y="585" font-size="12.5" fill="#263238" xml:space="preserve">4. test the remaining selectors on elements added later</text>
+<rect x="910" y="430" width="400" height="230" rx="9" fill="#e1f5fe" stroke="#0277bd" stroke-width="1.6"/>
+<text x="922" y="452" font-size="14" font-weight="bold" fill="#263238" xml:space="preserve">PageProtections (UI process)</text>
+<text x="922" y="471" font-size="12.5" fill="#263238" xml:space="preserve">message handler "induckgoGuard",</text>
+<text x="922" y="490" font-size="12.5" fill="#263238" xml:space="preserve">reachable only from Guard's world</text>
+<rect x="930" y="510" width="360" height="80" rx="9" fill="#ede7f6" stroke="#5e35b1" stroke-width="1.6"/>
+<text x="942" y="532" font-size="14" font-weight="bold" fill="#263238" xml:space="preserve">GenericHidingRequest (core)</text>
+<text x="942" y="551" font-size="12.5" fill="#263238" xml:space="preserve">caps host, lists, tokens;</text>
+<text x="942" y="570" font-size="12.5" fill="#263238" xml:space="preserve">GenericHiding answers for host + tokens</text>
+<path d="M230,358 L230,464" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<text x="240" y="400" font-size="12" font-weight="bold" text-anchor="start" fill="#37474f">hides the probe where the list applies</text>
+<path d="M1110,358 L1110,426" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<text x="1120" y="400" font-size="12" font-weight="bold" text-anchor="start" fill="#37474f">read on activation</text>
+<path d="M660,520 L906,520" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<text x="783" y="512" font-size="12" font-weight="bold" text-anchor="middle" fill="#37474f">host, lists, classes and ids</text>
+<path d="M906,610 L664,610" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<text x="783" y="630" font-size="12" font-weight="bold" text-anchor="middle" fill="#37474f">selectors to hide and to test</text>
+<rect x="30" y="690" width="26" height="16" rx="4" fill="#ffebee" stroke="#c62828" stroke-width="3" stroke-dasharray="5 3"/>
+<text x="66" y="703" font-size="12.5" fill="#263238">Untrusted input (highest risk)</text>
+<rect x="30" y="716" width="26" height="16" rx="4" fill="#e1f5fe" stroke="#0277bd" stroke-width="1.6"/>
+<text x="66" y="729" font-size="12.5" fill="#263238">WebKit and UI adapters</text>
+<rect x="590" y="690" width="26" height="16" rx="4" fill="#ede7f6" stroke="#5e35b1" stroke-width="1.6"/>
+<text x="626" y="703" font-size="12.5" fill="#263238">Domain logic (induckgo-core)</text>
+<rect x="590" y="716" width="26" height="16" rx="4" fill="#e0f2f1" stroke="#00897b" stroke-width="1.6"/>
+<text x="626" y="729" font-size="12.5" fill="#263238">Data kept on disk</text>
+</svg>

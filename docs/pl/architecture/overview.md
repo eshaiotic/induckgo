@@ -293,6 +293,26 @@ reguł pojedynczo, zamiast budowania najpierw `serde_json::Value` całej
 listy, obniżyła szczyt pamięci z 243 MB do 84 MB. Ma to znaczenie, bo glibc nie oddaje pamięci wątku
 roboczego.
 
+**Ogólne ukrywanie elementów, stosowane leniwie.** WebKit dopasowuje każdy selektor `css-display-none`
+blokera treści do każdego elementu przy każdym przeliczeniu stylów. Listy Guarda mają około 30 000 ogólnych
+selektorów (`##.ad-banner`, bez nazwy witryny). Z nimi pełne przeliczenie stylów strony z 10 000 elementów trwało
+229 ms zamiast 35 ms. Dlatego `GuardRuleList` nie przekazuje ogólnego ukrywania do WebKit, tylko zapisuje je jako
+`<lista>.generic-hiding.json` (`GenericHiding`, indeksowane klasą lub id, których selektor potrzebuje). Skrypt
+strony Guarda (`assets/guard/generic-hiding.js`) działa we własnym świecie skryptów w czterech krokach:
+
+1. Na starcie dokumentu sprawdza jedną regułę sondy na listę. WebKit ukrywa sondę tam, gdzie dana lista działa,
+   więc o wyjątkach i tarczy użytkownika decyduje sam WebKit.
+2. Zgłasza klasy i id strony do handlera wiadomości `induckgoGuard`.
+3. Odpowiedź wstawia do przyjętego arkusza stylów.
+4. Selektory, których nie zawęża żadna klasa ani id, testuje na elementach w miarę ich dodawania.
+
+Działają tu dwa rodzaje wyjątków, które konwersja `adblock` do WebKit gubi: `$generichide` i wyjątki elementów
+`#@#`. Pomiar po zmianie (względem stałej porcji pracy JS): układ 0,64 i przeliczenie stylów 0,20 z Guardem
+wobec 0,66 i 0,25 bez niego. Domeny wyłączone dla ogólnego selektora porównujemy z hostem ramki, w której działa
+skrypt.
+
+![Listy Guarda są dzielone: blokowanie i ukrywanie dla konkretnych witryn trafia do WebKit z jedną regułą sondy na listę; ogólne selektory trafiają do indeksu JSON; skrypt strony sprawdza sondę, zgłasza klasy i id strony do handlera w procesie UI i wstawia otrzymane selektory](../../assets/diagrams/architecture-guard-generic-hiding.pl.svg)
+
 **Ochrona przed fingerprintingiem.** Konfiguracja DuckDuckGo dla macOS zostawia wyłączone zabezpieczenia
 C-S-S dla canvas, audio, baterii, rozmiaru ekranu, pamięci tymczasowej i referrera, bo na macOS WebKit Safari
 dodaje własny szum; WebKitGTK tego nie robi. `FingerprintHardening` (rdzeń) je włącza i zachowuje wyjątki stron

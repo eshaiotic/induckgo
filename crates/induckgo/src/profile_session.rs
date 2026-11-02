@@ -465,7 +465,7 @@ impl ProfileSession {
         let fingerprint = list.fingerprint(&downloaded, &user_hosts);
         let is_empty = !list.has_rules(&downloaded);
         PreparedRuleList::built_on_demand(list.name(), fingerprint, is_empty, move || {
-            list.content_rules(&downloaded, &user_hosts)
+            list.converted(&downloaded, &user_hosts)
         })
     }
 

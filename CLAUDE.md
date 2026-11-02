@@ -14,12 +14,19 @@ This file is an index; the content lives in the linked documents.
 - [Przegląd architektury (PL)](docs/pl/architecture/overview.md) — polish mirror of the architecture overview.
 - `docs/assets/diagrams/` — SVG + PNG diagrams, one file per language (`.en` / `.pl`).
 
+## Reports
+
+- [Tracking comparison](docs/en/reports/tracking-comparison.md) — InDuckGo vs Chrome vs Brave: telemetry, trackers, fingerprinting (measured).
+- [Porównanie śledzenia (PL)](docs/pl/reports/tracking-comparison.md) — polish mirror of the tracking comparison.
+- [Podsumowanie dla PO (HTML, PL)](docs/pl/reports/tracking-summary.html) — one-page tracker and ad blocking summary for non-technical readers.
+- [Product context](PRODUCT.md) — users, positioning and evidence used by design work.
+
 ## Code map
 
 - `crates/induckgo-core` — domain logic without GTK/WebKit: protection rules, Guard filter lists, profiles, web apps, zoom, launch.
 - `crates/induckgo-core/tests` — one OO scenario test file per domain type.
 - `crates/induckgo` — GTK 4 + libadwaita app: adapters that carry out core decisions in WebKitGTK/libsoup/GIO.
-- `assets/` — vendored Content Scope Scripts (Apache-2.0), app icons and the error page template; never the TDS or filter lists.
+- `assets/` — vendored Content Scope Scripts (Apache-2.0), Guard's page script, app icons and the error page template; never the TDS or filter lists.
 - `packaging/` — PKGBUILD, rpm spec, deb/AppImage assembly, desktop entry and AppStream metadata.
 
 ## Commands

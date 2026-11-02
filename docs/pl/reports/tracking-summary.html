@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>InDuckGo kontra Chrome i Brave — blokowanie trackerów i reklam</title>
+<style>
+  :root {
+    --ink: #1e1060; --indigo: #2e1a87; --violet: #6a5acd; --lilac: #8e7fe8; --amber: #ffb300;
+    --bg: #f6f5fc; --card: #ffffff; --text: #1d1a33; --muted: #5d5878; --line: #e3e0f3;
+    --chrome: #9e9aae; --brave: #f06a3b;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 17px/1.55 system-ui, "Cantarell", "Noto Sans", sans-serif; }
+  header { background: linear-gradient(135deg, var(--ink), var(--indigo) 60%, var(--violet)); color: #fff;
+    padding: 56px 24px 64px; }
+  .wrap { max-width: 1000px; margin: 0 auto; }
+  .kicker { color: var(--amber); font-weight: 700; letter-spacing: .04em; text-transform: uppercase; font-size: 14px; }
+  h1 { font-size: clamp(30px, 5vw, 50px); line-height: 1.1; margin: 10px 0 16px; }
+  header p { font-size: 19px; max-width: 760px; color: #e6e2ff; margin: 0; }
+  .hero-numbers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 36px; }
+  .hero-numbers div { background: rgb(255 255 255 / 10%); border-radius: 14px; padding: 18px 20px; }
+  .hero-numbers b { display: block; font-size: clamp(40px, 7vw, 64px); line-height: 1; }
+  .hero-numbers .us b { color: var(--amber); }
+  .hero-numbers span { color: #d9d4ff; font-size: 15px; }
+  main { padding: 8px 24px 56px; }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 28px;
+    margin-top: 28px; }
+  h2 { margin: 0 0 6px; font-size: 26px; color: var(--ink); }
+  .lead { color: var(--muted); margin: 0 0 22px; }
+  .bars { display: grid; gap: 12px; }
+  .bar { display: grid; grid-template-columns: 110px 1fr 56px; align-items: center; gap: 12px; }
+  .bar .track { background: #efedf8; border-radius: 8px; height: 30px; overflow: hidden; }
+  .bar .fill { height: 100%; border-radius: 8px; min-width: 6px; }
+  .bar b { text-align: right; font-size: 20px; }
+  .chrome .fill { background: var(--chrome); } .brave .fill { background: var(--brave); }
+  .induckgo .fill { background: linear-gradient(90deg, var(--indigo), var(--lilac)); }
+  .induckgo span, .induckgo b { color: var(--indigo); font-weight: 700; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+  h3 { margin: 0 0 12px; font-size: 18px; }
+  table { width: 100%; border-collapse: collapse; font-size: 16px; }
+  th, td { text-align: left; padding: 12px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 14px; }
+  td.us { background: #f1efff; font-weight: 600; color: var(--ink); }
+  .yes { color: #1a7f37; font-weight: 700; } .no { color: #c01c28; font-weight: 700; }
+  .honest { border-left: 6px solid var(--amber); }
+  .honest li { margin-bottom: 10px; }
+  .method { font-size: 15px; color: var(--muted); }
+  footer { text-align: center; color: var(--muted); font-size: 14px; padding: 0 24px 40px; }
+  @media (max-width: 720px) {
+    .hero-numbers, .two { grid-template-columns: 1fr; }
+    .bar { grid-template-columns: 84px 1fr 44px; }
+    section { padding: 20px; }
+  }
+  @media print { header { -webkit-print-color-adjust: exact; print-color-adjust: exact; } section { break-inside: avoid; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="kicker">Pomiar z 2 listopada 2026 · 12 popularnych serwisów</div>
+    <h1>InDuckGo przepuszcza najmniej trackerów i reklam: mniej niż Brave, ułamek tego, co Chrome.</h1>
+    <p>Trzy przeglądarki otworzyły w tym samym czasie te same strony, każda na czystym profilu. Liczyliśmy, z iloma
+      serwerami śledzącymi i reklamowymi się połączyły. Co jest trackerem, rozstrzygała neutralna lista
+      Disconnect, ta sama, której używa Firefox.</p>
+    <div class="hero-numbers">
+      <div><b>94</b><span>trackery w Chrome 156</span></div>
+      <div><b>5</b><span>trackerów w Brave 1.98</span></div>
+      <div class="us"><b>2</b><span>trackery w InDuckGo</span></div>
+    </div>
+  </div>
+</header>
+<main class="wrap">
+  <section>
+    <h2>Serwery reklamowe i śledzące na 12 stronach</h2>
+    <p class="lead">onet.pl, wp.pl, interia.pl, gazeta.pl, o2.pl, allegro.pl, olx.pl, CNN, The Guardian, BBC,
+      weather.com, Forbes. Mniej znaczy lepiej.</p>
+    <div class="two">
+      <div>
+        <h3>Serwery reklamowe</h3>
+        <div class="bars">
+          <div class="bar chrome"><span>Chrome</span><div class="track"><div class="fill" style="width:100%"></div></div><b>75</b></div>
+          <div class="bar brave"><span>Brave</span><div class="track"><div class="fill" style="width:5.3%"></div></div><b>4</b></div>
+          <div class="bar induckgo"><span>InDuckGo</span><div class="track"><div class="fill" style="width:1.3%"></div></div><b>1</b></div>
+        </div>
+      </div>
+      <div>
+        <h3>Analityka i inne trackery</h3>
+        <div class="bars">
+          <div class="bar chrome"><span>Chrome</span><div class="track"><div class="fill" style="width:100%"></div></div><b>19</b></div>
+          <div class="bar brave"><span>Brave</span><div class="track"><div class="fill" style="width:5.3%"></div></div><b>1</b></div>
+          <div class="bar induckgo"><span>InDuckGo</span><div class="track"><div class="fill" style="width:5.3%"></div></div><b>1</b></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Co przeglądarka robi poza blokowaniem</h2>
+    <p class="lead">Blokowanie to nie wszystko. Liczy się też, co przeglądarka sama wysyła i czy da się ją
+      rozpoznać bez ciasteczek.</p>
+    <table>
+      <tr><th></th><th>Chrome</th><th>Brave</th><th>InDuckGo</th></tr>
+      <tr><td>Wysyła dane o użyciu do producenta</td><td class="no">tak, do Google, domyślnie</td>
+        <td class="no">tak: codzienny ping i statystyki P3A, domyślnie</td><td class="us yes">nie, żadnej telemetrii</td></tr>
+      <tr><td>Wpisywany tekst wysyła do wyszukiwarki w trakcie pisania</td><td class="no">tak</td><td class="yes">nie (w Polsce)</td><td class="us yes">nie</td></tr>
+      <tr><td>Ciasteczka śledzące innych firm</td><td class="no">dozwolone</td><td class="yes">blokowane</td><td class="us yes">blokowane</td></tr>
+      <tr><td>Ten sam „odcisk palca” na różnych stronach</td><td class="no">tak, wszędzie identyczny</td>
+        <td class="yes">nie (ale po restarcie strona widzi te same wartości)</td><td class="us yes">nie, zmienia się też z każdą sesją</td></tr>
+      <tr><td>Sygnał „nie sprzedawaj moich danych” (GPC)</td><td class="no">nie</td><td class="yes">tak</td><td class="us yes">tak</td></tr>
+      <tr><td>Osobne, izolowane aplikacje dla Gmaila, banku itp.</td><td>wspólne dane z przeglądarką</td><td>wspólne dane z przeglądarką</td><td class="us yes">każda ma własny proces i dane</td></tr>
+    </table>
+  </section>
+
+  <section class="honest">
+    <h2>Gdzie InDuckGo jest jeszcze słabsze</h2>
+    <ul>
+      <li><b>Brak ostrzeżeń przed phishingiem i złośliwymi stronami.</b> Chrome i Brave mają Safe Browsing, a silnik
+        WebKitGTK, na którym stoi InDuckGo, takiej usługi nie ma.</li>
+      <li><b>Rzadki silnik.</b> Mało kto używa WebKitGTK na Linuksie, więc strona może to zauważyć. Brave wygląda
+        jak Chrome i ginie w tłumie.</li>
+      <li><b>Strona startowa to strona główna DuckDuckGo,</b> która przy otwarciu wysyła własne, anonimowe
+        statystyki.</li>
+    </ul>
+  </section>
+
+  <section class="method">
+    <h2>Jak mierzyliśmy</h2>
+    <p>Wersje: Chrome 156.0.8078.79 (oficjalna paczka Google), Brave 1.98.63, InDuckGo 1.0.0 z Guardem. Wszystkie
+      trzy działały jednocześnie, z oknem i na świeżym profilu. Każdą stronę otwierały na 20 sekund, bez klikania w
+      banery zgody. Lokalne proxy zapisywało tylko nazwy serwerów, z którymi się łączyły, bez podglądania treści.
+      To jeden pomiar z jednego kraju, a po kliknięciu „Akceptuję” strony ładują więcej trackerów, więc
+      rzeczywiste liczby, zwłaszcza w Chrome, są wyższe. Pełny raport ze źródłami znajduje się w pliku
+      <code>docs/pl/reports/tracking-comparison.md</code>.</p>
+  </section>
+</main>
+<footer>InDuckGo nie jest powiązane z DuckDuckGo. Korzysta z jego otwartych (open source) zabezpieczeń.</footer>
+</body>
+</html>

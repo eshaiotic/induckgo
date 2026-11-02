@@ -288,6 +288,26 @@ instead of building a
 `serde_json::Value` of the whole list first, cut the peak memory from 243 MB to 84 MB. This matters because
 glibc keeps the memory of the worker thread.
 
+**Generic element hiding, applied lazily.** WebKit matches every `css-display-none` selector of a content
+blocker against every element at every style recalculation. Guard's lists hold about 30,000 generic selectors
+(`##.ad-banner`, naming no site), and with them a full style recalculation of a 10,000-element page took 229 ms
+instead of 35 ms. So `GuardRuleList` keeps generic hiding out of WebKit and stores it as
+`<list>.generic-hiding.json` (`GenericHiding`, indexed by the class or id a selector needs). Guard's page script
+(`assets/guard/generic-hiding.js`) runs in its own script world and works in four steps:
+
+1. At document start it checks one probe rule per list. WebKit hides the probe wherever that list applies, so
+   exceptions and the user's shield are decided by WebKit itself.
+2. It reports the classes and ids the page uses to the `induckgoGuard` message handler.
+3. It inserts the answer into an adopted style sheet.
+4. It tests the selectors that no class or id narrows down on elements as they are added.
+
+Two things `adblock`'s WebKit conversion drops are honoured here: `$generichide` exceptions and `#@#` element
+exceptions. Measured after the change (normalised to a fixed JS workload): layout 0.64 and style recalculation
+0.20 with Guard, against 0.66 and 0.25 without it. The excluded domains of a generic selector are compared with
+the host of the frame the script runs in.
+
+![Guard's lists are split: blocking and site-specific hiding compile into WebKit with one probe rule per list; generic selectors go to a JSON index; the page script checks the probe, reports the page's classes and ids to a message handler in the UI process, and inserts the selectors it gets back](../../assets/diagrams/architecture-guard-generic-hiding.en.svg)
+
 **Fingerprinting defences.** DuckDuckGo's macOS configuration leaves the canvas, audio, battery, screen size,
 temporary storage and referrer defences of C-S-S off, because Safari's WebKit adds noise of its own on macOS;
 WebKitGTK does not. `FingerprintHardening` (core) switches them on and keeps DuckDuckGo's site exceptions

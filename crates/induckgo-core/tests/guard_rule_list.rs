@@ -4,6 +4,7 @@
 use std::collections::HashMap;
 
 use induckgo_core::guard::filter_list_source::FilterListSource;
+use induckgo_core::guard::generic_hiding::GenericHiding;
 use induckgo_core::guard::guard_rule_list::GuardRuleList;
 use regex::RegexBuilder;
 use serde_json::Value;
@@ -33,8 +34,12 @@ impl GuardScenario {
     }
 
     fn when_built(&self, list: GuardRuleList) -> WebKitRuleList {
-        let source = list.content_rules(&self.downloaded, &self.user_unprotected_domains);
-        WebKitRuleList { rules: serde_json::from_str(&source).expect("a JSON array of rules") }
+        let converted = list.converted(&self.downloaded, &self.user_unprotected_domains);
+        WebKitRuleList {
+            rules: serde_json::from_str(converted.content_rules()).expect("a JSON array of rules"),
+            generic_hiding: converted.into_generic_hiding(),
+            probe: list.probe_selector(),
+        }
     }
 
     fn when_fingerprinted(&self, list: GuardRuleList) -> String {
@@ -62,9 +67,12 @@ impl Load<'_> {
 }
 
 /// A rule list evaluated the way WebKit does: in order, `ignore-previous-rules` cancelling every action that
-/// matched before it.
+/// matched before it. Generic element hiding is left to the page script, which asks for it where WebKit still
+/// hides the list's probe element.
 struct WebKitRuleList {
     rules: Vec<Value>,
+    generic_hiding: GenericHiding,
+    probe: String,
 }
 
 impl WebKitRuleList {
@@ -92,8 +100,28 @@ impl WebKitRuleList {
         assert!(self.hidden_selectors(page_host).contains(&selector.to_owned()), "{selector} shown on {page_host}");
     }
 
-    fn then_shows(&self, selector: &str, page_host: &str) {
-        assert!(!self.hidden_selectors(page_host).contains(&selector.to_owned()), "{selector} hidden on {page_host}");
+    /// Generic hiding: the page script gets `selector` once it finds its class on a page where WebKit applies the
+    /// list.
+    fn then_hides_where_the_page_uses(&self, selector: &str, page_host: &str) {
+        let lazily = self.generic_hiding.selectors_for(page_host, &[selector.to_owned()]);
+        assert_eq!((self.applies_generic_hiding(page_host), lazily), (true, vec![selector]));
+    }
+
+    fn then_shows_where_the_page_uses(&self, selector: &str, page_host: &str) {
+        let lazily = self.generic_hiding.selectors_for(page_host, &[selector.to_owned()]);
+        assert!(!self.applies_generic_hiding(page_host) || lazily.is_empty(), "{selector} hidden on {page_host}");
+    }
+
+    fn then_hides_nothing_generic_on(&self, page_host: &str) {
+        assert!(!self.applies_generic_hiding(page_host), "generic hiding on {page_host}");
+    }
+
+    fn then_leaves_out_of_webkit(&self, selector: &str) {
+        assert!(!self.rules.iter().any(|rule| rule["action"]["selector"] == selector), "{selector} left in WebKit");
+    }
+
+    fn applies_generic_hiding(&self, page_host: &str) -> bool {
+        self.hidden_selectors(page_host).contains(&self.probe)
     }
 
     /// Counted, not evaluated: matching 150 000 regular expressions would take minutes.
@@ -202,6 +230,63 @@ fn should_hide_page_elements_of_a_list_that_also_blocks_requests() {
 }
 
 #[test]
+fn should_hide_generic_elements_on_pages_of_a_list_that_also_blocks_requests() {
+    GuardScenario::given_downloaded(FilterListSource::EASYLIST, "||ads.example^\n##.ad-banner\n")
+        .when_built(GuardRuleList::ADS)
+        .then_hides_where_the_page_uses(".ad-banner", "news.pl");
+}
+
+#[test]
+fn should_keep_generic_hiding_out_of_webkit_style_sheets() {
+    GuardScenario::given_downloaded(FilterListSource::EASYLIST, "##.ad-banner\n")
+        .when_built(GuardRuleList::ADS)
+        .then_leaves_out_of_webkit(".ad-banner");
+}
+
+#[test]
+fn should_lift_generic_hiding_on_a_site_a_generichide_exception_names() {
+    GuardScenario::given_downloaded(FilterListSource::EASYLIST, "##.ad-banner\n@@||bank.pl^$generichide\n")
+        .when_built(GuardRuleList::ADS)
+        .then_shows_where_the_page_uses(".ad-banner", "bank.pl");
+}
+
+#[test]
+fn should_keep_generic_hiding_where_no_generichide_exception_applies() {
+    GuardScenario::given_downloaded(FilterListSource::EASYLIST, "##.ad-banner\n@@||bank.pl^$generichide\n")
+        .when_built(GuardRuleList::ADS)
+        .then_hides_where_the_page_uses(".ad-banner", "news.pl");
+}
+
+#[test]
+fn should_lift_a_selector_on_the_site_an_element_exception_names() {
+    GuardScenario::given_downloaded(FilterListSource::EASYLIST, "##.ad-banner\nbank.pl#@#.ad-banner\n")
+        .when_built(GuardRuleList::ADS)
+        .then_shows_where_the_page_uses(".ad-banner", "bank.pl");
+}
+
+#[test]
+fn should_keep_a_selector_an_element_exception_lifts_elsewhere() {
+    GuardScenario::given_downloaded(FilterListSource::EASYLIST, "##.ad-banner\nbank.pl#@#.ad-banner\n")
+        .when_built(GuardRuleList::ADS)
+        .then_hides_where_the_page_uses(".ad-banner", "news.pl");
+}
+
+#[test]
+fn should_switch_generic_hiding_off_where_the_user_switched_protection_off() {
+    GuardScenario::given_downloaded(FilterListSource::EASYLIST, "##.ad-banner\n")
+        .with_protection_switched_off_by_user_on("bank.pl")
+        .when_built(GuardRuleList::ADS)
+        .then_hides_nothing_generic_on("bank.pl");
+}
+
+#[test]
+fn should_keep_generic_hiding_off_on_a_domain_its_filter_excludes() {
+    GuardScenario::given_downloaded(FilterListSource::EASYLIST, "~bank.pl##.ad-banner\n")
+        .when_built(GuardRuleList::ADS)
+        .then_shows_where_the_page_uses(".ad-banner", "bank.pl");
+}
+
+#[test]
 fn should_never_block_the_page_the_user_asked_for() {
     GuardScenario::given_downloaded(FilterListSource::EASYLIST, "/ads/*\n")
         .when_built(GuardRuleList::ADS)
@@ -212,7 +297,7 @@ fn should_never_block_the_page_the_user_asked_for() {
 fn should_hide_cookie_notices() {
     GuardScenario::given_downloaded(FilterListSource::COOKIE_NOTICES, "##.cookie-consent-bar\n")
         .when_built(GuardRuleList::ANNOYANCES)
-        .then_hides(".cookie-consent-bar", "news.pl");
+        .then_hides_where_the_page_uses(".cookie-consent-bar", "news.pl");
 }
 
 #[test]
@@ -235,7 +320,7 @@ fn should_keep_page_elements_visible_on_sites_the_user_switched_protection_off_f
     GuardScenario::given_downloaded(FilterListSource::COOKIE_NOTICES, "##.cookie-consent-bar\n")
         .with_protection_switched_off_by_user_on("news.pl")
         .when_built(GuardRuleList::ANNOYANCES)
-        .then_shows(".cookie-consent-bar", "news.pl");
+        .then_hides_nothing_generic_on("news.pl");
 }
 
 #[test]

@@ -20,6 +20,7 @@ This file is an index; the content lives in the linked documents.
 - `crates/induckgo-core/tests` — one OO scenario test file per domain type.
 - `crates/induckgo` — GTK 4 + libadwaita app: adapters that carry out core decisions in WebKitGTK/libsoup/GIO.
 - `assets/` — vendored Content Scope Scripts (Apache-2.0) and the app icons; the Tracker Data Set is never committed.
+- `packaging/` — PKGBUILD, rpm spec, deb/AppImage assembly, desktop entry and AppStream metadata.
 
 ## Commands
 
@@ -27,6 +28,8 @@ This file is an index; the content lives in the linked documents.
 - `cargo clippy --all-targets` — lints (pedantic, `unsafe_code` forbidden).
 - `cargo audit` — dependency vulnerability check (zero-vulnerability policy).
 - `cargo run -p induckgo -- [--profile NAME | --web-app ID] [URL…]` — run the browser or an installed web app.
+- `packaging/release.sh [arch] [deb] [appimage] [rpm]` — release packages into `dist/` (deb/AppImage/rpm in podman).
+- `./install.sh` / `./uninstall.sh [--purge]` — install or remove the system package (Arch: built with makepkg).
 
 ## Gotchas
 

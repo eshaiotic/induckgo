@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.induckgo.InDuckGo</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>Apache-2.0</project_license>
+  <name>InDuckGo</name>
+  <summary>Privacy-first browser with DuckDuckGo's tracker protections</summary>
+  <description>
+    <p>
+      InDuckGo is a WebKitGTK web browser that blocks third-party trackers with DuckDuckGo's open-source
+      protections, upgrades connections to HTTPS, removes tracking parameters from links and announces
+      Global Privacy Control. It has no extension support, by design.
+    </p>
+    <p>
+      Every profile and every site installed as an app runs in its own process with its own cookies and
+      storage, so a link clicked in the browser never reaches the session of your bank or mailbox.
+    </p>
+    <p>InDuckGo is an independent project, not affiliated with or endorsed by Duck Duck Go, Inc.</p>
+  </description>
+  <launchable type="desktop-id">io.github.induckgo.InDuckGo.desktop</launchable>
+  <developer id="io.github.induckgo">
+    <name>Michał Ligus</name>
+  </developer>
+  <provides>
+    <binary>induckgo</binary>
+  </provides>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="1.0.0" date="2026-11-02"/>
+  </releases>
+</component>

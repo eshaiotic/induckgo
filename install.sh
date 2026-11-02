@@ -1,0 +1,51 @@
+#!/bin/sh
+# Installs InDuckGo as a package of this system's package manager, so it can be removed cleanly later.
+#
+#   Arch and its derivatives (CachyOS, EndeavourOS, Manjaro, ...): builds the pacman package from this
+#   checkout and installs it with pacman.
+#   Debian, Ubuntu / Fedora: installs the newest .deb / .rpm from dist/ (built by packaging/release.sh).
+#
+# Usage: ./install.sh
+set -eu
+
+repository=$(cd "$(dirname "$0")" && pwd -P)
+
+# Newest file in dist/ matching a pattern, or nothing.
+newest_package() {
+  find "$repository/dist" -maxdepth 1 -name "$1" -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -n 1 | cut -d' ' -f2-
+}
+
+# Fails with a hint when packaging/release.sh has not built the package yet.
+require_package() {
+  if [ -z "$1" ]; then
+    echo "No $2 package in dist/. Build it first: packaging/release.sh $2" >&2
+    exit 1
+  fi
+}
+
+# shellcheck source=/dev/null # the running system describes itself here
+. /etc/os-release
+case " ${ID:-} ${ID_LIKE:-} " in
+  *" arch "*)
+    "$repository/packaging/release.sh" arch
+    package=$(newest_package 'induckgo-*.pkg.tar.*')
+    require_package "$package" arch
+    sudo pacman -U "$package"
+    ;;
+  *" debian "* | *" ubuntu "*)
+    package=$(newest_package 'induckgo_*.deb')
+    require_package "$package" deb
+    sudo apt-get install -y "$package"
+    ;;
+  *" fedora "*)
+    package=$(newest_package 'induckgo-*.rpm')
+    require_package "$package" rpm
+    sudo dnf install -y "$package"
+    ;;
+  *)
+    echo "No package for ${PRETTY_NAME:-this system}; use the AppImage: packaging/release.sh appimage" >&2
+    exit 1
+    ;;
+esac
+
+echo "InDuckGo installed. Start it from the application menu or with: induckgo"

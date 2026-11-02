@@ -141,7 +141,7 @@ impl WebAppInstaller {
             }
             None => context.icons.application_icon(),
         };
-        let executable = std::env::current_exe()?;
+        let executable = ExternalLauncher::program()?;
         let entry = DesktopEntry::new(&app, &executable, &icon);
         StoredFile::new(context.paths.desktop_entry(&entry.file_name())).write(entry.render().as_bytes())?;
         context.catalogs.save_web_apps(&catalog)?;

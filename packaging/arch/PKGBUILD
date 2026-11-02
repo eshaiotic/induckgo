@@ -1,0 +1,50 @@
+# Maintainer: Michał Ligus <eshaiotic@eshaiotic.io>
+#
+# Builds InDuckGo from the repository this file lives in: the working tree as it is, uncommitted changes
+# included. Usually run through ./install.sh or packaging/release.sh; by hand: cd packaging/arch && makepkg -si
+# The flags of /etc/makepkg.conf apply, so the package may be tuned for this machine's processor.
+
+pkgname=induckgo
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="Privacy-first WebKitGTK browser built on DuckDuckGo's open-source tracker protections"
+arch=('x86_64' 'aarch64')
+license=('Apache-2.0')
+depends=('gcc-libs' 'glib2' 'glibc' 'gtk4' 'hicolor-icon-theme' 'libadwaita' 'libsoup3' 'webkitgtk-6.0')
+makedepends=('cargo')
+# The release profile strips symbols, so a separate debug package would be empty.
+options=('!debug')
+
+_repository="$(realpath "$startdir/../..")"
+
+prepare() {
+  cd "$_repository"
+  if ! grep -qx "version = \"$pkgver\"" Cargo.toml; then
+    error "pkgver $pkgver differs from the version in Cargo.toml"
+    return 1
+  fi
+  export RUSTUP_TOOLCHAIN=stable
+  cargo fetch --locked --target "$(rustc --print host-tuple)"
+}
+
+build() {
+  cd "$_repository"
+  export RUSTUP_TOOLCHAIN=stable CARGO_TARGET_DIR="$srcdir/target"
+  cargo build --frozen --release -p induckgo
+}
+
+check() {
+  cd "$_repository"
+  export RUSTUP_TOOLCHAIN=stable CARGO_TARGET_DIR="$srcdir/target"
+  cargo test --frozen -p induckgo-core
+}
+
+package() {
+  cd "$_repository"
+  install -Dm0755 "$srcdir/target/release/induckgo" "$pkgdir/usr/bin/induckgo"
+  install -Dm0644 packaging/linux/io.github.induckgo.InDuckGo.desktop -t "$pkgdir/usr/share/applications"
+  install -Dm0644 packaging/linux/io.github.induckgo.InDuckGo.metainfo.xml -t "$pkgdir/usr/share/metainfo"
+  install -Dm0644 assets/icons/io.github.induckgo.InDuckGo.svg -t "$pkgdir/usr/share/icons/hicolor/scalable/apps"
+  install -Dm0644 NOTICE -t "$pkgdir/usr/share/licenses/$pkgname"
+  install -Dm0644 README.md -t "$pkgdir/usr/share/doc/$pkgname"
+}

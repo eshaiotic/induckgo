@@ -31,7 +31,35 @@ Usable work in progress: browsing with tabs, all protections above, profiles, we
 permission prompts and find-in-page work. Not built yet: session restore, bookmarks, history window,
 cookie-consent handling, translations. The full list with reasons is in the architecture document.
 
-## Running
+## Installing
+
+On Arch Linux and its derivatives (CachyOS, EndeavourOS, Manjaro):
+
+```sh
+./install.sh             # builds the pacman package from this checkout and installs it
+./uninstall.sh           # removes the package; profiles and web apps are kept
+./uninstall.sh --purge   # also deletes all InDuckGo data and web app launchers
+```
+
+On Debian 13, Ubuntu 24.04 LTS or newer and on Fedora 44, `./install.sh` installs the `.deb` / `.rpm` that
+`packaging/release.sh` built into `dist/`. On any other distribution, use the AppImage:
+`chmod +x InDuckGo-*-x86_64.AppImage && ./InDuckGo-*-x86_64.AppImage`. It uses the system's WebKitGTK 6.0,
+GTK ≥ 4.14 and libadwaita ≥ 1.5 (oldest tested: Ubuntu 24.04 LTS). Those must be installed, but in return the browser engine keeps receiving
+your distribution's security updates.
+
+## Building release packages
+
+```sh
+packaging/release.sh                # all formats into dist/, with SHA256SUMS
+packaging/release.sh deb appimage   # or only some: arch, deb, appimage, rpm
+```
+
+The `.deb` and the AppImage are built in a Debian 13 container and the `.rpm` in a Fedora 44 container
+(rootless podman), so they link against the libraries of the systems they target. The Arch package is
+built on the host with `makepkg` and its `makepkg.conf` flags. The AppImage runtime is pinned to a release
+and checked against its SHA-256.
+
+## Running from source
 
 ```sh
 sudo pacman -S --needed rust webkitgtk-6.0 gtk4 libadwaita

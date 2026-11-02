@@ -1,0 +1,48 @@
+#!/bin/sh
+# Removes the InDuckGo package. Your profiles and installed web apps are kept, so a reinstall finds them.
+#
+#   --purge   also deletes your InDuckGo data: every profile (cookies, logins, history, site data), the
+#             protection cache and the launchers of installed web apps. This cannot be undone.
+#
+# Usage: ./uninstall.sh [--purge]
+set -eu
+
+purge=false
+case "${1:-}" in
+  "") ;;
+  --purge) purge=true ;;
+  *)
+    echo "Usage: $0 [--purge]" >&2
+    exit 2
+    ;;
+esac
+
+if $purge && pgrep -u "$(id -u)" -x induckgo >/dev/null; then
+  echo "InDuckGo is running. Close the browser and its web apps first." >&2
+  exit 1
+fi
+
+if command -v pacman >/dev/null && pacman -Qq induckgo >/dev/null 2>&1; then
+  sudo pacman -R induckgo
+elif command -v dpkg-query >/dev/null && dpkg-query -W -f='${Status}' induckgo 2>/dev/null | grep -q installed; then
+  sudo apt-get remove -y induckgo
+elif command -v rpm >/dev/null && rpm -q induckgo >/dev/null 2>&1; then
+  sudo dnf remove -y induckgo
+else
+  echo "No InDuckGo package is installed."
+fi
+
+if $purge; then
+  data=${XDG_DATA_HOME:-$HOME/.local/share}
+  cache=${XDG_CACHE_HOME:-$HOME/.cache}
+  for launcher in "$data"/applications/io.github.induckgo.InDuckGo.WebApp.*.desktop; do
+    if [ -e "$launcher" ]; then
+      rm -f -- "$launcher"
+    fi
+  done
+  rm -rf -- "$data/induckgo" "$cache/induckgo"
+  if command -v update-desktop-database >/dev/null; then
+    update-desktop-database "$data/applications" 2>/dev/null || true
+  fi
+  echo "Deleted InDuckGo data: $data/induckgo, $cache/induckgo and the web app launchers."
+fi

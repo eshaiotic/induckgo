@@ -4,8 +4,10 @@
 //! runs only forwards the address to the running browser over D-Bus; the started process exits at once.
 
 use std::ffi::OsStr;
+use std::path::PathBuf;
 
 use induckgo_core::launch::launch_request::LaunchRequest;
+use induckgo_core::launch::program_location::ProgramLocation;
 use induckgo_core::profile::profile_id::ProfileId;
 use induckgo_core::web_app::desktop_entry::DesktopEntry;
 use induckgo_core::web_app::web_app_id::WebAppId;
@@ -44,8 +46,17 @@ impl ExternalLauncher {
         });
     }
 
+    /// The file that starts InDuckGo: the AppImage when running from one, else the running executable.
+    ///
+    /// # Errors
+    /// The running executable cannot be determined.
+    pub fn program() -> std::io::Result<PathBuf> {
+        let appimage = std::env::var_os(ProgramLocation::APPIMAGE_VARIABLE);
+        Ok(ProgramLocation::choose(appimage.as_deref(), std::env::current_exe()?))
+    }
+
     fn start_induckgo(arguments: &[&str]) {
-        let executable = match std::env::current_exe() {
+        let executable = match Self::program() {
             Ok(executable) => executable,
             Err(error) => {
                 glib::g_warning!(Self::LOG_DOMAIN, "cannot locate the InDuckGo executable: {error}");

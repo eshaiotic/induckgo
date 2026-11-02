@@ -1,0 +1,56 @@
+# Built by packaging/release.sh inside a Fedora container (packaging/rpm/build.sh). Source0 is a tarball of
+# the working tree. Library dependencies (libwebkitgtk-6.0.so.4, ...) are found by rpm in the ELF binary.
+
+# The release profile strips symbols, so there is nothing for a debuginfo package.
+%global debug_package %{nil}
+
+Name:           induckgo
+Version:        1.0.0
+Release:        1%{?dist}
+Summary:        Privacy-first WebKitGTK browser built on DuckDuckGo's open-source tracker protections
+License:        Apache-2.0
+Source0:        %{name}-%{version}.tar.gz
+
+BuildRequires:  cargo
+BuildRequires:  rust
+BuildRequires:  pkgconfig(gtk4)
+BuildRequires:  pkgconfig(libadwaita-1)
+BuildRequires:  pkgconfig(libsoup-3.0)
+BuildRequires:  pkgconfig(webkitgtk-6.0)
+Requires:       hicolor-icon-theme
+
+%description
+InDuckGo blocks third-party trackers with DuckDuckGo's open-source protections, upgrades connections to
+HTTPS, removes tracking parameters from links and announces Global Privacy Control. Every profile and every
+site installed as an app runs in its own process with its own cookies and storage.
+
+%prep
+%autosetup
+if ! grep -qx 'version = "%{version}"' Cargo.toml; then
+    echo "Version %{version} differs from the version in Cargo.toml" >&2
+    exit 1
+fi
+
+%build
+cargo build --release --locked -p induckgo
+
+%check
+cargo test --locked -p induckgo-core
+
+%install
+install -Dm0755 target/release/induckgo %{buildroot}%{_bindir}/induckgo
+install -Dm0644 packaging/linux/io.github.induckgo.InDuckGo.desktop -t %{buildroot}%{_datadir}/applications
+install -Dm0644 packaging/linux/io.github.induckgo.InDuckGo.metainfo.xml -t %{buildroot}%{_metainfodir}
+install -Dm0644 assets/icons/io.github.induckgo.InDuckGo.svg -t %{buildroot}%{_datadir}/icons/hicolor/scalable/apps
+
+%files
+%license LICENSE NOTICE
+%doc README.md
+%{_bindir}/induckgo
+%{_datadir}/applications/io.github.induckgo.InDuckGo.desktop
+%{_metainfodir}/io.github.induckgo.InDuckGo.metainfo.xml
+%{_datadir}/icons/hicolor/scalable/apps/io.github.induckgo.InDuckGo.svg
+
+%changelog
+* Mon Nov 02 2026 Michał Ligus <eshaiotic@eshaiotic.io> - 1.0.0-1
+- First release.

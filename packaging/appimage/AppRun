@@ -1,0 +1,5 @@
+#!/bin/sh
+# AppImage entry point. InDuckGo uses the system's WebKitGTK 6.0, GTK 4 and libadwaita: a browser engine frozen
+# inside the image would stop receiving the engine's security updates.
+here=$(dirname "$(readlink -f "$0")")
+exec "$here/usr/bin/induckgo" "$@"

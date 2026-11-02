@@ -66,7 +66,6 @@ impl<'lookup> WebAppNavigationPolicy<'lookup> {
     }
 
     fn site_of(url: &Url, lookup: &dyn RegistrableDomainLookup) -> Option<String> {
-        let host = url.host_str()?.to_ascii_lowercase();
-        Some(lookup.registrable_domain(&host).unwrap_or(host))
+        url.host_str().map(|host| lookup.site_of(host))
     }
 }

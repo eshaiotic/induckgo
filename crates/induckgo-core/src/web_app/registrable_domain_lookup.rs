@@ -24,4 +24,11 @@ pub trait RegistrableDomainLookup {
             .unwrap_or(labels.len() - 1);
         (suffix_start > 0).then(|| labels[suffix_start - 1..].join("."))
     }
+
+    /// The site `host` belongs to: its registrable domain, or the host itself when it has none (an IP address,
+    /// `localhost`).
+    fn site_of(&self, host: &str) -> String {
+        let host = host.to_ascii_lowercase();
+        self.registrable_domain(&host).unwrap_or(host)
+    }
 }

@@ -46,9 +46,9 @@ impl InDuckGoApplication {
         ("win.back", &["<Alt>Left"]),
         ("win.forward", &["<Alt>Right"]),
         ("win.find", &["<Control>f"]),
-        ("win.zoom-in", &["<Control>plus", "<Control>equal"]),
-        ("win.zoom-out", &["<Control>minus"]),
-        ("win.zoom-reset", &["<Control>0"]),
+        ("win.zoom-in", &["<Control>plus", "<Control>equal", "<Control>KP_Add"]),
+        ("win.zoom-out", &["<Control>minus", "<Control>KP_Subtract"]),
+        ("win.zoom-reset", &["<Control>0", "<Control>KP_0"]),
         ("win.fire", &["<Control><Shift>Delete"]),
         ("app.quit", &["<Control>q"]),
     ];

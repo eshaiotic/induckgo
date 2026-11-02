@@ -212,7 +212,7 @@ obiektem błędu na żądania, bo InDuckGo nie implementuje natywnych funkcji, o
 ### 5.5 Ogień
 
 Przycisk Ognia (w nagłówku każdego okna) zamyka pozostałe okna profilu i usuwa wszystkie dane witryn profilu
-(cookies, magazyn, cache, favikony) z wyjątkiem wpisów **HSTS**. Te pamiętają, które witryny wymagają HTTPS,
+(cookies, magazyn, cache, favikony, zoom nadany witrynom) z wyjątkiem wpisów **HSTS**. Te pamiętają, które witryny wymagają HTTPS,
 a ich zapomnienie tylko osłabiłoby następną wizytę. Bieżące okno zaczyna od nowa z pustą kartą.
 
 ## 6. Aplikacje webowe
@@ -271,6 +271,16 @@ przez wskaźnik do tymczasowego, już zwolnionego napisu i wywracało aplikacje 
   jest dozwolona, wszystko inne odrzucane.
 - **Inne schematy** (`mailto:`, `tel:`, `zoommtg:` …) są przekazywane do pulpitu tylko po prawdziwym geście
   użytkownika, więc strona nie może sama otwierać aplikacji.
+- **Zoom strony** przechodzi przez rozmiary DuckDuckGo (`ZoomLevel`: 50, 75, 85, 100, 115, 125, 150, 175, 200, 250
+  i 300 %) skrótami Ctrl `+`/`-`/`0` (także na klawiaturze numerycznej), Ctrl z kółkiem myszy albo rzędem zoomu
+  w menu okna. Rozmiar inny niż 100 % widać jako znaczek obok paska adresu (w aplikacji webowej w nagłówku);
+  kliknięcie wraca do 100 %. Jak w przeglądarce DuckDuckGo na macOS rozmiar należy do *witryny*
+  (`SiteZoomLevels`, klucz to domena rejestrowalna, zapis per profil w `site-zoom-levels.json`): każda strona
+  witryny otwiera się w nim, a jego zmiana od razu przeskalowuje pozostałe otwarte karty tej witryny. Bez tego
+  WebKit przenosiłby zoom jednej karty na każdą witrynę, którą karta odwiedzi później. Strony spoza sieci
+  (`file:`, `about:`) otwierają się w 100 % i nie są zapamiętywane. Ctrl z kółkiem jest przechwytywany, zanim
+  zobaczy go strona, więc strona (np. mapa) nie może użyć tego gestu dla siebie; rozsunięcie palców na touchpadzie
+  nadal powiększa stronę tak, jak robi to WebKit.
 
 ## 8. Co WebKitGTK potrafi, a czego nie (zmierzone na 2.54)
 

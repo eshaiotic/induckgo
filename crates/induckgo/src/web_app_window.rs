@@ -16,6 +16,7 @@ use gtk::prelude::Cast;
 use gtk::prelude::GtkWindowExt;
 use gtk::prelude::ObjectExt;
 use gtk::prelude::WidgetExt;
+use induckgo_core::page_zoom::zoom_level::ZoomLevel;
 use induckgo_core::web_app::installed_web_app::InstalledWebApp;
 use induckgo_core::web_app::web_app_navigation_policy::NavigationTrigger;
 use induckgo_core::web_app::web_app_navigation_policy::WebAppNavigation;
@@ -32,6 +33,7 @@ use crate::app_context::AppContext;
 use crate::external_launcher::ExternalLauncher;
 use crate::page_view::PageView;
 use crate::public_suffix_list::PublicSuffixList;
+use crate::zoom_controls::ZoomControls;
 
 /// A window action: its name and what it does.
 type WebAppCommand = (&'static str, fn(&Rc<WebAppWindow>));
@@ -41,6 +43,7 @@ pub struct WebAppWindow {
     app: InstalledWebApp,
     window: adw::ApplicationWindow,
     page: Rc<PageView>,
+    zoom: ZoomControls,
     toasts: adw::ToastOverlay,
 }
 
@@ -57,6 +60,7 @@ impl WebAppWindow {
                 .build(),
             app,
             page,
+            zoom: ZoomControls::new(),
             toasts: adw::ToastOverlay::new(),
         });
         web_app.build_layout();
@@ -73,7 +77,7 @@ impl WebAppWindow {
         web_app
     }
 
-    fn build_layout(&self) {
+    fn build_layout(self: &Rc<Self>) {
         let title = adw::WindowTitle::new(&self.app.name, &self.app.host());
         let header = adw::HeaderBar::builder().title_widget(&title).build();
         header.pack_start(
@@ -90,11 +94,21 @@ impl WebAppWindow {
                 .tooltip_text("Reload")
                 .build(),
         );
-        let menu = gio::Menu::new();
-        menu.append(Some("Open Page in Browser"), Some("win.open-in-browser"));
-        menu.append(Some("Clear App Data…"), Some("win.fire"));
-        menu.append(Some("About InDuckGo"), Some("app.about"));
-        header.pack_end(&gtk::MenuButton::builder().icon_name("open-menu-symbolic").menu_model(&menu).build());
+        let menu = gtk::MenuButton::builder().icon_name("open-menu-symbolic").tooltip_text("Main Menu").build();
+        let web_app = Rc::downgrade(self);
+        menu.set_create_popup_func(move |button| {
+            if let Some(web_app) = web_app.upgrade() {
+                button.set_menu_model(Some(&Self::menu_model(web_app.page.zoom_level())));
+            }
+        });
+        header.pack_end(&menu);
+        header.pack_end(self.zoom.badge());
+        let web_app = Rc::downgrade(self);
+        self.page.web_view().connect_zoom_level_notify(move |_| {
+            if let Some(web_app) = web_app.upgrade() {
+                web_app.zoom.show(&web_app.window, web_app.page.zoom_level());
+            }
+        });
         Self::show_current_site(&self.page, &title, &self.app);
         let name = self.app.name.clone();
         self.page.web_view().connect_title_notify(move |view| {
@@ -107,6 +121,17 @@ impl WebAppWindow {
         toolbar.set_content(Some(self.page.widget()));
         self.toasts.set_child(Some(&toolbar));
         self.window.set_content(Some(&self.toasts));
+    }
+
+    fn menu_model(zoom: ZoomLevel) -> gio::Menu {
+        let menu = gio::Menu::new();
+        menu.append_item(&ZoomControls::menu_row(zoom));
+        let app = gio::Menu::new();
+        app.append(Some("Open Page in Browser"), Some("win.open-in-browser"));
+        app.append(Some("Clear App Data…"), Some("win.fire"));
+        app.append(Some("About InDuckGo"), Some("app.about"));
+        menu.append_section(None, &app);
+        menu
     }
 
     /// The subtitle names the host of the page on screen, flagged when it is not on the app's own site.
@@ -128,7 +153,7 @@ impl WebAppWindow {
     }
 
     fn install_actions(self: &Rc<Self>) {
-        let actions: [WebAppCommand; 4] = [
+        let actions: [WebAppCommand; 7] = [
             ("back", |web_app| web_app.page.web_view().go_back()),
             ("reload", |web_app| web_app.page.web_view().reload()),
             // The page moves to the browser, so the app window closes; it stays if the browser did not start.
@@ -140,6 +165,9 @@ impl WebAppWindow {
                 }
             }),
             ("fire", Self::confirm_clear),
+            ("zoom-in", |web_app| web_app.page.change_zoom(ZoomLevel::zoomed_in)),
+            ("zoom-out", |web_app| web_app.page.change_zoom(ZoomLevel::zoomed_out)),
+            ("zoom-reset", |web_app| web_app.page.change_zoom(|_| ZoomLevel::ACTUAL_SIZE)),
         ];
         for (name, activate) in actions {
             let web_app = Rc::downgrade(self);

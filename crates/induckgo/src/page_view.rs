@@ -8,7 +8,9 @@
 //! * Permission requests are asked, never granted silently.
 //! * A page that cannot be shown (unknown host, refused connection, untrusted certificate, crash, an error
 //!   status with an empty body) is replaced by an InDuckGo error page that explains it.
+//! * Zoom: each page is drawn at the size the user gave its site; Ctrl and the scroll wheel change it.
 
+use std::cell::Cell;
 use std::cell::RefCell;
 use std::collections::VecDeque;
 use std::rc::Rc;
@@ -17,9 +19,11 @@ use std::rc::Weak;
 use adw::prelude::WidgetExt;
 use gtk::prelude::BoxExt;
 use gtk::prelude::Cast;
+use gtk::prelude::EventControllerExt;
 use gtk::prelude::IsA;
 use induckgo_core::navigation::load_failure::FailureCause;
 use induckgo_core::navigation::load_failure::LoadFailure;
+use induckgo_core::page_zoom::zoom_level::ZoomLevel;
 use url::Url;
 use webkit6::LoadEvent;
 use webkit6::NavigationPolicyDecision;
@@ -36,6 +40,7 @@ use crate::error_page_view::ErrorPageView;
 use crate::external_launcher::ExternalLauncher;
 use crate::permission_prompt::PermissionPrompt;
 use crate::profile_session::ProfileSession;
+use crate::site_zoom::SiteZoom;
 
 pub struct PageView {
     session: Rc<ProfileSession>,
@@ -66,6 +71,8 @@ impl PageView {
     const RECENT_NAVIGATIONS: usize = 16;
     /// Schemes WebKit displays itself; every other scheme belongs to another application.
     const WEB_SCHEMES: [&'static str; 7] = ["http", "https", "about", "data", "blob", "file", "webkit-pdfjs-viewer"];
+    /// Touchpad scrolling is measured in pixels; this many make one zoom step, like one notch of a wheel.
+    const PIXELS_PER_ZOOM_STEP: f64 = 40.0;
 
     pub fn new(session: &Rc<ProfileSession>, web_view: WebView) -> Rc<Self> {
         let insecure_banner = adw::Banner::builder().button_label("Load Insecure Page").revealed(false).build();
@@ -85,6 +92,8 @@ impl PageView {
             empty_error_answer: RefCell::new(None),
         });
         page.connect_signals();
+        page.zoom_on_control_scroll();
+        session.zoom().follow(&page.web_view);
         page
     }
 
@@ -107,6 +116,16 @@ impl PageView {
     /// so the site's other windows can still rewrite it: never treat it as more trustworthy than the site.
     pub fn shows_error_page(&self) -> bool {
         *self.error_page.borrow() == ErrorPageState::Shown
+    }
+
+    /// The size the page is drawn at.
+    pub fn zoom_level(&self) -> ZoomLevel {
+        SiteZoom::current(&self.web_view)
+    }
+
+    /// Zooms the page, and with it every open page of its site.
+    pub fn change_zoom(&self, change: fn(ZoomLevel) -> ZoomLevel) {
+        self.session.zoom().change(&self.web_view, change);
     }
 
     /// Host of the current page, if it is a web page.
@@ -154,6 +173,32 @@ impl PageView {
         let page = Rc::downgrade(self);
         self.insecure_banner.connect_button_clicked(move |_| Self::load_insecurely(&page));
         self.web_view.connect_permission_request(PermissionPrompt::ask);
+    }
+
+    /// Ctrl with the scroll wheel zooms (up enlarges), as in every browser. The event is caught before it
+    /// reaches the page, so a page cannot zoom itself this way and does not scroll meanwhile.
+    fn zoom_on_control_scroll(self: &Rc<Self>) {
+        let scroll = gtk::EventControllerScroll::new(gtk::EventControllerScrollFlags::VERTICAL);
+        scroll.set_propagation_phase(gtk::PropagationPhase::Capture);
+        let pending = Cell::new(0.0);
+        let page = Rc::downgrade(self);
+        scroll.connect_scroll(move |scroll, _, delta| {
+            let Some(page) = page.upgrade() else { return glib::Propagation::Proceed };
+            if delta == 0.0 || !scroll.current_event_state().contains(gdk::ModifierType::CONTROL_MASK) {
+                pending.set(0.0);
+                return glib::Propagation::Proceed;
+            }
+            let steps = if scroll.unit() == gdk::ScrollUnit::Surface { Self::PIXELS_PER_ZOOM_STEP } else { 1.0 };
+            let scrolled = pending.get() + delta / steps;
+            if scrolled.abs() < 1.0 {
+                pending.set(scrolled);
+            } else {
+                pending.set(0.0);
+                page.change_zoom(if scrolled < 0.0 { ZoomLevel::zoomed_in } else { ZoomLevel::zoomed_out });
+            }
+            glib::Propagation::Stop
+        });
+        self.root.add_controller(scroll);
     }
 
     /// Remembers plain-HTTP targets, sends links to other applications outside and stops empty error answers;
@@ -265,6 +310,7 @@ impl PageView {
     }
 
     fn note_committed_page(&self) {
+        self.session.zoom().apply(&self.web_view);
         let state = if self.is_loading_error_page() { ErrorPageState::Shown } else { ErrorPageState::Absent };
         self.error_page.replace(state);
     }

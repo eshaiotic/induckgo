@@ -11,6 +11,7 @@ use adw::prelude::AlertDialogExt;
 use adw::prelude::AlertDialogExtManual;
 use gio::prelude::ActionMapExt;
 use gio::prelude::ActionMapExtManual;
+use gtk::prelude::BoxExt;
 use gtk::prelude::ButtonExt;
 use gtk::prelude::Cast;
 use gtk::prelude::EditableExt;
@@ -21,6 +22,7 @@ use gtk::prelude::ToVariant;
 use gtk::prelude::ToggleButtonExt;
 use gtk::prelude::WidgetExt;
 use induckgo_core::navigation::address_bar_input::AddressBarInput;
+use induckgo_core::page_zoom::zoom_level::ZoomLevel;
 use induckgo_core::web_app::installed_web_app::InstalledWebApp;
 use webkit6::WebView;
 use webkit6::prelude::WebViewExt;
@@ -32,6 +34,7 @@ use crate::management_dialogs::ProfilesDialog;
 use crate::management_dialogs::WebAppsDialog;
 use crate::page_view::PageView;
 use crate::web_app_installer::WebAppInstaller;
+use crate::zoom_controls::ZoomControls;
 
 /// A window action: its name and what it does.
 type BrowserCommand = (&'static str, fn(&Rc<BrowserWindow>));
@@ -44,6 +47,7 @@ pub struct BrowserWindow {
     reload: gtk::Button,
     shield: gtk::ToggleButton,
     find_bar: Rc<FindBar>,
+    zoom: ZoomControls,
     toasts: adw::ToastOverlay,
     pages: RefCell<Vec<Rc<PageView>>>,
     /// Set while the header mirrors the page, so mirroring does not trigger the switch's own handler.
@@ -52,7 +56,6 @@ pub struct BrowserWindow {
 
 impl BrowserWindow {
     pub const HOME_PAGE: &'static str = "https://duckduckgo.com/";
-    const ZOOM_STEP: f64 = 0.1;
     const PRODUCT: &'static str = "InDuckGo";
 
     /// Opens a window with one tab per address (or the home page).
@@ -81,6 +84,7 @@ impl BrowserWindow {
             tab_view,
             address,
             find_bar,
+            zoom: ZoomControls::new(),
             toasts,
             pages: RefCell::new(Vec::new()),
             updating_header: Cell::new(false),
@@ -141,7 +145,7 @@ impl BrowserWindow {
         }
     }
 
-    fn build_layout(&self) {
+    fn build_layout(self: &Rc<Self>) {
         let header = adw::HeaderBar::new();
         for (icon, action, tooltip) in
             [("go-previous-symbolic", "win.back", "Back"), ("go-next-symbolic", "win.forward", "Forward")]
@@ -150,12 +154,20 @@ impl BrowserWindow {
                 .pack_start(&gtk::Button::builder().icon_name(icon).action_name(action).tooltip_text(tooltip).build());
         }
         header.pack_start(&self.reload);
+        let address_row = gtk::Box::new(gtk::Orientation::Horizontal, 6);
+        address_row.append(&self.address);
+        address_row.append(self.zoom.badge());
         header.set_title_widget(Some(
-            &adw::Clamp::builder().maximum_size(860).tightening_threshold(560).child(&self.address).build(),
+            &adw::Clamp::builder().maximum_size(860).tightening_threshold(560).child(&address_row).build(),
         ));
         let menu = gtk::MenuButton::builder().icon_name("open-menu-symbolic").tooltip_text("Main Menu").build();
-        let context = Rc::clone(&self.context);
-        menu.set_create_popup_func(move |button| button.set_menu_model(Some(&Self::menu_model(&context))));
+        let browser = Rc::downgrade(self);
+        menu.set_create_popup_func(move |button| {
+            if let Some(browser) = browser.upgrade() {
+                let level = browser.selected_page().map_or(ZoomLevel::ACTUAL_SIZE, |page| page.zoom_level());
+                button.set_menu_model(Some(&Self::menu_model(&browser.context, level)));
+            }
+        });
         header.pack_end(&menu);
         header.pack_end(
             &gtk::Button::builder()
@@ -182,7 +194,7 @@ impl BrowserWindow {
         self.window.set_title(Some(&self.product_title()));
     }
 
-    fn menu_model(context: &AppContext) -> gio::Menu {
+    fn menu_model(context: &AppContext, zoom: ZoomLevel) -> gio::Menu {
         let menu = gio::Menu::new();
         let tabs = gio::Menu::new();
         tabs.append(Some("New Tab"), Some("win.new-tab"));
@@ -190,10 +202,8 @@ impl BrowserWindow {
         menu.append_section(None, &tabs);
         let page = gio::Menu::new();
         page.append(Some("Find in Page…"), Some("win.find"));
-        page.append(Some("Zoom In"), Some("win.zoom-in"));
-        page.append(Some("Zoom Out"), Some("win.zoom-out"));
-        page.append(Some("Actual Size"), Some("win.zoom-reset"));
         menu.append_section(None, &page);
+        menu.append_item(&ZoomControls::menu_row(zoom));
         let apps = gio::Menu::new();
         apps.append(Some("Install Site as App…"), Some("win.install-web-app"));
         apps.append(Some("Installed Apps…"), Some("win.manage-web-apps"));
@@ -234,13 +244,9 @@ impl BrowserWindow {
                     browser.find_bar.show_for(page.web_view());
                 }
             }),
-            ("zoom-in", |browser| {
-                browser.with_web_view(|view| view.set_zoom_level(view.zoom_level() + Self::ZOOM_STEP));
-            }),
-            ("zoom-out", |browser| {
-                browser.with_web_view(|view| view.set_zoom_level((view.zoom_level() - Self::ZOOM_STEP).max(0.3)));
-            }),
-            ("zoom-reset", |browser| browser.with_web_view(|view| view.set_zoom_level(1.0))),
+            ("zoom-in", |browser| browser.change_zoom(ZoomLevel::zoomed_in)),
+            ("zoom-out", |browser| browser.change_zoom(ZoomLevel::zoomed_out)),
+            ("zoom-reset", |browser| browser.change_zoom(|_| ZoomLevel::ACTUAL_SIZE)),
             ("fire", Self::confirm_fire),
             ("install-web-app", Self::install_web_app),
             ("manage-web-apps", |browser| WebAppsDialog::present(&browser.context, &browser.window)),
@@ -331,6 +337,8 @@ impl BrowserWindow {
         let browser = Rc::downgrade(self);
         view.connect_estimated_load_progress_notify(move |_| Self::refresh(&browser));
         let browser = Rc::downgrade(self);
+        view.connect_zoom_level_notify(move |_| Self::refresh(&browser));
+        let browser = Rc::downgrade(self);
         view.connect_create(move |view, _| {
             let browser = browser.upgrade()?;
             let related = WebView::builder().related_view(view).build();
@@ -373,6 +381,7 @@ impl BrowserWindow {
         browser.set_action_enabled("back", view.can_go_back());
         browser.set_action_enabled("forward", view.can_go_forward());
         browser.reload.set_icon_name(if view.is_loading() { "process-stop-symbolic" } else { "view-refresh-symbolic" });
+        browser.zoom.show(&browser.window, page.zoom_level());
         let host = page.host();
         let protected = host.as_deref().is_none_or(|host| browser.context.session.is_site_protected(host));
         browser.shield.set_sensitive(host.is_some());
@@ -430,6 +439,12 @@ impl BrowserWindow {
     fn focus_address(self: &Rc<Self>) {
         self.address.grab_focus();
         self.address.select_region(0, -1);
+    }
+
+    fn change_zoom(&self, change: fn(ZoomLevel) -> ZoomLevel) {
+        if let Some(page) = self.selected_page() {
+            page.change_zoom(change);
+        }
     }
 
     fn with_web_view(&self, action: impl FnOnce(&WebView)) {

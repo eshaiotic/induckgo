@@ -10,6 +10,7 @@ pub mod download;
 pub mod identity;
 pub mod launch;
 pub mod navigation;
+pub mod page_zoom;
 pub mod profile;
 pub mod protection;
 pub mod web_app;

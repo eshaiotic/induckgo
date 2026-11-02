@@ -208,7 +208,7 @@ with an error object, since InDuckGo implements none of the native features they
 ### 5.5 Fire
 
 The Fire button (in each window's header) closes the profile's other windows and erases all of the
-profile's website data — cookies, storage, cache, favicons — except the **HSTS** records: those remember
+profile's website data — cookies, storage, cache, favicons, the zoom given to sites — except the **HSTS** records: those remember
 which sites demand HTTPS, and forgetting them would only weaken the next visit. The current window then
 starts over with an empty tab.
 
@@ -267,6 +267,15 @@ temporary string that has already been freed, and it crashed web apps on their f
   denied.
 - **Other schemes** (`mailto:`, `tel:`, `zoommtg:` …) are handed to the desktop only after a real user
   gesture, so a page cannot open applications by itself.
+- **Page zoom** steps through DuckDuckGo's sizes (`ZoomLevel`: 50, 75, 85, 100, 115, 125, 150, 175, 200, 250 and
+  300 %) with Ctrl `+`/`-`/`0` (also on the keypad), Ctrl with the scroll wheel, or the zoom row of the window
+  menu. A size other than 100 % shows as a badge next to the address bar (in a web app, in the header); clicking
+  it returns to 100 %. As in DuckDuckGo's macOS browser, the size belongs to the *site* (`SiteZoomLevels`, keyed
+  by registrable domain, saved per profile in `site-zoom-levels.json`): every page of the site opens at it, and
+  changing it resizes the site's other open tabs at once. WebKit would otherwise carry one tab's zoom over to
+  every site the tab visits next. Pages that are not on the web (`file:`, `about:`) open at 100 % and are not
+  remembered. Ctrl with the wheel is caught before the page sees it, so a page (a map, say) cannot use that
+  gesture for itself; pinching a touchpad still magnifies the page as WebKit does.
 
 ## 8. What WebKitGTK can and cannot do (measured on 2.54)
 

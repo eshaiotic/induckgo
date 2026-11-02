@@ -2,7 +2,8 @@
 //!
 //! Each InDuckGo process serves exactly one profile (or one web app's private profile), so a session owns:
 //! a WebKit `NetworkSession` with its own cookie jar, storage, cache and HSTS list; the page protections;
-//! and the state that feeds them (privacy configuration, Tracker Data Set, sites the user unprotected).
+//! and the state that feeds them (privacy configuration, Tracker Data Set, sites the user unprotected); and the
+//! zoom the user gave each site.
 //!
 //! Pages must not load before tracker blocking is active: [`ProfileSession::when_protected`] holds a load
 //! back until rule lists are active. Building the tracker list from the Tracker Data Set costs a few tenths of
@@ -41,6 +42,7 @@ use crate::page_protections::PreparedRuleList;
 use crate::page_protections::RuleList;
 use crate::protection_feed::ProtectionDocuments;
 use crate::protection_feed::ProtectionFeed;
+use crate::site_zoom::SiteZoom;
 use crate::stored_file::StoredFile;
 
 enum Readiness {
@@ -84,6 +86,7 @@ pub struct ProfileSession {
     feed: ProtectionFeed,
     http: Rc<HttpClient>,
     unprotected_sites_file: StoredFile,
+    zoom: SiteZoom,
     inputs: RefCell<ProtectionInputs>,
     readiness: RefCell<Readiness>,
     /// Bumped by every rebuild; a slower, older rebuild never overwrites a newer one.
@@ -115,6 +118,7 @@ impl ProfileSession {
             feed: ProtectionFeed::new(&paths.protection_feed()),
             http,
             unprotected_sites_file,
+            zoom: SiteZoom::load(StoredFile::new(location.data.join("site-zoom-levels.json"))),
             inputs: RefCell::new(ProtectionInputs {
                 tracker_data: None,
                 configuration: None,
@@ -134,6 +138,10 @@ impl ProfileSession {
 
     pub fn profile_id(&self) -> &ProfileId {
         &self.profile
+    }
+
+    pub fn zoom(&self) -> &SiteZoom {
+        &self.zoom
     }
 
     /// A new top-level web view in this profile.
@@ -193,9 +201,10 @@ impl ProfileSession {
         self.rebuild(then);
     }
 
-    /// The Fire button: deletes every cookie, storage, cache and favicon of this profile. The HSTS list is
-    /// kept, because forgetting it would let a network attacker downgrade sites to plain HTTP again.
+    /// The Fire button: deletes every cookie, storage, cache, favicon and site zoom of this profile. The HSTS
+    /// list is kept, because forgetting it would let a network attacker downgrade sites to plain HTTP again.
     pub async fn burn_website_data(&self) -> Result<(), glib::Error> {
+        self.zoom.forget_all();
         let Some(data_manager) = self.network_session.website_data_manager() else { return Ok(()) };
         if let Some(favicons) = data_manager.favicon_database() {
             favicons.clear();

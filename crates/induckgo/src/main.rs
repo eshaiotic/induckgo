@@ -20,9 +20,11 @@ mod profile_session;
 mod protection_feed;
 mod public_suffix_list;
 mod running_instances;
+mod site_zoom;
 mod stored_file;
 mod web_app_installer;
 mod web_app_window;
+mod zoom_controls;
 
 use crate::induckgo_application::InDuckGoApplication;
 

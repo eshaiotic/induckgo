@@ -184,8 +184,9 @@ Ważne są cztery szczegóły:
 - Połączenie z serwerem, który nigdy nie odpowiada, libsoup anuluje (`G_IO_ERROR_CANCELLED`), zamiast zgłosić
   przekroczenie czasu. Dlatego jest objaśniane jako przekroczony czas, a wczytanie zatrzymane przez
   użytkownika (`WEBKIT_NETWORK_ERROR_CANCELLED`) nie pokazuje niczego.
-- Nad stroną błędu pasek adresu nie pokazuje kłódki ani przycisku instalacji, bo nic na niej nie pochodzi od
-  witryny.
+- Nad stroną błędu pasek adresu nie pokazuje kłódki ani przycisku instalacji, bo strona niczego nie dowodzi
+  o połączeniu. Zwykłe HTTP zachowuje ostrzeżenie: strona działa w pochodzeniu witryny, więc inne okna tej
+  witryny nadal mogą ją przepisać.
 
 Strona działa w pochodzeniu nieudanej witryny, więc nie może nikomu zaszkodzić. Wszystko, co pochodzi z
 porażki, jest escapowane w HTML: adres, host i komunikat GLib. Szablon jest wypełniany w jednym przebiegu, więc

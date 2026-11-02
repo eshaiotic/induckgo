@@ -9,7 +9,6 @@
 //! * A page that cannot be shown (unknown host, refused connection, untrusted certificate, crash, an error
 //!   status with an empty body) is replaced by an InDuckGo error page that explains it.
 
-use std::cell::Cell;
 use std::cell::RefCell;
 use std::collections::VecDeque;
 use std::rc::Rc;
@@ -49,17 +48,17 @@ pub struct PageView {
     insecure_fallback: RefCell<Option<(String, String)>>,
     /// The last address this page cleaned, so a rule/cleaner mismatch can never loop.
     last_cleaned: RefCell<Option<String>>,
-    error_page: Cell<ErrorPageState>,
+    error_page: RefCell<ErrorPageState>,
     /// `(address, status)` of the empty error answer the page stopped, to explain when its load fails.
     empty_error_answer: RefCell<Option<(String, u16)>>,
 }
 
 /// Whether the view shows one of InDuckGo's error pages instead of a page of the site.
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(PartialEq, Eq)]
 enum ErrorPageState {
     Absent,
-    /// Requested; its own load (started and committed right after) is not a new navigation.
-    Loading,
+    /// Requested for this address; only a load of that address can be the error page's own load.
+    Loading(String),
     Shown,
 }
 
@@ -82,7 +81,7 @@ impl PageView {
             recent_plain_http: RefCell::new(VecDeque::new()),
             insecure_fallback: RefCell::new(None),
             last_cleaned: RefCell::new(None),
-            error_page: Cell::new(ErrorPageState::Absent),
+            error_page: RefCell::new(ErrorPageState::Absent),
             empty_error_answer: RefCell::new(None),
         });
         page.connect_signals();
@@ -104,9 +103,10 @@ impl PageView {
         self.session.when_protected(move || web_view.load_uri(&address));
     }
 
-    /// Whether the view shows an InDuckGo error page rather than the site: nothing on it comes from the site.
+    /// Whether the view shows an InDuckGo error page rather than the site. The page runs in the site's origin,
+    /// so the site's other windows can still rewrite it: never treat it as more trustworthy than the site.
     pub fn shows_error_page(&self) -> bool {
-        self.error_page.get() == ErrorPageState::Shown
+        *self.error_page.borrow() == ErrorPageState::Shown
     }
 
     /// Host of the current page, if it is a web page.
@@ -134,10 +134,7 @@ impl PageView {
             let Some(page) = page.upgrade() else { return };
             match event {
                 LoadEvent::Started => page.forget_failed_load(),
-                LoadEvent::Committed => page.error_page.set(match page.error_page.get() {
-                    ErrorPageState::Loading => ErrorPageState::Shown,
-                    ErrorPageState::Absent | ErrorPageState::Shown => ErrorPageState::Absent,
-                }),
+                LoadEvent::Committed => page.note_committed_page(),
                 _ => {}
             }
         });
@@ -249,15 +246,27 @@ impl PageView {
     }
 
     fn show_error_page(&self, failure: &LoadFailure) {
-        self.error_page.set(ErrorPageState::Loading);
+        self.error_page.replace(ErrorPageState::Loading(failure.address.clone()));
         ErrorPageView::show(&self.web_view, failure);
+    }
+
+    /// Whether the load in progress is the requested error page: it loads under the failed address.
+    fn is_loading_error_page(&self) -> bool {
+        let address = self.web_view.uri();
+        matches!(&*self.error_page.borrow(), ErrorPageState::Loading(requested) if address.as_deref() == Some(requested))
     }
 
     /// A new load hides the banner about the last failure, unless it is that failure's error page.
     fn forget_failed_load(&self) {
-        if self.error_page.get() != ErrorPageState::Loading {
+        if !self.is_loading_error_page() {
+            self.error_page.replace(ErrorPageState::Absent);
             self.insecure_banner.set_revealed(false);
         }
+    }
+
+    fn note_committed_page(&self) {
+        let state = if self.is_loading_error_page() { ErrorPageState::Shown } else { ErrorPageState::Absent };
+        self.error_page.replace(state);
     }
 
     /// When the failed load was an HTTPS upgrade of a plain-HTTP address, offers to load that address insecurely.

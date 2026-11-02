@@ -357,14 +357,14 @@ impl BrowserWindow {
         if !browser.address.has_focus() {
             browser.address.set_text(&address);
         }
+        // An error page proves nothing about the connection, so it never gets the padlock; plain HTTP stays marked.
         let security_icon = match address.split_once(':').map(|(scheme, _)| scheme) {
-            _ if page.shows_error_page() => None,
-            Some("https") => Some("channel-secure-symbolic"),
+            Some("https") if !page.shows_error_page() => Some("channel-secure-symbolic"),
             Some("http") => Some("channel-insecure-symbolic"),
             _ => None,
         };
         browser.address.set_icon_from_icon_name(gtk::EntryIconPosition::Primary, security_icon);
-        let is_installable = security_icon.is_some();
+        let is_installable = security_icon.is_some() && !page.shows_error_page();
         browser.address.set_icon_from_icon_name(
             gtk::EntryIconPosition::Secondary,
             is_installable.then_some(AppIcons::INSTALL_APP),

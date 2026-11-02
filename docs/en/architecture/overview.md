@@ -182,8 +182,9 @@ Four details matter:
 - A connection to a server that never answers is cancelled by libsoup (`G_IO_ERROR_CANCELLED`), not timed out.
   It is therefore explained as a time-out, while a load the user stopped (`WEBKIT_NETWORK_ERROR_CANCELLED`)
   shows nothing.
-- The address bar shows no padlock and no install button over an error page, since nothing on it comes from
-  the site.
+- The address bar shows no padlock and no install button over an error page, since the page proves nothing
+  about the connection. Plain HTTP keeps its warning: the page runs in the site's origin, so the site's other
+  windows can still rewrite it.
 
 The page runs in the failed site's origin, so it must not be able to harm anyone. Everything taken from the
 failure is HTML-escaped: the address, the host and GLib's message. The template is filled in one pass, so a

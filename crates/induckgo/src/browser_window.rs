@@ -21,6 +21,7 @@ use gtk::prelude::ToVariant;
 use gtk::prelude::ToggleButtonExt;
 use gtk::prelude::WidgetExt;
 use induckgo_core::navigation::address_bar_input::AddressBarInput;
+use induckgo_core::web_app::installed_web_app::InstalledWebApp;
 use webkit6::WebView;
 use webkit6::prelude::WebViewExt;
 
@@ -110,6 +111,23 @@ impl BrowserWindow {
         let page = PageView::new(&self.context.session, self.context.session.new_web_view());
         self.add_page(&page);
         page.open(address);
+    }
+
+    /// Closes the tabs that showed `app` — its own pages and the tab it was installed from — now that the
+    /// app has its own window. A window left without tabs closes.
+    pub fn close_tabs_of(&self, app: &InstalledWebApp, installed_from: &WebView) {
+        let closing: Vec<adw::TabPage> = self
+            .pages
+            .borrow()
+            .iter()
+            .filter(|page| {
+                page.web_view() == installed_from || page.web_view().uri().is_some_and(|uri| app.is_own_page(&uri))
+            })
+            .map(|page| self.tab_view.page(page.widget()))
+            .collect();
+        for tab in &closing {
+            self.tab_view.close_page(tab);
+        }
     }
 
     /// Closes every tab and opens a fresh one; used after the Fire button deleted the profile's data.
@@ -396,10 +414,16 @@ impl BrowserWindow {
         dialog.present(Some(&self.window));
     }
 
+    /// Once the app is installed and started, the browser hands over: the app's tabs close in every window.
     fn install_web_app(self: &Rc<Self>) {
-        if let Some(page) = self.selected_page() {
-            WebAppInstaller::offer(&self.context, page.web_view(), &self.window, &self.toasts);
-        }
+        let Some(page) = self.selected_page() else { return };
+        let context = Rc::clone(&self.context);
+        let installed_from = page.web_view().clone();
+        WebAppInstaller::offer(&self.context, page.web_view(), &self.window, &self.toasts, move |app| {
+            for browser in context.browser_windows.open() {
+                browser.close_tabs_of(app, &installed_from);
+            }
+        });
     }
 
     fn focus_address(self: &Rc<Self>) {

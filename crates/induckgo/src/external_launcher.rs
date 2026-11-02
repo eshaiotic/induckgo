@@ -33,8 +33,9 @@ impl ExternalLauncher {
         }
     }
 
-    pub fn start_web_app(web_app: &WebAppId) {
-        Self::start_induckgo(&[DesktopEntry::WEB_APP_SWITCH, web_app.as_str()]);
+    /// `false` when the app's process could not be started (logged).
+    pub fn start_web_app(web_app: &WebAppId) -> bool {
+        Self::start_induckgo(&[DesktopEntry::WEB_APP_SWITCH, web_app.as_str()])
     }
 
     /// Opens a non-web link (`mailto:`, `tel:`, ...) with the program the desktop chooses for it.

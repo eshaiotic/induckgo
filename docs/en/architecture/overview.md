@@ -183,6 +183,13 @@ decoded, and only after `PngHeader` confirmed sane dimensions (at most 2048 px p
 WebKit already decoded is used. The result is a catalog entry, an icon and a desktop entry whose `Exec=` line
 runs `induckgo --web-app <id>`.
 
+Once installed, the app starts and the browser hands the site over to it: every browser window of the profile
+closes the tab the install started from and every tab showing a page of the app (`InstalledWebApp::is_own_page`:
+the same origin, meaning scheme, host and port, as the app's start address). A window left without tabs closes.
+The test is deliberately narrower than the app's site: a Gmail app owns `mail.google.com`, so a Google Docs or Google
+Calendar tab of the same site stays in the browser. Nothing closes if the app could not be started; the toast then
+offers to open it.
+
 **Navigating.** `WebAppNavigationPolicy` (core) decides where a navigation inside the app may go:
 
 - a **link the user clicked** to another *site* (registrable domain) opens in the regular browser, so mail

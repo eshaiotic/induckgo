@@ -39,12 +39,14 @@ impl WebAppInstaller {
     const INSTALL: &'static str = "install";
     const CANCEL: &'static str = "cancel";
 
-    /// Proposes the open page as an app and installs it once the user confirms the name.
+    /// Proposes the open page as an app and installs it once the user confirms the name, then starts the app;
+    /// `when_started` runs once it was started, so the browser can hand the site over to it.
     pub fn offer(
         context: &Rc<AppContext>,
         web_view: &WebView,
         window: &adw::ApplicationWindow,
         toasts: &adw::ToastOverlay,
+        when_started: impl Fn(&InstalledWebApp) + 'static,
     ) {
         let Some(page_url) = web_view.uri().map(String::from).filter(|address| Self::is_web_address(address)) else {
             toasts.add_toast(adw::Toast::new("Only web pages can be installed as apps"));
@@ -54,9 +56,10 @@ impl WebAppInstaller {
         let web_view = web_view.clone();
         let window = window.clone();
         let toasts = toasts.clone();
+        let when_started: Rc<dyn Fn(&InstalledWebApp)> = Rc::new(when_started);
         glib::spawn_future_local(async move {
             let draft = Self::draft(&context, &web_view, &page_url).await;
-            Self::confirm(context, draft, web_view.favicon(), &window, toasts);
+            Self::confirm(context, draft, web_view.favicon(), &window, toasts, when_started);
         });
     }
 
@@ -89,6 +92,7 @@ impl WebAppInstaller {
         favicon: Option<gdk::Texture>,
         window: &adw::ApplicationWindow,
         toasts: adw::ToastOverlay,
+        when_started: Rc<dyn Fn(&InstalledWebApp)>,
     ) {
         let host =
             Url::parse(&draft.start_url).ok().and_then(|url| url.host_str().map(str::to_owned)).unwrap_or_default();
@@ -107,14 +111,20 @@ impl WebAppInstaller {
         dialog.connect_response(Some(Self::INSTALL), move |_, _| {
             let chosen_name = name.text().trim().to_owned();
             let chosen_name = if chosen_name.is_empty() { draft.name.clone() } else { chosen_name };
-            let (context, draft, favicon, toasts) =
-                (Rc::clone(&context), draft.clone(), favicon.clone(), toasts.clone());
+            let (context, draft, favicon, toasts, when_started) =
+                (Rc::clone(&context), draft.clone(), favicon.clone(), toasts.clone(), Rc::clone(&when_started));
             glib::spawn_future_local(async move {
                 let toast = match Self::install(&context, &draft, &chosen_name, favicon).await {
+                    Ok(app) if ExternalLauncher::start_web_app(&app.id) => {
+                        when_started(&app);
+                        adw::Toast::new(&format!("Installed {}", app.name))
+                    }
                     Ok(app) => {
                         let toast =
                             adw::Toast::builder().title(format!("Installed {}", app.name)).button_label("Open").build();
-                        toast.connect_button_clicked(move |_| ExternalLauncher::start_web_app(&app.id));
+                        toast.connect_button_clicked(move |_| {
+                            ExternalLauncher::start_web_app(&app.id);
+                        });
                         toast
                     }
                     Err(error) => adw::Toast::new(&format!("Could not install the app: {error}")),

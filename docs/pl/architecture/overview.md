@@ -184,6 +184,13 @@ PNG i tylko po tym, jak `PngHeader` potwierdzi rozsądne wymiary (najwyżej 2048
 pobierze, używana jest favikona, którą WebKit już zdekodował. Wynikiem jest wpis w katalogu, ikona i plik
 desktop, którego linia `Exec=` uruchamia `induckgo --web-app <id>`.
 
+Po instalacji aplikacja się uruchamia, a przeglądarka przekazuje jej witrynę: każde okno przeglądarki tego
+profilu zamyka kartę, z której zaczęła się instalacja, i każdą kartę ze stroną aplikacji
+(`InstalledWebApp::is_own_page`: to samo pochodzenie, czyli schemat, host i port, co adres startowy aplikacji).
+Okno, w którym nie została żadna karta, się zamyka. Test jest celowo węższy niż witryna aplikacji: aplikacja Gmail
+posiada `mail.google.com`, więc karta Dokumentów czy Kalendarza Google z tej samej witryny zostaje w przeglądarce.
+Gdy aplikacji nie udało się uruchomić, nic się nie zamyka, a komunikat proponuje jej otwarcie.
+
 **Nawigacja.** `WebAppNavigationPolicy` (rdzeń) decyduje, dokąd może prowadzić nawigacja w aplikacji:
 
 - **link kliknięty przez użytkownika** do innej *witryny* (domeny rejestrowalnej) otwiera się w zwykłej

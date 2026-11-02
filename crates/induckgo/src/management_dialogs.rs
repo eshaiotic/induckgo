@@ -221,7 +221,9 @@ impl WebAppsDialog {
             .web_apps()
             .map(|app| {
                 let id = app.id.clone();
-                let open = RowList::button("Open", false, move || ExternalLauncher::start_web_app(&id));
+                let open = RowList::button("Open", false, move || {
+                    ExternalLauncher::start_web_app(&id);
+                });
                 let (manager, installed) = (Rc::downgrade(self), app.clone());
                 let uninstall = RowList::button("Uninstall", true, move || {
                     if let Some(manager) = manager.upgrade() {

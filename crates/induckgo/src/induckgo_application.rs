@@ -6,16 +6,13 @@
 //! running browser, and clicking a web app's icon twice shows its existing window.
 
 use std::cell::OnceCell;
-use std::cell::RefCell;
 use std::rc::Rc;
-use std::rc::Weak;
 
 use adw::prelude::AdwDialogExt;
 use gio::prelude::ActionMapExtManual;
 use gio::prelude::ApplicationCommandLineExt;
 use gio::prelude::ApplicationExt;
 use gio::prelude::ApplicationExtManual;
-use gtk::prelude::Cast;
 use gtk::prelude::GtkApplicationExt;
 use gtk::prelude::GtkWindowExt;
 use induckgo_core::launch::launch_request::LaunchRequest;
@@ -24,6 +21,7 @@ use induckgo_core::profile::profile_id::ProfileId;
 use crate::app_context::AppContext;
 use crate::app_icons::AppIcons;
 use crate::browser_window::BrowserWindow;
+use crate::browser_windows::BrowserWindows;
 use crate::catalog_files::CatalogFiles;
 use crate::external_launcher::ExternalLauncher;
 use crate::http_client::HttpClient;
@@ -34,7 +32,6 @@ use crate::web_app_window::WebAppWindow;
 pub struct InDuckGoApplication {
     profile: ProfileId,
     context: OnceCell<Rc<AppContext>>,
-    browser_windows: RefCell<Vec<Weak<BrowserWindow>>>,
 }
 
 impl InDuckGoApplication {
@@ -71,11 +68,7 @@ impl InDuckGoApplication {
             .application_id(request.application_id().as_str())
             .flags(gio::ApplicationFlags::HANDLES_COMMAND_LINE)
             .build();
-        let process = Rc::new(Self {
-            profile: request.profile_id(),
-            context: OnceCell::new(),
-            browser_windows: RefCell::new(Vec::new()),
-        });
+        let process = Rc::new(Self { profile: request.profile_id(), context: OnceCell::new() });
         let starting = Rc::clone(&process);
         application.connect_startup(move |application| starting.start(application));
         application.connect_command_line(move |application, command_line| process.handle(application, command_line));
@@ -90,7 +83,14 @@ impl InDuckGoApplication {
         icons.install();
         let session = ProfileSession::start(self.profile.clone(), &paths, Rc::clone(&http));
         let catalogs = CatalogFiles::new(&paths);
-        let _ = self.context.set(Rc::new(AppContext { paths, http, catalogs, icons, session }));
+        let _ = self.context.set(Rc::new(AppContext {
+            paths,
+            http,
+            catalogs,
+            icons,
+            session,
+            browser_windows: BrowserWindows::default(),
+        }));
         for (action, accelerators) in Self::ACCELERATORS {
             application.set_accels_for_action(action, accelerators);
         }
@@ -137,12 +137,12 @@ impl InDuckGoApplication {
             command_line.printerr_literal(&format!("induckgo: there is no profile {}\n", self.profile));
             return glib::ExitCode::from(Self::NOT_FOUND);
         }
-        match self.active_browser_window(application).filter(|_| !request.addresses().is_empty()) {
+        match context.browser_windows.active(application).filter(|_| !request.addresses().is_empty()) {
             Some(browser) => {
                 request.addresses().iter().for_each(|address| browser.open_tab(address));
                 browser.window().present();
             }
-            None => self.open_browser_window(application, context, request.addresses()),
+            None => Self::open_browser_window(application, context, request.addresses()),
         }
         glib::ExitCode::SUCCESS
     }
@@ -154,7 +154,7 @@ impl InDuckGoApplication {
                 if let Some(process) = process.upgrade()
                     && let Some(context) = process.context.get()
                 {
-                    process.open_browser_window(application, context, &[]);
+                    Self::open_browser_window(application, context, &[]);
                 }
             })
             .build();
@@ -169,7 +169,7 @@ impl InDuckGoApplication {
                 };
                 match process.context.get() {
                     Some(context) if profile == process.profile => {
-                        process.open_browser_window(application, context, &[]);
+                        Self::open_browser_window(application, context, &[]);
                     }
                     _ => ExternalLauncher::start_profile(&profile),
                 }
@@ -184,20 +184,8 @@ impl InDuckGoApplication {
         application.add_action_entries([new_window, open_profile, about, quit]);
     }
 
-    fn open_browser_window(&self, application: &adw::Application, context: &Rc<AppContext>, addresses: &[String]) {
-        let browser = BrowserWindow::open(application, context, addresses);
-        let mut windows = self.browser_windows.borrow_mut();
-        windows.retain(|window| window.strong_count() > 0);
-        windows.push(Rc::downgrade(&browser));
-    }
-
-    fn active_browser_window(&self, application: &adw::Application) -> Option<Rc<BrowserWindow>> {
-        let active = application.active_window()?;
-        self.browser_windows
-            .borrow()
-            .iter()
-            .filter_map(Weak::upgrade)
-            .find(|browser| browser.window().upcast_ref::<gtk::Window>() == &active)
+    fn open_browser_window(application: &adw::Application, context: &Rc<AppContext>, addresses: &[String]) {
+        context.browser_windows.register(&BrowserWindow::open(application, context, addresses));
     }
 
     fn present_about(application: &adw::Application) {

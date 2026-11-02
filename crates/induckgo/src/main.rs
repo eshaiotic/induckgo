@@ -3,6 +3,7 @@
 mod app_context;
 mod app_icons;
 mod browser_window;
+mod browser_windows;
 mod catalog_files;
 mod download_tracker;
 mod external_launcher;

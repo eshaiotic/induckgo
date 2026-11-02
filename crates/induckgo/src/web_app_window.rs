@@ -60,7 +60,7 @@ impl WebAppWindow {
         });
         web_app.build_layout();
         web_app.install_actions();
-        web_app.keep_to_own_site();
+        Self::keep_to_site(web_app.page.web_view(), web_app.app.start_url.clone());
         web_app.open_pop_ups_in_app();
         web_app.page.open(&web_app.app.start_url);
         let keep_alive = Rc::clone(&web_app);
@@ -93,7 +93,7 @@ impl WebAppWindow {
         menu.append(Some("Clear App Data…"), Some("win.fire"));
         menu.append(Some("About InDuckGo"), Some("app.about"));
         header.pack_end(&gtk::MenuButton::builder().icon_name("open-menu-symbolic").menu_model(&menu).build());
-        self.show_current_site(&title);
+        Self::show_current_site(&self.page, &title, &self.app);
         let name = self.app.name.clone();
         self.page.web_view().connect_title_notify(move |view| {
             title.set_title(
@@ -107,12 +107,12 @@ impl WebAppWindow {
         self.window.set_content(Some(&self.toasts));
     }
 
-    /// The subtitle names the host of the page on screen, flagged when a redirect left the app's own site.
-    fn show_current_site(&self, title: &adw::WindowTitle) {
-        let page = Rc::downgrade(&self.page);
-        let (title, start_url, name) = (title.clone(), self.app.start_url.clone(), self.app.name.clone());
-        self.page.web_view().connect_uri_notify(move |view| {
-            let (Some(page), Some(address)) = (page.upgrade(), view.uri()) else { return };
+    /// The subtitle names the host of the page on screen, flagged when it is not on the app's own site.
+    fn show_current_site(page: &Rc<PageView>, title: &adw::WindowTitle, app: &InstalledWebApp) {
+        let shown = Rc::downgrade(page);
+        let (title, start_url, name) = (title.clone(), app.start_url.clone(), app.name.clone());
+        page.web_view().connect_uri_notify(move |view| {
+            let (Some(page), Some(address)) = (shown.upgrade(), view.uri()) else { return };
             let Some(host) = page.host() else { return };
             title.set_subtitle(&host);
             if WebAppNavigationPolicy::new(&start_url, &PublicSuffixList).is_app_page(&address) {
@@ -149,12 +149,12 @@ impl WebAppWindow {
         }
     }
 
-    fn keep_to_own_site(self: &Rc<Self>) {
-        let start_url = self.app.start_url.clone();
-        self.page.web_view().connect_decide_policy(move |_, decision, kind| Self::decide(&start_url, decision, kind));
+    /// A clicked link to a site other than `site_url`'s opens in the browser; see [`WebAppNavigationPolicy`].
+    fn keep_to_site(web_view: &WebView, site_url: String) {
+        web_view.connect_decide_policy(move |_, decision, kind| Self::decide(&site_url, decision, kind));
     }
 
-    fn decide(start_url: &str, decision: &PolicyDecision, kind: PolicyDecisionType) -> bool {
+    fn decide(site_url: &str, decision: &PolicyDecision, kind: PolicyDecisionType) -> bool {
         if !matches!(kind, PolicyDecisionType::NavigationAction | PolicyDecisionType::NewWindowAction) {
             return false;
         }
@@ -166,7 +166,7 @@ impl WebAppWindow {
         } else {
             NavigationTrigger::RedirectOrScript
         };
-        match WebAppNavigationPolicy::new(start_url, &PublicSuffixList).decide(&target, trigger) {
+        match WebAppNavigationPolicy::new(site_url, &PublicSuffixList).decide(&target, trigger) {
             WebAppNavigation::StayInWebApp => false,
             WebAppNavigation::OpenInBrowser => {
                 decision.ignore();
@@ -176,13 +176,24 @@ impl WebAppWindow {
         }
     }
 
+    /// Pop-ups share the app's session, so they get the same gate and site indicator as the main window. A
+    /// pop-up keeps to the site it was opened for (a sign-in or 3-D Secure page), whose own links must work.
     fn open_pop_ups_in_app(self: &Rc<Self>) {
         let web_app = Rc::downgrade(self);
-        self.page.web_view().connect_create(move |opener, _| {
+        self.page.web_view().connect_create(move |opener, action| {
             let web_app = web_app.upgrade()?;
             let pop_up = WebView::builder().related_view(opener).build();
             let page = PageView::new(&web_app.context.session, pop_up.clone());
-            let header = adw::HeaderBar::new();
+            let opened_for = action
+                .request()
+                .and_then(|request| request.uri())
+                .map(String::from)
+                .filter(|address| address.starts_with("http://") || address.starts_with("https://"))
+                .unwrap_or_else(|| web_app.app.start_url.clone());
+            Self::keep_to_site(&pop_up, opened_for);
+            let title = adw::WindowTitle::new("", "");
+            Self::show_current_site(&page, &title, &web_app.app);
+            let header = adw::HeaderBar::builder().title_widget(&title).build();
             let toolbar = adw::ToolbarView::new();
             toolbar.add_top_bar(&header);
             toolbar.set_content(Some(page.widget()));
@@ -195,7 +206,12 @@ impl WebAppWindow {
             pop_up.connect_title_notify(glib::clone!(
                 #[weak]
                 window,
-                move |view| window.set_title(view.title().as_deref())
+                #[weak]
+                title,
+                move |view| {
+                    window.set_title(view.title().as_deref());
+                    title.set_title(view.title().as_deref().unwrap_or_default());
+                }
             ));
             pop_up.connect_close(glib::clone!(
                 #[weak]

@@ -121,7 +121,9 @@ buduje trzy osobne listy, żeby wyjątki jednej funkcji nie wyłączyły innej:
    allowlistę trackerów oraz witryny, dla których użytkownik wyłączył ochronę (przycisk tarczy).
 2. **`https`**: `HttpsUpgradePolicy` tworzy jedną regułę `make-https` dla każdego URL `http://`, a po niej
    wyjątki dla adresów IP, nazw jednoczłonowych i lokalnych (`localhost`, `.local`, `.lan`, `.internal`,
-   `.home.arpa`), wyjątków `https` z konfiguracji i hostów, dla których upgrade wcześniej zawiódł.
+   `.home.arpa`), wyjątków `https` z konfiguracji i hostów, dla których upgrade wcześniej zawiódł. Każdy
+   wzorzec wyjątku kończy się na hoście i opcjonalnym porcie, więc dane logowania w URL nie mogą udawać
+   zwolnionego hosta: `http://localhost:1@example.com/` prowadzi do `example.com` i jest podnoszony do HTTPS.
 3. **`links`**: `TrackingParameterRemover` tworzy jedną regułę na parametr śledzący. Reguła blokuje nawigację
    *dokumentu w ramce głównej*, która go niesie, poza witrynami zwolnionymi przez konfigurację.
 
@@ -172,7 +174,9 @@ desktop, którego linia `Exec=` uruchamia `induckgo --web-app <id>`.
 - **przekierowania i nawigacje skryptów** zostają, bo logowanie (Gmail przez `accounts.google.com`) i
   płatności kartą (strony 3-D Secure) przeskakują między witrynami;
 - **wyskakujące okna** otwierane przez aplikację (OAuth, potwierdzenie płatności) otwierają się w małym oknie
-  tej samej aplikacji.
+  tej samej aplikacji. Dzielą jej sesję, więc mają tę samą bramkę, mierzoną względem witryny, dla której okno
+  otwarto (linki na stronie 3-D Secure działają, kliknięty link do trzeciej witryny otwiera się w
+  przeglądarce), i ten sam wskaźnik witryny w nagłówku.
 
 Przekierowanie może wyprowadzić aplikację poza jej witrynę, dlatego podtytuł okna zawsze pokazuje host
 widocznej strony. Gdy strona należy do innej witryny, podtytuł zmienia kolor na ostrzegawczy i dostaje

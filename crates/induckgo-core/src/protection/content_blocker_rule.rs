@@ -114,6 +114,10 @@ impl UrlFilter {
     /// <https://webkit.org/blog/4062/targeting-domains-with-content-blockers/>
     pub const SUBDOMAIN_PREFIX: &'static str = "^[^:]+://+([^:/]+\\.)?";
     const DOMAIN_MATCH_SUFFIX: &'static str = "[:/]";
+    /// Where the authority of an exempted plain-HTTP URL must end: an optional port, then the path, which WebKit
+    /// always writes (at least `/`). Allowing anything else would let user info pose as the host:
+    /// `http://localhost:1@example.com/` is `example.com`, not `localhost`.
+    const PLAIN_HTTP_HOST_END: &'static str = "(:[0-9]+)?/";
 
     #[must_use]
     pub fn any_url() -> Self {
@@ -129,10 +133,10 @@ impl UrlFilter {
     /// Plain-HTTP URLs whose host is an IPv4 address.
     #[must_use]
     pub fn plain_http_ipv4_host() -> Self {
-        Self { regex: "^http://[0-9.]+([:/?#].*)?$".to_owned() }
+        Self { regex: format!("^http://[0-9.]+{}", Self::PLAIN_HTTP_HOST_END) }
     }
 
-    /// Plain-HTTP URLs whose host is an IPv6 address.
+    /// Plain-HTTP URLs whose host is an IPv6 address (user info cannot contain a literal `[`).
     #[must_use]
     pub fn plain_http_ipv6_host() -> Self {
         Self { regex: "^http://\\[".to_owned() }
@@ -141,13 +145,19 @@ impl UrlFilter {
     /// Plain-HTTP URLs whose host has no dot (`http://nas/`), which only resolve on a local network.
     #[must_use]
     pub fn plain_http_single_label_host() -> Self {
-        Self { regex: "^http://[^/:?#.]+([:/?#].*)?$".to_owned() }
+        Self { regex: format!("^http://[^/:?#.@]+{}", Self::PLAIN_HTTP_HOST_END) }
     }
 
-    /// Every URL on exactly `host`, subdomains excluded.
+    /// Plain-HTTP URLs on `domain` or its subdomains.
     #[must_use]
-    pub fn matching_exact_host(host: &str) -> Self {
-        Self { regex: format!("^[^:]+://+{}[:/]", Self::regex_escaped(host)) }
+    pub fn plain_http_on_domain(domain: &str) -> Self {
+        Self { regex: format!("^http://([^/:?#@]+\\.)?{}{}", Self::regex_escaped(domain), Self::PLAIN_HTTP_HOST_END) }
+    }
+
+    /// Plain-HTTP URLs on exactly `host`, subdomains excluded.
+    #[must_use]
+    pub fn plain_http_on_exact_host(host: &str) -> Self {
+        Self { regex: format!("^http://{}{}", Self::regex_escaped(host), Self::PLAIN_HTTP_HOST_END) }
     }
 
     /// URLs whose query (not fragment) contains the parameter `name`, with or without a value.

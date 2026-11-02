@@ -2,6 +2,8 @@
 
 use induckgo_core::navigation::https_upgrade_policy::HttpsUpgradePolicy;
 use induckgo_core::protection::content_blocker_rule::ContentBlockerRule;
+use regex::Regex;
+use regex::RegexBuilder;
 
 /// Given: the privacy configuration excludes `legacy-portal.com` from HTTPS upgrades.
 struct HttpsUpgradeScenario {
@@ -24,12 +26,40 @@ impl HttpsUpgradeScenario {
         rules
             .iter()
             .map(ContentBlockerRule::to_json)
-            .map(|rule| (rule["action"]["type"].to_string(), rule["trigger"]["url-filter"].to_string()))
+            .map(|rule| {
+                let filter = rule["trigger"]["url-filter"].as_str().unwrap_or_default().to_owned();
+                (rule["action"]["type"].as_str().unwrap_or_default().to_owned(), filter)
+            })
             .collect()
+    }
+
+    /// The exemption filters compiled as WebKit matches them: anywhere in the URL, case-insensitively.
+    fn when_exemptions_are_compiled(&self) -> PlainHttpExemptions {
+        let filters = self.when_upgrade_rules_are_built().into_iter().skip(1).map(|(_, filter)| filter);
+        PlainHttpExemptions {
+            filters: filters
+                .map(|filter| RegexBuilder::new(&filter).case_insensitive(true).build().expect("valid url-filter"))
+                .collect(),
+        }
     }
 
     fn when_navigating_to(&self, url: &str) -> NavigationOutcome {
         NavigationOutcome { url: url.to_owned(), upgraded: self.policy.upgraded(url) }
+    }
+}
+
+struct PlainHttpExemptions {
+    filters: Vec<Regex>,
+}
+
+impl PlainHttpExemptions {
+    fn then_keep_on_plain_http(&self, url: &str) {
+        assert!(self.filters.iter().any(|filter| filter.is_match(url)), "not exempted: {url}");
+    }
+
+    fn then_upgrade(&self, url: &str) {
+        let exempting: Vec<&str> = self.filters.iter().filter(|f| f.is_match(url)).map(Regex::as_str).collect();
+        assert!(exempting.is_empty(), "{url} exempted by {exempting:?}");
     }
 }
 
@@ -92,38 +122,57 @@ fn should_stop_upgrading_host_after_failed_upgrade() {
 fn should_upgrade_every_plain_http_request_before_it_is_sent() {
     let rules = HttpsUpgradeScenario::given_https_first_browsing().when_upgrade_rules_are_built();
 
-    assert_eq!(rules[0], (r#""make-https""#.to_owned(), r#""^http://""#.to_owned()));
-}
-
-#[test]
-fn should_keep_local_network_and_excluded_hosts_on_plain_http() {
-    let rules = HttpsUpgradeScenario::given_https_first_browsing()
-        .after_https_failed_for("https://old-blog.com/post")
-        .when_upgrade_rules_are_built();
-    let exceptions: Vec<&str> = rules[1..].iter().map(|(_, filter)| filter.as_str()).collect();
-
-    assert_eq!(
-        exceptions,
-        [
-            r#""^http://[0-9.]+([:/?#].*)?$""#,
-            r#""^http://\\[""#,
-            r#""^http://[^/:?#.]+([:/?#].*)?$""#,
-            r#""^[^:]+://+([^:/]+\\.)?localhost[:/]""#,
-            r#""^[^:]+://+([^:/]+\\.)?local[:/]""#,
-            r#""^[^:]+://+([^:/]+\\.)?lan[:/]""#,
-            r#""^[^:]+://+([^:/]+\\.)?internal[:/]""#,
-            r#""^[^:]+://+([^:/]+\\.)?home\\.arpa[:/]""#,
-            r#""^[^:]+://+([^:/]+\\.)?legacy-portal\\.com[:/]""#,
-            r#""^[^:]+://+old-blog\\.com[:/]""#,
-        ]
-    );
+    assert_eq!(rules[0], ("make-https".to_owned(), "^http://".to_owned()));
 }
 
 #[test]
 fn should_express_every_exception_as_ignore_previous_rules() {
     let rules = HttpsUpgradeScenario::given_https_first_browsing().when_upgrade_rules_are_built();
 
-    assert!(rules[1..].iter().all(|(action, _)| action == r#""ignore-previous-rules""#));
+    assert!(rules[1..].iter().all(|(action, _)| action == "ignore-previous-rules"));
+}
+
+#[test]
+fn should_keep_local_network_and_excluded_hosts_on_plain_http() {
+    let exemptions = HttpsUpgradeScenario::given_https_first_browsing()
+        .after_https_failed_for("https://old-blog.com/post")
+        .when_exemptions_are_compiled();
+
+    for url in [
+        "http://192.168.0.1/",
+        "http://127.0.0.1:8080/admin?x=1",
+        "http://[::1]/",
+        "http://nas/",
+        "http://nas:5000/files",
+        "http://localhost:3000/",
+        "http://printer.local/",
+        "http://router.home.arpa/",
+        "http://www.legacy-portal.com/",
+        "http://old-blog.com/other",
+    ] {
+        exemptions.then_keep_on_plain_http(url);
+    }
+}
+
+#[test]
+fn should_upgrade_public_sites_hiding_behind_user_info_that_looks_like_an_exempt_host() {
+    let exemptions = HttpsUpgradeScenario::given_https_first_browsing()
+        .after_https_failed_for("https://old-blog.com/post")
+        .when_exemptions_are_compiled();
+
+    for url in [
+        "http://x:y@example.com/",
+        "http://1:2@example.com/",
+        "http://192.168.0.1:80@example.com/",
+        "http://nas:x@example.com/",
+        "http://localhost:3000@example.com/",
+        "http://printer.local:x@example.com/",
+        "http://legacy-portal.com:x@example.com/",
+        "http://old-blog.com:x@example.com/",
+        "http://old-blog.com.example.com/",
+    ] {
+        exemptions.then_upgrade(url);
+    }
 }
 
 #[test]

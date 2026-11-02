@@ -56,9 +56,9 @@ impl HttpsUpgradePolicy {
     #[must_use]
     pub fn content_rules(&self) -> Vec<ContentBlockerRule> {
         let address_hosts = [UrlFilter::plain_http_ipv4_host(), UrlFilter::plain_http_ipv6_host()];
-        let local_names = DomainName::LOCAL_NETWORK_DOMAINS.into_iter().map(UrlFilter::matching_domain);
-        let excluded = self.excluded.domains().map(UrlFilter::matching_domain);
-        let failed = self.failed_hosts.iter().map(|host| UrlFilter::matching_exact_host(host.as_str()));
+        let local_names = DomainName::LOCAL_NETWORK_DOMAINS.into_iter().map(UrlFilter::plain_http_on_domain);
+        let excluded = self.excluded.domains().map(UrlFilter::plain_http_on_domain);
+        let failed = self.failed_hosts.iter().map(|host| UrlFilter::plain_http_on_exact_host(host.as_str()));
         let exemptions = address_hosts
             .into_iter()
             .chain([UrlFilter::plain_http_single_label_host()])

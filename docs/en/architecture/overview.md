@@ -119,7 +119,9 @@ therefore builds three separate lists, so the exceptions of one feature cannot d
    (shield button).
 2. **`https`** — `HttpsUpgradePolicy` emits one `make-https` rule for every `http://` URL, followed by
    exceptions for IP addresses, single-label and local names (`localhost`, `.local`, `.lan`, `.internal`,
-   `.home.arpa`), the configuration's `https` exceptions and hosts whose upgrade failed before.
+   `.home.arpa`), the configuration's `https` exceptions and hosts whose upgrade failed before. Every
+   exemption pattern ends at the host and an optional port, so user info cannot pose as an exempt host:
+   `http://localhost:1@example.com/` goes to `example.com` and is upgraded.
 3. **`links`** — `TrackingParameterRemover` emits one rule per tracking parameter that blocks a *top-frame
    document* navigation carrying it, except on the sites the configuration exempts.
 
@@ -171,7 +173,10 @@ runs `induckgo --web-app <id>`.
   links and ads never run inside the bank's session;
 - **redirects and script navigations** stay, because sign-in (Gmail via `accounts.google.com`) and card
   payments (3-D Secure pages) hop across sites;
-- **pop-ups** opened by the app (OAuth, payment confirmation) open in a small window of the same app.
+- **pop-ups** opened by the app (OAuth, payment confirmation) open in a small window of the same app. They
+  share the app's session, so they get the same gate, measured against the site the pop-up was opened for
+  (links inside a 3-D Secure page keep working, a clicked link to a third site opens in the browser), and
+  the same site indicator in their header.
 
 Because a redirect may leave the app's site, the window's subtitle always shows the host of the page on
 screen. When that page belongs to another site, the subtitle turns to the warning colour and gets an

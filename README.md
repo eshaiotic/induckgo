@@ -21,9 +21,10 @@ InDuckGo is an independent project. It is not affiliated with or endorsed by Duc
 
 There is no extension support — by design, and because WebKitGTK has no extension API.
 
-**Web apps.** *Install Site as App* (window menu) turns any site — your bank, your mailbox — into a desktop
-application with the site's icon. Each app has its own isolated session; a link you click inside it to
-another site opens in the browser, so the app's login never meets foreign pages.
+**Web apps.** *Install Site as App* (the button at the right end of the address bar, or the window menu)
+turns any site — your bank, your mailbox — into a desktop application with the site's icon. Each app has
+its own isolated session; a link you click inside it to another site opens in the browser, so the app's
+login never meets foreign pages.
 
 ## Status
 

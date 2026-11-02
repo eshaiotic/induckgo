@@ -159,7 +159,8 @@ starts over with an empty tab.
 
 ## 6. Web apps
 
-**Installing.** "Install Site as App" reads the page's title, manifest link and icon links with a script
+**Installing.** "Install Site as App" (the button at the right end of the address bar on every web page, or
+the window menu) reads the page's title, manifest link and icon links with a script
 running in an *isolated JavaScript world*, which the page itself cannot see or tamper with. The manifest and
 icons are downloaded without cookies, with size limits (512 KiB manifest, 2 MiB icon). Only PNG icons are
 decoded, and only after `PngHeader` confirmed sane dimensions (at most 2048 px per side), which stops

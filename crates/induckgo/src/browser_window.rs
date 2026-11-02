@@ -242,6 +242,12 @@ impl BrowserWindow {
     }
 
     fn connect_signals(self: &Rc<Self>) {
+        self.address.set_icon_tooltip_text(gtk::EntryIconPosition::Secondary, Some("Install Site as App"));
+        self.address.connect_icon_press(|entry, position| {
+            if position == gtk::EntryIconPosition::Secondary {
+                let _ = entry.activate_action("win.install-web-app", None);
+            }
+        });
         let browser = Rc::downgrade(self);
         self.address.connect_activate(move |entry| {
             let Some(browser) = browser.upgrade() else { return };
@@ -339,6 +345,11 @@ impl BrowserWindow {
             _ => None,
         };
         browser.address.set_icon_from_icon_name(gtk::EntryIconPosition::Primary, security_icon);
+        let is_installable = security_icon.is_some();
+        browser.address.set_icon_from_icon_name(
+            gtk::EntryIconPosition::Secondary,
+            is_installable.then_some(AppIcons::INSTALL_APP),
+        );
         browser.address.set_progress_fraction(if view.is_loading() { view.estimated_load_progress() } else { 0.0 });
         browser.set_action_enabled("back", view.can_go_back());
         browser.set_action_enabled("forward", view.can_go_forward());

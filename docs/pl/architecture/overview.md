@@ -159,7 +159,8 @@ a ich zapomnienie tylko osłabiłoby następną wizytę. Bieżące okno zaczyna 
 
 ## 6. Aplikacje webowe
 
-**Instalacja.** „Install Site as App” czyta tytuł strony, link do manifestu i linki do ikon skryptem
+**Instalacja.** „Install Site as App” (przycisk na prawym końcu paska adresu na każdej stronie WWW albo menu
+okna) czyta tytuł strony, link do manifestu i linki do ikon skryptem
 działającym w *izolowanym świecie JavaScript*, którego sama strona nie widzi i nie może zmienić. Manifest i
 ikony są pobierane bez cookies, z limitami rozmiaru (manifest 512 KiB, ikona 2 MiB). Dekodowane są tylko ikony
 PNG i tylko po tym, jak `PngHeader` potwierdzi rozsądne wymiary (najwyżej 2048 px na bok), co zatrzymuje

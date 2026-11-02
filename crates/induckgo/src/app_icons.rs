@@ -12,8 +12,10 @@ pub struct AppIcons {
 impl AppIcons {
     pub const APPLICATION: &'static str = "io.github.induckgo.InDuckGo";
     pub const FIRE: &'static str = "induckgo-fire-symbolic";
+    pub const INSTALL_APP: &'static str = "induckgo-install-app-symbolic";
     const APPLICATION_SVG: &'static str = include_str!("../../../assets/icons/io.github.induckgo.InDuckGo.svg");
     const FIRE_SVG: &'static str = include_str!("../../../assets/icons/induckgo-fire-symbolic.svg");
+    const INSTALL_APP_SVG: &'static str = include_str!("../../../assets/icons/induckgo-install-app-symbolic.svg");
     const LOG_DOMAIN: &'static str = "induckgo";
 
     pub fn new(paths: &InstallationPaths) -> Self {
@@ -22,7 +24,12 @@ impl AppIcons {
 
     /// Writes the icons (when changed) and makes GTK look them up; needs a display.
     pub fn install(&self) {
-        for (path, svg) in [(self.application_icon(), Self::APPLICATION_SVG), (self.fire_icon(), Self::FIRE_SVG)] {
+        let icons = [
+            (self.application_icon(), Self::APPLICATION_SVG),
+            (self.symbolic_icon(Self::FIRE), Self::FIRE_SVG),
+            (self.symbolic_icon(Self::INSTALL_APP), Self::INSTALL_APP_SVG),
+        ];
+        for (path, svg) in icons {
             let file = StoredFile::new(path);
             if file.read_text().as_deref() != Some(svg)
                 && let Err(error) = file.write(svg.as_bytes())
@@ -41,7 +48,7 @@ impl AppIcons {
         self.theme_directory.join("hicolor/scalable/apps").join(format!("{}.svg", Self::APPLICATION))
     }
 
-    fn fire_icon(&self) -> PathBuf {
-        self.theme_directory.join("hicolor/symbolic/apps").join(format!("{}.svg", Self::FIRE))
+    fn symbolic_icon(&self, name: &str) -> PathBuf {
+        self.theme_directory.join("hicolor/symbolic/apps").join(format!("{name}.svg"))
     }
 }

@@ -1,0 +1,10 @@
+//! InDuckGo Guard: protections on top of DuckDuckGo's, aimed at blocking and hiding more than Brave Shields.
+//!
+//! DuckDuckGo's tracker blocking (the `protection` module) stays the base. Guard adds community filter lists
+//! (ads, trackers, link-click pings, cookie notices), applied to a site's own requests as well as third parties, and
+//! switches on fingerprinting defences that DuckDuckGo's macOS configuration leaves to Safari.
+
+pub mod filter_list_source;
+pub mod fingerprint_hardening;
+pub mod guard_rule_list;
+pub mod pending_rule_changes;

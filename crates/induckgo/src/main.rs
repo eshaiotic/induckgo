@@ -8,6 +8,8 @@ mod catalog_files;
 mod download_tracker;
 mod error_page_view;
 mod external_launcher;
+mod feed_document;
+mod filter_list_feed;
 mod find_bar;
 mod http_client;
 mod induckgo_application;

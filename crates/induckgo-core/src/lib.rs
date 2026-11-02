@@ -7,6 +7,7 @@
 
 pub mod document;
 pub mod download;
+pub mod guard;
 pub mod identity;
 pub mod launch;
 pub mod navigation;

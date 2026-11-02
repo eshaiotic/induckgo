@@ -42,6 +42,10 @@ impl StoredFile {
             .ok()
     }
 
+    pub fn read_bytes(&self) -> Option<Vec<u8>> {
+        fs::read(&self.path).ok()
+    }
+
     pub fn read_text(&self) -> Option<String> {
         fs::read_to_string(&self.path).ok()
     }

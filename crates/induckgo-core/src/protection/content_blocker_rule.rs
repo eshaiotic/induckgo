@@ -20,10 +20,14 @@ pub enum ResourceType {
     SvgDocument,
     Media,
     Popup,
+    /// `<a ping>` reports, which tell a site's analytics which link you clicked. (WebKitGTK files
+    /// `navigator.sendBeacon` under `raw`, with every other script request.)
+    Ping,
 }
 
 impl ResourceType {
-    /// Maps the TDS request-type vocabulary; types WebKit cannot distinguish (e.g. `ping`) have no mapping.
+    /// Maps the TDS request-type vocabulary as `TrackerRadarKit` does, which leaves other types (e.g. `ping`)
+    /// unmapped.
     #[must_use]
     pub fn from_tds_name(name: &str) -> Option<Self> {
         match name {
@@ -48,6 +52,7 @@ impl ResourceType {
             Self::SvgDocument => "svg-document",
             Self::Media => "media",
             Self::Popup => "popup",
+            Self::Ping => "ping",
         }
     }
 }

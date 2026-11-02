@@ -11,8 +11,9 @@ InDuckGo is an independent project. It is not affiliated with or endorsed by Duc
 | Protection | How it works |
 |---|---|
 | Third-party trackers | DuckDuckGo's Tracker Data Set is translated into WebKit content-blocking rules (port of `TrackerRadarKit`). |
-| Breakage | DuckDuckGo's privacy configuration supplies per-site exceptions so sites keep working; the shield button switches protection off for one site. |
-| Fingerprinting, GPC | DuckDuckGo Content Scope Scripts run in every frame and announce Global Privacy Control. |
+| Breakage | DuckDuckGo's privacy configuration supplies per-site exceptions so sites keep working; the shield button (in a web app: *Protect This Site* in its menu) switches protection off for one site. |
+| Fingerprinting, GPC | DuckDuckGo Content Scope Scripts run in every frame; InDuckGo Guard switches on the canvas, audio, screen and referrer defences DuckDuckGo leaves off, and sends the `Sec-GPC: 1` header. |
+| Ads, trackers, cookie notices | InDuckGo Guard downloads EasyList, EasyPrivacy, uBlock Origin's, Peter Lowe's, Polish and cookie-notice filter lists and applies them to a site's own requests too. |
 | Cross-site cookies | Third-party cookies are refused; WebKit Intelligent Tracking Prevention is on. |
 | Tracking links | A navigation carrying `utm_*`, `fbclid`, `gclid`, ... is stopped before it leaves the machine and reloaded without them. |
 | Plain HTTP | Navigations are upgraded to HTTPS; if a site has no HTTPS, a banner asks before loading it insecurely. |
@@ -88,3 +89,6 @@ cargo audit                     # dependency vulnerabilities
 - Content Scope Scripts 20.0.0 — Apache-2.0, vendored in `assets/content-scope-scripts` with its licence.
 - Privacy configuration — Apache-2.0, downloaded at runtime.
 - Tracker Data Set — **CC BY-NC-SA 4.0** (non-commercial), downloaded at runtime, never committed.
+- InDuckGo Guard's filter lists — GPL-3.0, CC BY-SA 3.0, CC BY 3.0, CC BY-NC-SA 4.0 or their publisher's terms,
+  downloaded at runtime, never committed.
+- adblock-rust 0.13.5 — MPL-2.0, compiled in unmodified (source: <https://github.com/brave/adblock-rust>).

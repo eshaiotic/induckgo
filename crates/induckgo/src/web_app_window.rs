@@ -11,10 +11,12 @@ use adw::prelude::AdwApplicationWindowExt;
 use adw::prelude::AdwDialogExt;
 use adw::prelude::AlertDialogExt;
 use adw::prelude::AlertDialogExtManual;
+use gio::prelude::ActionMapExt;
 use gio::prelude::ActionMapExtManual;
 use gtk::prelude::Cast;
 use gtk::prelude::GtkWindowExt;
 use gtk::prelude::ObjectExt;
+use gtk::prelude::ToVariant;
 use gtk::prelude::WidgetExt;
 use induckgo_core::page_zoom::zoom_level::ZoomLevel;
 use induckgo_core::web_app::installed_web_app::InstalledWebApp;
@@ -45,6 +47,9 @@ pub struct WebAppWindow {
     page: Rc<PageView>,
     zoom: ZoomControls,
     toasts: adw::ToastOverlay,
+    /// "Protect This Site" in the menu, the app's counterpart of the browser's shield: a web app has its own
+    /// session, so it is the only way to switch protections off where they break the app.
+    site_protection: gio::SimpleAction,
 }
 
 impl WebAppWindow {
@@ -62,6 +67,7 @@ impl WebAppWindow {
             page,
             zoom: ZoomControls::new(),
             toasts: adw::ToastOverlay::new(),
+            site_protection: gio::SimpleAction::new_stateful("protect-site", None, &true.to_variant()),
         });
         web_app.build_layout();
         web_app.install_actions();
@@ -98,6 +104,7 @@ impl WebAppWindow {
         let web_app = Rc::downgrade(self);
         menu.set_create_popup_func(move |button| {
             if let Some(web_app) = web_app.upgrade() {
+                web_app.show_site_protection();
                 button.set_menu_model(Some(&Self::menu_model(web_app.page.zoom_level())));
             }
         });
@@ -126,6 +133,9 @@ impl WebAppWindow {
     fn menu_model(zoom: ZoomLevel) -> gio::Menu {
         let menu = gio::Menu::new();
         menu.append_item(&ZoomControls::menu_row(zoom));
+        let site = gio::Menu::new();
+        site.append(Some("Protect This Site"), Some("win.protect-site"));
+        menu.append_section(None, &site);
         let app = gio::Menu::new();
         app.append(Some("Open Page in Browser"), Some("win.open-in-browser"));
         app.append(Some("Clear App Data…"), Some("win.fire"));
@@ -180,6 +190,27 @@ impl WebAppWindow {
                 .build();
             self.window.add_action_entries([action]);
         }
+        let web_app = Rc::downgrade(self);
+        self.site_protection.connect_change_state(move |action, requested| {
+            let Some(web_app) = web_app.upgrade() else { return };
+            let (Some(protected), Some(host)) = (requested.and_then(glib::Variant::get::<bool>), web_app.page.host())
+            else {
+                return;
+            };
+            action.set_state(&protected.to_variant());
+            let web_view = web_app.page.web_view().clone();
+            web_app.context.session.set_site_protected(&host, protected, move || web_view.reload());
+        });
+        self.window.add_action(&self.site_protection);
+    }
+
+    /// Ticks "Protect This Site" for the page on screen; a page without a host (an error page) has nothing to
+    /// switch.
+    fn show_site_protection(&self) {
+        let host = self.page.host();
+        self.site_protection.set_enabled(host.is_some());
+        let protected = host.as_deref().is_none_or(|host| self.context.session.is_site_protected(host));
+        self.site_protection.set_state(&protected.to_variant());
     }
 
     /// A clicked link to a site other than `site_url`'s opens in the browser; see [`WebAppNavigationPolicy`].

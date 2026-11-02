@@ -42,6 +42,10 @@ Two more goals shape the design:
 | Application ID | The D-Bus name of a running GTK application, e.g. `io.github.induckgo.InDuckGo`. GTK starts only one process per ID. |
 | Desktop entry | A `.desktop` file in `~/.local/share/applications` that puts an application into the desktop's menu. |
 | Fire | The button that erases a profile's browsing data in one click. |
+| InDuckGo Guard | InDuckGo's own protections on top of DuckDuckGo's: community filter lists, the fingerprinting defences DuckDuckGo leaves off, and the GPC header (§5.6). |
+| Filter list | A text file of blocking and hiding rules in Adblock Plus syntax (`\|\|ads.example^` blocks a domain, `##.ad` hides elements, `@@` marks an exception), maintained by volunteers. uBlock Origin, Brave and AdGuard read the same lists. |
+| Fingerprinting | Recognising a browser without cookies, from what it gives away: how it draws a canvas, how its audio stack rounds numbers, its screen and fonts. |
+| Link-click ping | The request `<a ping="…">` sends when a link is clicked, telling the site's analytics which link it was. |
 
 ## 3. Two crates
 
@@ -83,8 +87,8 @@ the strongest separation Linux offers without containers: a crash, a memory leak
 bank app cannot touch the browser. The desktop also sees each app as a separate application (its own dock
 icon, window grouping through `StartupWMClass`), which is what "install as app" promises.
 
-The only shared data is the **protection feed** in `~/.cache/induckgo/protections`: the TDS and the privacy
-configuration. Every process reads it. A download replaces a file atomically (write `name.part`, then
+The only shared data is the **protection feed** in `~/.cache/induckgo/protections`: the TDS, the privacy
+configuration and Guard's filter lists (`filter-lists/*.txt`). Every process reads it. A download replaces a file atomically (write `name.part`, then
 rename), so a process never reads half a file.
 
 Before deleting a profile or uninstalling an app, InDuckGo asks D-Bus whether its application ID is still
@@ -108,6 +112,9 @@ running (`RunningInstances`) and refuses to delete data that a live process uses
 Pages do not load until protections are active (`ProfileSession::when_protected`), so the first page of a
 new profile is never loaded unprotected.
 
+`FilterListFeed` downloads Guard's filter lists under the same rules (§5.6). Both feeds share `FeedDocument`,
+which keeps the last good copy of one document and replaces it only with a download it recognises.
+
 ### 5.2 Three rule lists
 
 WebKit's `ignore-previous-rules` action (an exception) only cancels rules *of its own list*. InDuckGo
@@ -116,7 +123,7 @@ therefore builds three separate lists, so the exceptions of one feature cannot d
 1. **`trackers`** — `ContentBlockerRulesBuilder`, a port of DuckDuckGo's `TrackerRadarKit`, blocks
    third-party requests to tracking domains, honouring the TDS allow-rules, the configuration's
    `contentBlocking` exceptions, the tracker allowlist, and the sites the user switched protection off for
-   (shield button).
+   (shield button; in a web app, *Protect This Site* in its menu).
 2. **`https`** — `HttpsUpgradePolicy` emits one `make-https` rule for every `http://` URL, followed by
    exceptions for IP addresses, single-label and local names (`localhost`, `.local`, `.lan`, `.internal`,
    `.home.arpa`), the configuration's `https` exceptions and hosts whose upgrade failed before. Every
@@ -127,7 +134,7 @@ therefore builds three separate lists, so the exceptions of one feature cannot d
 
 `PageProtections` compiles each list with WebKit's `UserContentFilterStore`. Compiling the tracker list takes
 about a second, so the compiled result is kept on disk next to a fingerprint (hash) of the source; an
-unchanged list is loaded instead of compiled.
+unchanged list is loaded instead of compiled. InDuckGo Guard adds three more lists of its own (§5.6).
 
 Even an unchanged tracker list costs something: building its 7,000 rules and serializing them (4.7 MB of
 JSON) to compute the fingerprint takes 0.1–0.2 s of processor time, more on a busy machine. That work runs
@@ -166,8 +173,8 @@ few causes a person can act on (`FailureCause` in core):
 - file not found.
 
 The page names the problem in one heading, says which site it concerns and lists what to check. It offers
-only actions that help: Try Again or Reload, Search DuckDuckGo for a host that does not exist, and Go to Home
-Page for an empty 404. It is drawn in the browser's current light or dark style with the desktop's accent
+only actions that help: Try Again or Reload, a search with the profile's search engine for a host that does not
+exist, and Go to Home Page for an empty 404. It is drawn in the browser's current light or dark style with the desktop's accent
 colour. The page is loaded as WebKit's *alternate HTML* for the failed address, so the address bar, Reload and
 Back behave as for the page that failed.
 
@@ -195,7 +202,8 @@ forms and every remote load. Retry links are only emitted for `http`, `https` an
 
 `ContentScopeScript` fills the C-S-S template with the privacy configuration, the user's unprotected sites
 and the preferences (GPC on, a random session key and message secret per process, the UI language). It runs
-at document start in every frame, in the page's own JavaScript world, as DuckDuckGo's macOS app does.
+at document start in every frame, in the page's own JavaScript world, as DuckDuckGo's macOS app does. The
+configuration it embeds has Guard's fingerprinting defences switched on (§5.6).
 
 Because every frame parses the embedded configuration again, `ContentScopeScript` embeds only the features
 the bundled `apple` build runs (`platformSupport.apple` plus their `featureConfigDependencies`). The bundle
@@ -211,6 +219,111 @@ The Fire button (in each window's header) closes the profile's other windows and
 profile's website data — cookies, storage, cache, favicons, the zoom given to sites — except the **HSTS** records: those remember
 which sites demand HTTPS, and forgetting them would only weaken the next visit. The current window then
 starts over with an empty tab.
+
+### 5.6 InDuckGo Guard
+
+![Filter lists are downloaded from their publishers, validated and cached; the core groups them into three Guard rule lists identified by a fingerprint of their inputs; PageProtections loads a current compiled copy or builds and compiles a changed list on a worker thread; the privacy configuration is hardened before the content scope script is rendered; a WebKit feature sends the GPC header](../../assets/diagrams/architecture-guard-pipeline.en.svg)
+
+DuckDuckGo's rules block the trackers DuckDuckGo has catalogued, and only when they load as a third party.
+Brave Shields also read community filter lists, which is why Brave blocked more in our measurement. Guard
+closes that gap and goes past it in four ways: more lists, rules that also apply to a site's own requests,
+fingerprinting defences DuckDuckGo leaves off, and the GPC header.
+
+**Filter lists.** `FilterListFeed` downloads nine lists from their publishers. Their licences do not fit an
+Apache-2.0 package, so, like the TDS, they are never bundled:
+
+| List | Blocks | Licence |
+|---|---|---|
+| EasyList | ads | GPL-3.0 or CC BY-SA 3.0 |
+| EasyPrivacy | trackers and analytics | GPL-3.0 or CC BY-SA 3.0 |
+| uBlock filters, Privacy, Badware risks | ads, trackers, scam and malware sites | GPL-3.0 |
+| uBlock filters – Unbreak | nothing: exceptions that repair sites the other lists break | GPL-3.0 |
+| Peter Lowe's list | ad and tracking servers | the publisher's terms (pgl.yoyo.org) |
+| Polish Filters | the ads of Polish sites | CC BY-NC-SA 4.0 |
+| EasyList Cookie List | cookie consent notices | CC BY 3.0 |
+
+A download replaces the cached copy only if its first line is a list header or comment, so a hotel Wi-Fi login
+page served in its place is rejected. One list that fails to refresh keeps its old copy and does not stop the
+others.
+
+`GuardRuleList` (core) groups the lists into three WebKit rule lists: `guard-ads` (EasyList, uBlock filters,
+Badware risks, Peter Lowe, Polish Filters), `guard-privacy` (EasyPrivacy, uBlock Privacy) and
+`guard-annoyances` (the cookie list). There are three for the same two WebKit limits that separate DuckDuckGo's
+lists: a list holds at most 150,000 rules, and an exception only cancels rules of its own list. That is why
+uBlock's Unbreak exceptions are read into every list, and why every list ends with one rule that stands it down
+on the sites the user switched protection off for. Brave's `adblock` crate (MPL-2.0, the converter Brave uses
+for its iOS browser) turns Adblock Plus syntax into WebKit JSON. Filters without `$third-party` also apply to a
+site's own requests and pages; Brave Shields do that only in their "aggressive" mode. `guard-privacy` also
+blocks every link-click ping.
+
+Three findings shaped the conversion:
+
+- `adblock` closes its output with an exception for first-party documents, so that no filter can block the page
+  the user asked for. WebKit decides which elements a page hides on that same load, so at the end of the list
+  the exception cancels every element-hiding rule. In a test page, a hidden `.ad_banner` stayed visible
+  until `GuardRuleList` moved the exception ahead of the first hiding rule.
+- WebKit rejects a list of more than 150,000 rules, and also an empty one ("Empty extension"). Should lists
+  outgrow the limit, `GuardRuleList` drops blocking rules just before the first exception and keeps every
+  exception. A list with nothing downloaded is not compiled at all (`has_rules`).
+- WebKitGTK files `navigator.sendBeacon` under `raw`, with every other script request, and only `<a ping>`
+  under `ping`. Beacons to known trackers are blocked by address like any request. Blocking all beacons
+  would also drop what web apps send when a tab closes (a draft, a read receipt), so Guard does not.
+
+**Compiling without slowing pages down.** Converting the three lists takes 0.2 s of processor time and about
+75 MB of memory at its peak. Compiling them in WebKit takes about 9 s. Neither may delay a page, so a Guard list
+is identified by a **fingerprint of its inputs**: the texts of its filter lists, the user's unprotected sites and
+a conversion revision. Computing it takes under a millisecond. When the stored compiled copy was made from the
+same inputs, it is loaded and nothing is converted: a start with unchanged lists protects pages in 0.5 s. When
+a list changed, it is built on a worker thread and compiled in the background, and the previous compiled copy
+protects pages in the meantime. The user's shield is the exception, in both directions, because every Guard
+list carries the user's unprotected sites. When the user switches protection off for a site, the previous copy
+would go on blocking that very site, so the changed Guard lists are left out for those few seconds while
+DuckDuckGo's lists stay active, and the page reloads at once. When the user switches it back on, the previous
+copy still exempts the site, so the page reloads only once the new lists are compiled, about 10 s later.
+Rebuilds overlap (a background list refresh can start while the lists of the user's click still compile), and
+a newer rebuild supersedes an older one. So these promises, a reload and Guard left out, are kept by the profile
+(`PendingRuleChanges`), not by the rebuild that made them, and whichever rebuild activates the rules keeps them.
+Without this, a refresh that landed during those seconds made the reload vanish. Serialising rules one by one,
+instead of building a
+`serde_json::Value` of the whole list first, cut the peak memory from 243 MB to 84 MB. This matters because
+glibc keeps the memory of the worker thread.
+
+**Fingerprinting defences.** DuckDuckGo's macOS configuration leaves the canvas, audio, battery, screen size,
+temporary storage and referrer defences of C-S-S off, because Safari's WebKit adds noise of its own on macOS;
+WebKitGTK does not. `FingerprintHardening` (core) switches them on and keeps DuckDuckGo's site exceptions
+(for example banks whose fraud checks read the canvas) and settings. Canvas noise also waits for the
+`additionalEnabledCheck` setting, which DuckDuckGo's macOS configuration does not contain. Measured: canvas and
+audio readouts differ in every session, and stay identical within a page, so sites that draw do not break.
+
+**GPC header.** C-S-S only sets `navigator.globalPrivacyControl`, which a site's servers never see. WebKit's
+`GlobalPrivacyControl` feature, off by default, sends `Sec-GPC: 1` with every request. That header is the form
+laws such as California's CCPA recognise. Measured: the header arrives.
+
+**Measured against Brave.** Twelve news, shopping and weather sites (six Polish, six international) were loaded
+once each through a logging proxy, which records only the host names a browser connects to. A host counts as a
+tracker when Disconnect's list files it under advertising, analytics, fingerprinting, social or cryptomining.
+"Third-party" means any host outside the visited site's registrable domain.
+
+| Browser (November 2026) | Tracker hosts | Third-party hosts |
+|---|---|---|
+| Brave 1.98.63, Shields at their default ("standard") | 6 | 82 |
+| InDuckGo before Guard (DuckDuckGo protections only) | 14 | 146 |
+| InDuckGo with Guard | 3 | 70 |
+
+The three hosts that still got through are `pub.doubleverify.com` (BBC) and `securepubads.g.doubleclick.net`
+(weather.com), which Brave let through as well, and `m.stripe.network` (CNN), Stripe's fraud check for payments.
+Brave's CNN load reached no third-party host at all, which looks like the site refusing a headless browser. Leaving
+CNN out of both sums, the figures are 6 / 82 for Brave and 2 / 57 for Guard. This is one load per site, not a
+benchmark, but it shows the direction: Guard contacts half as many trackers as Brave.
+
+**What Guard does not do.**
+
+- uBlock Origin's scriptlets (`##+js(…)`) and `$redirect`, `$removeparam` and `$csp` filters have no content
+  blocker equivalent and are dropped in conversion. Brave runs scriptlets.
+- Pages can still probe which fonts are installed. WebKit's `ShouldAllowUserInstalledFonts` flag made no
+  difference, since Linux distributions install fonts system-wide. Brave limits fonts in its standard mode.
+- AdGuard's Tracking Protection list (406,000 rules) exceeds WebKit's limit for one list.
+- Each profile and web app compiles its own copy of the Guard lists, about 67 MB in its cache directory.
 
 ## 6. Web apps
 
@@ -291,29 +404,36 @@ code depended on it.
 |---|---|
 | The `decide-policy` signal cannot tell a main-frame navigation from an iframe one, and shows no `Sec-Fetch-*` headers. | HTTPS upgrades and link cleaning are done with content rules, not in the navigation hook. |
 | `make-https` works before the request, in all frames. | It is the HTTPS upgrade mechanism. |
-| `redirect` (with `remove-params`) and `modify-headers` compile but have no effect. | Tracking parameters are blocked and the page reloads the cleaned URL; no `Sec-GPC` header can be sent. |
+| `redirect` (with `remove-params`) and `modify-headers` compile but have no effect. | Tracking parameters are blocked and the page reloads the cleaned URL. |
+| The `GlobalPrivacyControl` feature (status "testable", off by default) sends `Sec-GPC: 1` with every request. | Guard switches it on; it is how the GPC header is sent. |
 | `block` with `resource-type: document` and `load-context: top-frame` blocks only main-frame navigations, before the request, and reports policy error 104. | This is how `links` rules work. |
 | For top-frame loads `unless-domain` is matched against the destination. | Exceptions of `links` rules name destination sites. |
-| `ignore-previous-rules` only reaches back within its own rule list. | Three separate lists. |
+| `ignore-previous-rules` only reaches back within its own rule list. | Separate lists for trackers, HTTPS, links and each Guard group. |
+| An `ignore-previous-rules` rule that matches a page's own document load also cancels the `css-display-none` rules before it. | Guard moves `adblock`'s first-party-document exception ahead of the hiding rules. |
+| A list may hold at most 150,000 rules; an empty list is rejected ("Empty extension"); `url-filter` has no `\|` alternation. | Guard groups its filter lists into three lists and fits each under the limit. |
+| `resource-type: ping` matches `<a ping>` reports only; `navigator.sendBeacon` and `fetch(…, {keepalive})` are `raw`. | Guard blocks link-click pings; beacons are blocked by address only. |
+| Compiling Guard's three lists (91,000, 59,000 and 27,000 rules) takes about 3, 4 and 1.5 s. | Compiled lists are stored and reused; pages never wait for them. |
 | Switching off `gtk-enable-animations` inside the application leaves `prefers-reduced-motion` of pages unchanged. | Interface animations (tabs, dialogs, banners, toasts, find bar) are off in every InDuckGo process for a snappier interface, and sites learn nothing new about the user from it. |
 
 ## 9. Known limitations
 
 | Limitation | Why | Revisit when |
 |---|---|---|
-| No `Sec-GPC` HTTP header; GPC is announced only through `navigator.globalPrivacyControl`. | WebKitGTK ignores `modify-headers` rules and offers no request-header hook in the UI process. | WebKitGTK implements `modify-headers`. |
 | Tracking parameters are not removed when the page that started the navigation is on an exception list (the macOS app checks the initiator). | Content rules see only the destination. | WebKitGTK exposes the initiator in rules or the navigation hook. |
 | A `POST` form whose action URL carries a tracking parameter is retried as a `GET` of the cleaned URL. | The blocked navigation is reloaded with `load_uri`. | Real breakage is reported. |
 | Permission answers are not remembered. | Asking every time is the safe default. | Per-profile permission storage is designed. |
-| No session restore, bookmarks or history window yet; no automatic cookie-consent handling (DuckDuckGo's autoconsent). | Not yet built. | The next milestone. |
+| No session restore, bookmarks or history window yet. Guard hides cookie notices but does not answer them (DuckDuckGo's autoconsent clicks "reject"), so a site that locks scrolling until answered stays locked. | Not yet built. | The next milestone. |
+| Guard does not run uBlock Origin's scriptlets, nor hide which fonts are installed (§5.6). | WebKit content blockers cannot express scriptlets; WebKitGTK offers no font restriction. | WebKitGTK gains either. |
 | The user interface is English only. | No translation catalogue yet. | gettext is introduced. |
 | Every profile appears as a separate application in the dock. | One application ID per profile process. | Users prefer grouping. |
 | A sign-in that starts with a *clicked link* to another site inside a web app opens in the browser. | Clicked off-site links leave the app on purpose (phishing). Most sign-ins redirect or use a pop-up and keep working. | A real app needs it; then an allowlist per app. |
 
 ## 10. Trust boundaries
 
-- **Network data** (TDS, configuration, manifests, icons) is size-limited, parsed defensively and validated
-  before use. The TDS and configuration are downloaded over HTTPS from DuckDuckGo's CDN only.
+- **Network data** (TDS, configuration, filter lists, manifests, icons) is size-limited, parsed defensively and
+  validated before use. The TDS and configuration are downloaded over HTTPS from DuckDuckGo's CDN only, the
+  filter lists over HTTPS from their publishers. A filter list can only block or hide: the conversion keeps no
+  scriptlets, so a hostile list could break sites but never run code in them.
 - **Web pages** never see the installer's collector script (isolated world). C-S-S messages get only fixed
   answers, and pages cannot open other applications without a user gesture.
 - **Files** InDuckGo writes are created with `0600` permissions in `0700` directories. They are written to a

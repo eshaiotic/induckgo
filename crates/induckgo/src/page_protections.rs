@@ -1,15 +1,17 @@
 //! Everything WebKit injects into the pages of one profile: compiled rule lists and the content scope script.
 //!
-//! Three rule lists, each compiled separately because `ignore-previous-rules` only reaches back within its
-//! own list: tracker blocking (the Tracker Data Set), HTTPS upgrades and tracking-parameter detection.
-//! Compiling the tracker list takes about a second, so every compiled list is kept in a per-profile
-//! `UserContentFilterStore` together with a fingerprint of its source; an unchanged list is loaded instead.
+//! Several rule lists, each compiled separately because `ignore-previous-rules` only reaches back within its
+//! own list: tracker blocking (the Tracker Data Set), HTTPS upgrades, tracking-parameter detection and the
+//! InDuckGo Guard lists. Compiling a large list takes seconds, so every compiled list is kept in a per-profile
+//! `UserContentFilterStore` together with a fingerprint of what it was made from; an unchanged list is loaded
+//! instead. A Guard list's source is not even built then: building it is the costly part.
 
 use std::collections::hash_map::DefaultHasher;
 use std::hash::Hash;
 use std::hash::Hasher;
 use std::path::Path;
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use induckgo_core::protection::content_blocker_rule::ContentBlockerRule;
 use induckgo_core::protection::content_scope_message::ContentScopeMessage;
@@ -40,7 +42,7 @@ impl RuleList {
         PreparedRuleList {
             name: self.name,
             fingerprint: Self::fingerprint(&source),
-            source,
+            source: RuleSource::Built(source),
             is_empty: self.rules.is_empty(),
         }
     }
@@ -52,12 +54,35 @@ impl RuleList {
     }
 }
 
-/// A rule list serialized for WebKit, with a fingerprint telling whether the stored compiled copy is current.
+/// A rule list ready for WebKit, with a fingerprint telling whether the stored compiled copy is current.
 pub struct PreparedRuleList {
     name: &'static str,
-    source: String,
+    source: RuleSource,
     fingerprint: String,
     is_empty: bool,
+}
+
+impl PreparedRuleList {
+    /// A list whose source is costly to build: `build` runs on a worker thread, and only when the stored
+    /// compiled copy was not made from what `fingerprint` identifies.
+    pub fn built_on_demand(
+        name: &'static str,
+        fingerprint: String,
+        is_empty: bool,
+        build: impl Fn() -> String + Send + Sync + 'static,
+    ) -> Self {
+        Self { name, source: RuleSource::OnDemand(Arc::new(build)), fingerprint, is_empty }
+    }
+
+    pub fn name(&self) -> &'static str {
+        self.name
+    }
+}
+
+/// The JSON WebKit compiles a list from.
+enum RuleSource {
+    Built(String),
+    OnDemand(Arc<dyn Fn() -> String + Send + Sync>),
 }
 
 pub struct PageProtections {
@@ -138,6 +163,22 @@ impl PageProtections {
         filters
     }
 
+    /// Splits `lists` into the compiled copies that are still current (loaded at once) and the lists that must
+    /// be compiled again; empty lists are dropped.
+    pub async fn current_or_stale(
+        &self,
+        lists: Vec<PreparedRuleList>,
+    ) -> (Vec<UserContentFilter>, Vec<PreparedRuleList>) {
+        let (mut current, mut stale) = (Vec::new(), Vec::new());
+        for list in lists.into_iter().filter(|list| !list.is_empty) {
+            match self.current(&list).await {
+                Some(filter) => current.push(filter),
+                None => stale.push(list),
+            }
+        }
+        (current, stale)
+    }
+
     /// Swaps in a new set of compiled lists; pages pick them up on their next load.
     pub fn activate(&self, filters: &[UserContentFilter]) {
         self.content_manager.remove_all_filters();
@@ -146,15 +187,30 @@ impl PageProtections {
         }
     }
 
+    /// The stored compiled copy of `list`, when it was made from what the list's fingerprint identifies.
+    async fn current(&self, list: &PreparedRuleList) -> Option<UserContentFilter> {
+        if self.marker(list.name).read_text().as_deref() != Some(list.fingerprint.as_str()) {
+            return None;
+        }
+        self.filter_store.load_future(list.name).await.ok()
+    }
+
     async fn compiled(&self, list: &PreparedRuleList) -> Result<UserContentFilter, glib::Error> {
-        let marker = self.marker(list.name);
-        if marker.read_text().as_deref() == Some(list.fingerprint.as_str())
-            && let Ok(filter) = self.filter_store.load_future(list.name).await
-        {
+        if let Some(filter) = self.current(list).await {
             return Ok(filter);
         }
-        let filter = self.filter_store.save_future(list.name, &glib::Bytes::from(list.source.as_bytes())).await?;
-        if let Err(error) = marker.write(list.fingerprint.as_bytes()) {
+        let source = match &list.source {
+            RuleSource::Built(source) => glib::Bytes::from(source.as_bytes()),
+            RuleSource::OnDemand(build) => {
+                let build = Arc::clone(build);
+                let source = gio::spawn_blocking(move || build()).await.map_err(|_| {
+                    glib::Error::new(gio::IOErrorEnum::Failed, &format!("building rule list {} failed", list.name))
+                })?;
+                glib::Bytes::from_owned(source)
+            }
+        };
+        let filter = self.filter_store.save_future(list.name, &source).await?;
+        if let Err(error) = self.marker(list.name).write(list.fingerprint.as_bytes()) {
             glib::g_warning!(Self::LOG_DOMAIN, "cannot record rule list fingerprint: {error}");
         }
         Ok(filter)

@@ -11,10 +11,17 @@ Copyright (c) 2010-2021 Duck Duck Go, Inc., licensed under the Apache License, V
   - TrackerRadarKit and parts of the DuckDuckGo macOS browser, whose rule building, link cleaning and
     HTTPS upgrade logic crates/induckgo-core ports to Rust.
 
+This product includes adblock-rust 0.13.5 by Brave Software, Inc., licensed under the Mozilla Public
+License, Version 2.0, compiled in unmodified. Its source code is available at
+https://github.com/brave/adblock-rust and https://crates.io/crates/adblock.
+
 Data downloaded at run time, not distributed with InDuckGo:
 
   - DuckDuckGo Tracker Data Set, licensed CC BY-NC-SA 4.0 (non-commercial use only);
-  - DuckDuckGo privacy configuration, licensed under the Apache License, Version 2.0.
+  - DuckDuckGo privacy configuration, licensed under the Apache License, Version 2.0;
+  - InDuckGo Guard's filter lists, from their publishers: EasyList and EasyPrivacy (GPL-3.0 or CC BY-SA 3.0),
+    EasyList Cookie List (CC BY 3.0), uBlock Origin's filter lists (GPL-3.0), Peter Lowe's Ad and tracking
+    server list (terms at https://pgl.yoyo.org/adservers/), Polish Filters (CC BY-NC-SA 4.0).
 
 "DuckDuckGo" is a trademark of Duck Duck Go, Inc. InDuckGo is an independent project, not affiliated with
 or endorsed by Duck Duck Go, Inc.

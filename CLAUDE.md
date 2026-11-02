@@ -16,10 +16,10 @@ This file is an index; the content lives in the linked documents.
 
 ## Code map
 
-- `crates/induckgo-core` — domain logic without GTK/WebKit: protection rules, profiles, web apps, page zoom, launch, downloads.
+- `crates/induckgo-core` — domain logic without GTK/WebKit: protection rules, Guard filter lists, profiles, web apps, zoom, launch.
 - `crates/induckgo-core/tests` — one OO scenario test file per domain type.
 - `crates/induckgo` — GTK 4 + libadwaita app: adapters that carry out core decisions in WebKitGTK/libsoup/GIO.
-- `assets/` — vendored Content Scope Scripts (Apache-2.0), app icons and the error page template; never the Tracker Data Set.
+- `assets/` — vendored Content Scope Scripts (Apache-2.0), app icons and the error page template; never the TDS or filter lists.
 - `packaging/` — PKGBUILD, rpm spec, deb/AppImage assembly, desktop entry and AppStream metadata.
 
 ## Commands
@@ -34,4 +34,5 @@ This file is an index; the content lives in the linked documents.
 ## Gotchas
 
 - Never call `soup::tld_get_base_domain` (soup3 0.9 binding reads freed memory); use `RegistrableDomainLookup`.
+- Changing Guard's list conversion (or upgrading `adblock`): bump `GuardRuleList::CONVERSION_REVISION`, else old compiled lists stay.
 - Manual GUI runs: isolate `XDG_DATA_HOME`/`XDG_CACHE_HOME`/`XDG_CONFIG_HOME` so the user's real profiles stay untouched.

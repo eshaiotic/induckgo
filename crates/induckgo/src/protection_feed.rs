@@ -1,76 +1,24 @@
 //! DuckDuckGo's Tracker Data Set and privacy configuration, downloaded at run time.
 //!
 //! The Tracker Data Set is licensed CC BY-NC-SA 4.0, so it is never bundled: InDuckGo downloads the macOS
-//! edition from DuckDuckGo's CDN and keeps the last good copy in the cache directory. Refreshes are
-//! conditional (`ETag`), so an unchanged list costs one small request. A download replaces the cached copy
-//! only after it parsed as the expected kind of document.
+//! edition from DuckDuckGo's CDN and keeps the last good copy in the cache directory (see [`FeedDocument`]).
 
 use std::error::Error;
 use std::path::Path;
 
 use serde_json::Value;
 
-use crate::http_client::Fetched;
+use crate::feed_document::FeedDocument;
 use crate::http_client::HttpClient;
-use crate::stored_file::StoredFile;
 
 pub struct ProtectionDocuments {
     pub tracker_data: Value,
     pub configuration: Value,
 }
 
-struct FeedDocument {
-    url: &'static str,
-    /// A top-level key every genuine document of this kind has.
-    required_key: &'static str,
-    content: StoredFile,
-    etag: StoredFile,
-}
-
-impl FeedDocument {
-    const MAX_BYTES: usize = 32 * 1024 * 1024;
-
-    fn new(directory: &Path, name: &str, url: &'static str, required_key: &'static str) -> Self {
-        Self {
-            url,
-            required_key,
-            content: StoredFile::new(directory.join(format!("{name}.json"))),
-            etag: StoredFile::new(directory.join(format!("{name}.etag"))),
-        }
-    }
-
-    fn cached(&self) -> Option<Value> {
-        self.content.read_json().filter(|document| self.is_genuine(document))
-    }
-
-    /// Downloads a newer copy; `Ok(false)` when the cached copy is still current.
-    async fn refresh(&self, http: &HttpClient) -> Result<bool, Box<dyn Error>> {
-        let etag = self.etag.read_text().filter(|_| self.content.exists());
-        match http.get(self.url, Self::MAX_BYTES, etag.as_deref()).await? {
-            Fetched::NotModified => Ok(false),
-            Fetched::Body { bytes, etag } => {
-                let document: Value = serde_json::from_slice(&bytes)?;
-                if !self.is_genuine(&document) {
-                    return Err(format!("{} did not return a {} document", self.url, self.required_key).into());
-                }
-                self.content.write(&bytes)?;
-                match etag {
-                    Some(etag) => self.etag.write(etag.as_bytes())?,
-                    None => self.etag.remove()?,
-                }
-                Ok(true)
-            }
-        }
-    }
-
-    fn is_genuine(&self, document: &Value) -> bool {
-        document.get(self.required_key).is_some_and(Value::is_object)
-    }
-}
-
 pub struct ProtectionFeed {
-    tracker_data: FeedDocument,
-    configuration: FeedDocument,
+    tracker_data: FeedDocument<Value>,
+    configuration: FeedDocument<Value>,
 }
 
 impl ProtectionFeed {
@@ -80,8 +28,16 @@ impl ProtectionFeed {
 
     pub fn new(cache_directory: &Path) -> Self {
         Self {
-            tracker_data: FeedDocument::new(cache_directory, "tracker-data", Self::TRACKER_DATA_URL, "trackers"),
-            configuration: FeedDocument::new(cache_directory, "configuration", Self::CONFIGURATION_URL, "features"),
+            tracker_data: FeedDocument::new(
+                cache_directory.join("tracker-data.json"),
+                Self::TRACKER_DATA_URL,
+                Self::tracker_data_document,
+            ),
+            configuration: FeedDocument::new(
+                cache_directory.join("configuration.json"),
+                Self::CONFIGURATION_URL,
+                Self::configuration_document,
+            ),
         }
     }
 
@@ -104,5 +60,18 @@ impl ProtectionFeed {
             return Ok(None);
         }
         Ok(self.cached())
+    }
+
+    fn tracker_data_document(bytes: &[u8]) -> Option<Value> {
+        Self::document_with(bytes, "trackers")
+    }
+
+    fn configuration_document(bytes: &[u8]) -> Option<Value> {
+        Self::document_with(bytes, "features")
+    }
+
+    /// A JSON document with the top-level object `key`, which every genuine document of its kind has.
+    fn document_with(bytes: &[u8], key: &str) -> Option<Value> {
+        serde_json::from_slice::<Value>(bytes).ok().filter(|document| document.get(key).is_some_and(Value::is_object))
     }
 }

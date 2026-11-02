@@ -2,22 +2,33 @@
 //!
 //! Each InDuckGo process serves exactly one profile (or one web app's private profile), so a session owns:
 //! a WebKit `NetworkSession` with its own cookie jar, storage, cache and HSTS list; the page protections;
-//! and the state that feeds them (privacy configuration, Tracker Data Set, sites the user unprotected); and the
-//! zoom the user gave each site and the search engine the user chose.
+//! and the state that feeds them (privacy configuration, Tracker Data Set, InDuckGo Guard's filter lists, sites
+//! the user unprotected); and the zoom the user gave each site and the search engine the user chose.
 //!
 //! Pages must not load before tracker blocking is active: [`ProfileSession::when_protected`] holds a load
 //! back until rule lists are active. Building the tracker list from the Tracker Data Set costs a few tenths of
 //! a second of processor time, so it runs on a worker thread, and a start does not wait for it: the list
 //! compiled last time is activated at once (as DuckDuckGo's macOS app does), then replaced if the new one
 //! differs. Only the very first start, with nothing compiled yet, waits for the full compilation.
+//!
+//! Guard's lists take seconds to compile, so pages never wait for them: until a changed list is compiled, its
+//! previous copy goes on protecting, except right after the user switched protection off for a site, when the
+//! previous copy would keep blocking that very site and is left out instead. Switching protection back on is
+//! the one change whose reload waits for the compiled lists, since the previous copy still exempts the site.
 
 use std::cell::Cell;
 use std::cell::RefCell;
+use std::collections::HashMap;
 use std::rc::Rc;
 use std::rc::Weak;
 use std::sync::Arc;
 use std::time::Instant;
 
+use induckgo_core::guard::filter_list_source::FilterListSource;
+use induckgo_core::guard::fingerprint_hardening::FingerprintHardening;
+use induckgo_core::guard::guard_rule_list::GuardRuleList;
+use induckgo_core::guard::pending_rule_changes::PendingRuleChanges;
+use induckgo_core::guard::pending_rule_changes::RuleChange;
 use induckgo_core::navigation::https_upgrade_policy::HttpsUpgradePolicy;
 use induckgo_core::navigation::search_engine::SearchEngine;
 use induckgo_core::profile::profile_directories::ProfileLocation;
@@ -36,6 +47,7 @@ use webkit6::WebView;
 use webkit6::WebsiteDataTypes;
 
 use crate::download_tracker::DownloadTracker;
+use crate::filter_list_feed::FilterListFeed;
 use crate::http_client::HttpClient;
 use crate::installation_paths::InstallationPaths;
 use crate::page_protections::PageProtections;
@@ -57,6 +69,18 @@ struct ProtectionInputs {
     configuration: Option<PrivacyConfiguration>,
     unprotected_sites: UnprotectedSites,
     https_upgrades: HttpsUpgradePolicy,
+    filter_lists: Arc<HashMap<FilterListSource, String>>,
+}
+
+/// The rule lists of one rebuild, by how they are built.
+struct RuleInputs {
+    /// Built later, on a worker thread.
+    trackers: TrackerListInputs,
+    /// HTTPS upgrades and link cleaning: cheap, and the HTTPS list must not carry over exemptions the user
+    /// allowed in an earlier session, so they are always built fresh.
+    quick_lists: Vec<PreparedRuleList>,
+    /// Built only when the stored compiled copy is out of date.
+    guard_lists: Vec<PreparedRuleList>,
 }
 
 /// What the tracker list is built from, owned so that a worker thread can build it.
@@ -85,6 +109,7 @@ pub struct ProfileSession {
     settings: Settings,
     protections: PageProtections,
     feed: ProtectionFeed,
+    filter_list_feed: FilterListFeed,
     http: Rc<HttpClient>,
     unprotected_sites_file: StoredFile,
     zoom: SiteZoom,
@@ -94,6 +119,8 @@ pub struct ProfileSession {
     readiness: RefCell<Readiness>,
     /// Bumped by every rebuild; a slower, older rebuild never overwrites a newer one.
     generation: Cell<u64>,
+    /// What rebuilds promised (reloads, Guard left out), kept for whichever rebuild activates rules.
+    pending: RefCell<PendingRuleChanges<Box<dyn FnOnce()>>>,
     started: Instant,
     _downloads: DownloadTracker,
 }
@@ -114,6 +141,7 @@ impl ProfileSession {
             .read_json()
             .map(|document| UnprotectedSites::from_json(&document))
             .unwrap_or_default();
+        let filter_list_feed = FilterListFeed::new(&paths.protection_feed());
         let session = Rc::new(Self {
             profile,
             _downloads: DownloadTracker::watch(&network_session, paths.downloads()),
@@ -131,9 +159,12 @@ impl ProfileSession {
                 configuration: None,
                 unprotected_sites,
                 https_upgrades: HttpsUpgradePolicy::default(),
+                filter_lists: Arc::new(filter_list_feed.cached()),
             }),
+            filter_list_feed,
             readiness: RefCell::new(Readiness::Waiting(Vec::new())),
             generation: Cell::new(0),
+            pending: RefCell::new(PendingRuleChanges::default()),
             started: Instant::now(),
         });
         if let Some(documents) = session.feed.cached() {
@@ -198,7 +229,7 @@ impl ProfileSession {
     /// Stops upgrading the host of `https`, then runs `then` once the new rules are active.
     pub fn stop_upgrading(self: &Rc<Self>, https: &str, then: impl FnOnce() + 'static) {
         self.inputs.borrow_mut().https_upgrades.record_failed_upgrade(https);
-        self.rebuild(then);
+        self.rebuild(RuleChange::Refresh, then);
     }
 
     pub fn is_site_protected(&self, host: &str) -> bool {
@@ -218,7 +249,7 @@ impl ProfileSession {
                 glib::g_warning!(Self::LOG_DOMAIN, "cannot save unprotected sites: {error}");
             }
         }
-        self.rebuild(then);
+        self.rebuild(if protected { RuleChange::SiteProtected } else { RuleChange::SiteUnprotected }, then);
     }
 
     /// The Fire button: deletes every cookie, storage, cache, favicon and site zoom of this profile. The HSTS
@@ -254,10 +285,21 @@ impl ProfileSession {
         session
     }
 
+    /// Developer tools on, pop-ups only on a click, and the WebKit feature InDuckGo Guard switches on: the
+    /// `Sec-GPC: 1` header (Global Privacy Control, a legally recognised "do not sell or share my data"
+    /// signal) with every request, not only the `navigator.globalPrivacyControl` the page script reports.
     fn private_settings() -> Settings {
+        const GUARD_FEATURES: [(&str, bool); 1] = [("GlobalPrivacyControl", true)];
         let settings = Settings::new();
         settings.set_enable_developer_extras(true);
         settings.set_javascript_can_open_windows_automatically(false);
+        let features = Settings::all_features();
+        for feature in features.iter().flat_map(|list| (0..list.length()).filter_map(|index| list.get(index))) {
+            let identifier = feature.identifier();
+            if let Some((_, enabled)) = GUARD_FEATURES.iter().find(|(name, _)| identifier.as_deref() == Some(*name)) {
+                settings.set_feature_enabled(&feature, *enabled);
+            }
+        }
         settings
     }
 
@@ -266,8 +308,14 @@ impl ProfileSession {
             loop {
                 let Some(live) = session.upgrade() else { return };
                 match live.feed.refreshed(&live.http).await {
-                    Ok(Some(documents)) => live.adopt(documents),
-                    Ok(None) => {}
+                    Ok(documents) => {
+                        if let Some(documents) = documents {
+                            live.adopt(documents);
+                        }
+                        if let Some(lists) = live.filter_list_feed.refreshed(&live.http).await {
+                            live.adopt_filter_lists(lists);
+                        }
+                    }
                     Err(error) => glib::g_warning!(Self::LOG_DOMAIN, "protection data refresh failed: {error}"),
                 }
                 let is_protected = matches!(*live.readiness.borrow(), Readiness::Protected);
@@ -281,51 +329,88 @@ impl ProfileSession {
     fn adopt(self: &Rc<Self>, documents: ProtectionDocuments) {
         {
             let mut inputs = self.inputs.borrow_mut();
-            let configuration =
-                PrivacyConfiguration::new(documents.configuration, PageProtections::COMPATIBILITY_VERSION);
+            let configuration = PrivacyConfiguration::new(
+                FingerprintHardening::applied_to(documents.configuration),
+                PageProtections::COMPATIBILITY_VERSION,
+            );
             inputs.https_upgrades.set_excluded_domains(&configuration.exception_domains(Self::HTTPS_FEATURE));
             inputs.tracker_data = Some(Arc::new(TrackerDataSet::from_json(&documents.tracker_data)));
             inputs.configuration = Some(configuration);
         }
-        self.rebuild(|| {});
+        self.rebuild(RuleChange::Refresh, || {});
     }
 
-    /// Rebuilds rule lists and script from the current inputs, then activates them and runs `then`.
-    fn rebuild(self: &Rc<Self>, then: impl FnOnce() + 'static) {
+    fn adopt_filter_lists(self: &Rc<Self>, lists: HashMap<FilterListSource, String>) {
+        self.inputs.borrow_mut().filter_lists = Arc::new(lists);
+        self.rebuild(RuleChange::Refresh, || {});
+    }
+
+    /// Rebuilds rule lists and script from the current inputs and activates them; Guard lists that changed
+    /// follow once compiled. `then` runs once the rules reflect `change` (see [`RuleChange`]), even when a later
+    /// rebuild takes over.
+    fn rebuild(self: &Rc<Self>, change: RuleChange, then: impl FnOnce() + 'static) {
         self.install_content_scope_script();
-        let Some((trackers, other_lists)) = self.rule_inputs() else {
+        let Some(RuleInputs { trackers, quick_lists, guard_lists }) = self.rule_inputs() else {
             then();
             return;
         };
+        self.pending.borrow_mut().record(change, Box::new(then));
         let generation = self.generation.get() + 1;
         self.generation.set(generation);
         let session = Rc::downgrade(self);
         glib::spawn_future_local(async move {
             let Some(live) = session.upgrade() else { return };
             if trackers.is_enabled && live.is_waiting() {
-                live.protect_with_last_tracker_list(&other_lists).await;
+                live.protect_with_last_lists(&quick_lists).await;
             }
             let Ok(trackers) = gio::spawn_blocking(move || trackers.prepared()).await else {
                 glib::g_critical!(Self::LOG_DOMAIN, "building the tracker rule list failed");
                 return;
             };
-            let lists: Vec<PreparedRuleList> = std::iter::once(trackers).chain(other_lists).collect();
-            let filters = live.protections.compile(&lists).await;
+            let lists: Vec<PreparedRuleList> = std::iter::once(trackers).chain(quick_lists).collect();
+            let mut filters = live.protections.compile(&lists).await;
+            let (current_guard, stale_guard) = live.protections.current_or_stale(guard_lists).await;
+            filters.extend(current_guard);
+            let mut interim = filters.clone();
+            let leaves_guard_out = live.pending.borrow().leaves_guard_out();
+            if !leaves_guard_out {
+                for list in &stale_guard {
+                    interim.extend(live.protections.last_compiled(list.name()).await);
+                }
+            }
             if live.generation.get() != generation {
                 return;
             }
-            live.protections.activate(&filters);
+            live.protections.activate(&interim);
             live.mark_protected();
-            then();
+            live.keep_promises(stale_guard.is_empty());
+            if stale_guard.is_empty() {
+                return;
+            }
+            filters.extend(live.protections.compile(&stale_guard).await);
+            if live.generation.get() == generation {
+                live.protections.activate(&filters);
+                live.keep_promises(true);
+            }
         });
     }
 
-    /// Lets pages load under the tracker list compiled last time, with fresh HTTPS and link lists (cheap to
-    /// build, and the HTTPS one must not carry over exemptions the user allowed in an earlier session).
-    async fn protect_with_last_tracker_list(&self, other_lists: &[PreparedRuleList]) {
+    /// Runs what waited for the rules just activated; see [`PendingRuleChanges::settled`].
+    fn keep_promises(&self, guard_compiled: bool) {
+        let settled = self.pending.borrow_mut().settled(guard_compiled);
+        for waiter in settled {
+            waiter();
+        }
+    }
+
+    /// Lets pages load under the tracker and Guard lists compiled last time, with fresh quick lists.
+    async fn protect_with_last_lists(&self, quick_lists: &[PreparedRuleList]) {
         let Some(last_trackers) = self.protections.last_compiled(TrackerListInputs::NAME).await else { return };
         let mut filters = vec![last_trackers];
-        filters.extend(self.protections.compile(other_lists).await);
+        for list in GuardRuleList::ALL {
+            filters.extend(self.protections.last_compiled(list.name()).await);
+        }
+        filters.extend(self.protections.compile(quick_lists).await);
         if self.is_waiting() {
             self.protections.activate(&filters);
             self.mark_protected();
@@ -343,8 +428,7 @@ impl ProfileSession {
         }
     }
 
-    /// The tracker list's inputs (built later, on a worker thread) and the other lists, ready for WebKit.
-    fn rule_inputs(&self) -> Option<(TrackerListInputs, Vec<PreparedRuleList>)> {
+    fn rule_inputs(&self) -> Option<RuleInputs> {
         let inputs = self.inputs.borrow();
         let (Some(tracker_data), Some(configuration)) = (&inputs.tracker_data, &inputs.configuration) else {
             return None;
@@ -361,11 +445,28 @@ impl ProfileSession {
             Vec::new()
         };
         let links = TrackingParameterRemover::new(configuration, &user_hosts).content_rules();
-        let other_lists = vec![
+        let quick_lists = vec![
             RuleList { name: "https", rules: https }.prepared(),
             RuleList { name: "links", rules: links }.prepared(),
         ];
-        Some((trackers, other_lists))
+        let guard_lists = GuardRuleList::ALL
+            .into_iter()
+            .map(|list| Self::guard_list(list, &inputs.filter_lists, &user_hosts))
+            .collect();
+        Some(RuleInputs { trackers, quick_lists, guard_lists })
+    }
+
+    fn guard_list(
+        list: GuardRuleList,
+        downloaded: &Arc<HashMap<FilterListSource, String>>,
+        user_hosts: &[String],
+    ) -> PreparedRuleList {
+        let (downloaded, user_hosts) = (Arc::clone(downloaded), user_hosts.to_vec());
+        let fingerprint = list.fingerprint(&downloaded, &user_hosts);
+        let is_empty = !list.has_rules(&downloaded);
+        PreparedRuleList::built_on_demand(list.name(), fingerprint, is_empty, move || {
+            list.content_rules(&downloaded, &user_hosts)
+        })
     }
 
     fn mark_protected(&self) {

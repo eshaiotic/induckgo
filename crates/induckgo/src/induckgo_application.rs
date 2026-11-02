@@ -228,6 +228,24 @@ impl InDuckGoApplication {
             gtk::License::Custom,
             Some("Downloaded at run time from DuckDuckGo; licensed CC BY-NC-SA 4.0."),
         );
+        about.add_legal_section(
+            "adblock-rust",
+            Some("© Brave Software, Inc."),
+            gtk::License::Mpl20,
+            Some(
+                "Turns InDuckGo Guard's filter lists into WebKit rules. Source: https://github.com/brave/adblock-rust",
+            ),
+        );
+        about.add_legal_section(
+            "InDuckGo Guard filter lists",
+            Some("© their maintainers"),
+            gtk::License::Custom,
+            Some(
+                "Downloaded at run time from their publishers: EasyList, EasyPrivacy and EasyList Cookie List \
+                 (GPL-3.0 or CC BY-SA 3.0, CC BY 3.0), uBlock Origin's lists (GPL-3.0), Peter Lowe's list \
+                 (pgl.yoyo.org terms), Polish Filters (CC BY-NC-SA 4.0).",
+            ),
+        );
         about.present(application.active_window().as_ref());
     }
 }

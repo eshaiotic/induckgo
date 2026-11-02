@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1340" height="860" viewBox="0 0 1340 860" font-family="DejaVu Sans, Noto Sans, sans-serif">
+<title>InDuckGo Guard — community filter lists and fingerprinting defences on top of DuckDuckGo</title>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#37474f"/></marker></defs>
+<rect width="1340" height="860" fill="#ffffff"/>
+<text x="670" y="34" font-size="18" font-weight="bold" text-anchor="middle" fill="#263238">InDuckGo Guard — community filter lists and fingerprinting defences on top of DuckDuckGo</text>
+<rect x="30" y="70" width="300" height="118" rx="9" fill="#ffebee" stroke="#c62828" stroke-width="3" stroke-dasharray="7 4"/>
+<text x="42" y="92" font-size="14" font-weight="bold" fill="#263238">Filter list publishers</text>
+<text x="42" y="114" font-size="12.5" fill="#263238" xml:space="preserve">easylist.to · ublockorigin.github.io</text>
+<text x="42" y="133" font-size="12.5" fill="#263238" xml:space="preserve">pgl.yoyo.org · MajkiIT (GitHub)</text>
+<text x="42" y="152" font-size="12.5" fill="#263238" xml:space="preserve">secure.fanboy.co.nz</text>
+<text x="42" y="171" font-size="12.5" fill="#263238" xml:space="preserve">9 lists: GPL · CC BY-SA · CC BY-NC-SA</text>
+<rect x="420" y="70" width="300" height="118" rx="9" fill="#e1f5fe" stroke="#0277bd" stroke-width="1.6"/>
+<text x="432" y="92" font-size="14" font-weight="bold" fill="#263238">FilterListFeed</text>
+<text x="432" y="114" font-size="12.5" fill="#263238" xml:space="preserve">HTTPS, no cookies, at most 32 MiB</text>
+<text x="432" y="133" font-size="12.5" fill="#263238" xml:space="preserve">kept only if it reads as a list</text>
+<text x="432" y="152" font-size="12.5" fill="#263238" xml:space="preserve">ETag refresh every 12 hours</text>
+<text x="432" y="171" font-size="12.5" fill="#263238" xml:space="preserve">one bad list never stops the rest</text>
+<rect x="810" y="70" width="300" height="99" rx="9" fill="#e0f2f1" stroke="#00897b" stroke-width="1.6"/>
+<text x="822" y="92" font-size="14" font-weight="bold" fill="#263238">Shared cache</text>
+<text x="822" y="114" font-size="12.5" fill="#263238" xml:space="preserve">~/.cache/induckgo/protections/</text>
+<text x="822" y="133" font-size="12.5" fill="#263238" xml:space="preserve">filter-lists/*.txt (about 6 MB)</text>
+<text x="822" y="152" font-size="12.5" fill="#263238" xml:space="preserve">read by every profile and app</text>
+<path d="M330,120 L416,120" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<text x="338" y="112" font-size="12" font-weight="bold" text-anchor="start" fill="#37474f">download</text>
+<path d="M720,120 L806,120" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<text x="728" y="112" font-size="12" font-weight="bold" text-anchor="start" fill="#37474f">validated</text>
+<rect x="30" y="290" width="330" height="194" rx="9" fill="#ede7f6" stroke="#5e35b1" stroke-width="1.6"/>
+<text x="42" y="312" font-size="14" font-weight="bold" fill="#263238">GuardRuleList × 3 (core)</text>
+<text x="42" y="334" font-size="12.5" fill="#263238" xml:space="preserve">guard-ads: EasyList, uBlock filters,</text>
+<text x="42" y="353" font-size="12.5" fill="#263238" xml:space="preserve">  Badware, Peter Lowe, Polish Filters</text>
+<text x="42" y="372" font-size="12.5" fill="#263238" xml:space="preserve">guard-privacy: EasyPrivacy, uBlock</text>
+<text x="42" y="391" font-size="12.5" fill="#263238" xml:space="preserve">  Privacy, plus &lt;a ping&gt; blocked</text>
+<text x="42" y="410" font-size="12.5" fill="#263238" xml:space="preserve">guard-annoyances: cookie notices</text>
+<text x="42" y="429" font-size="12.5" fill="#263238" xml:space="preserve">each: uBlock Unbreak exceptions,</text>
+<text x="42" y="448" font-size="12.5" fill="#263238" xml:space="preserve">  adblock-rust conversion, ≤ 150 000</text>
+<text x="42" y="467" font-size="12.5" fill="#263238" xml:space="preserve">  rules, user's unprotected sites last</text>
+<rect x="500" y="290" width="330" height="156" rx="9" fill="#e1f5fe" stroke="#0277bd" stroke-width="1.6"/>
+<text x="512" y="312" font-size="14" font-weight="bold" fill="#263238">PageProtections</text>
+<text x="512" y="334" font-size="12.5" fill="#263238" xml:space="preserve">fingerprint of the inputs current?</text>
+<text x="512" y="353" font-size="12.5" fill="#263238" xml:space="preserve">  → load the compiled copy (0.5 s start)</text>
+<text x="512" y="372" font-size="12.5" fill="#263238" xml:space="preserve">changed → build on a worker thread</text>
+<text x="512" y="391" font-size="12.5" fill="#263238" xml:space="preserve">  (0.2 s), compile (≈ 9 s for three)</text>
+<text x="512" y="410" font-size="12.5" fill="#263238" xml:space="preserve">meanwhile the previous copy protects,</text>
+<text x="512" y="429" font-size="12.5" fill="#263238" xml:space="preserve">  left out after "protection off"</text>
+<rect x="920" y="290" width="210" height="99" rx="9" fill="#e0f2f1" stroke="#00897b" stroke-width="1.6"/>
+<text x="932" y="312" font-size="14" font-weight="bold" fill="#263238">Per-profile filter store</text>
+<text x="932" y="334" font-size="12.5" fill="#263238" xml:space="preserve">content-filters/</text>
+<text x="932" y="353" font-size="12.5" fill="#263238" xml:space="preserve">compiled lists</text>
+<text x="932" y="372" font-size="12.5" fill="#263238" xml:space="preserve">+ fingerprints</text>
+<path d="M960,169 L960,250 L200,250 L200,286" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<text x="210" y="243" font-size="12" font-weight="bold" text-anchor="start" fill="#37474f">list texts</text>
+<path d="M360,372 L496,372" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<text x="366" y="345" font-size="12" font-weight="bold" text-anchor="start" fill="#37474f">fingerprint +</text>
+<text x="366" y="360" font-size="12" font-weight="bold" text-anchor="start" fill="#37474f">build on demand</text>
+<path d="M830,340 L916,340" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<path d="M916,380 L830,380" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<rect x="30" y="590" width="330" height="99" rx="9" fill="#e0f2f1" stroke="#00897b" stroke-width="1.6"/>
+<text x="42" y="612" font-size="14" font-weight="bold" fill="#263238">DuckDuckGo privacy configuration</text>
+<text x="42" y="634" font-size="12.5" fill="#263238" xml:space="preserve">macos-config.json (cached)</text>
+<text x="42" y="653" font-size="12.5" fill="#263238" xml:space="preserve">canvas, audio, screen size,</text>
+<text x="42" y="672" font-size="12.5" fill="#263238" xml:space="preserve">referrer … left off for Safari</text>
+<rect x="500" y="590" width="330" height="99" rx="9" fill="#ede7f6" stroke="#5e35b1" stroke-width="1.6"/>
+<text x="512" y="612" font-size="14" font-weight="bold" fill="#263238">FingerprintHardening (core)</text>
+<text x="512" y="634" font-size="12.5" fill="#263238" xml:space="preserve">switches six defences on</text>
+<text x="512" y="653" font-size="12.5" fill="#263238" xml:space="preserve">keeps DuckDuckGo's site exceptions</text>
+<text x="512" y="672" font-size="12.5" fill="#263238" xml:space="preserve">canvas: additionalEnabledCheck on</text>
+<rect x="920" y="590" width="210" height="99" rx="9" fill="#e1f5fe" stroke="#0277bd" stroke-width="1.6"/>
+<text x="932" y="612" font-size="14" font-weight="bold" fill="#263238">Content Scope Scripts</text>
+<text x="932" y="634" font-size="12.5" fill="#263238" xml:space="preserve">noise per session and site:</text>
+<text x="932" y="653" font-size="12.5" fill="#263238" xml:space="preserve">canvas · audio · screen size</text>
+<text x="932" y="672" font-size="12.5" fill="#263238" xml:space="preserve">referrer trimmed · GPC</text>
+<path d="M360,640 L496,640" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<text x="370" y="632" font-size="12" font-weight="bold" text-anchor="start" fill="#37474f">hardened</text>
+<path d="M830,640 L916,640" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<text x="838" y="632" font-size="12" font-weight="bold" text-anchor="start" fill="#37474f">rendered</text>
+<rect x="1150" y="70" width="175" height="137" rx="9" fill="#e1f5fe" stroke="#0277bd" stroke-width="1.6"/>
+<text x="1162" y="92" font-size="14" font-weight="bold" fill="#263238">WebKit settings</text>
+<text x="1162" y="114" font-size="12.5" fill="#263238" xml:space="preserve">GlobalPrivacy-</text>
+<text x="1162" y="133" font-size="12.5" fill="#263238" xml:space="preserve">Control:</text>
+<text x="1162" y="152" font-size="12.5" fill="#263238" xml:space="preserve">Sec-GPC: 1</text>
+<text x="1162" y="171" font-size="12.5" fill="#263238" xml:space="preserve">on every</text>
+<text x="1162" y="190" font-size="12.5" fill="#263238" xml:space="preserve">request</text>
+<rect x="1150" y="430" width="175" height="137" rx="9" fill="#e1f5fe" stroke="#0277bd" stroke-width="1.6"/>
+<text x="1162" y="452" font-size="14" font-weight="bold" fill="#263238">Every page</text>
+<text x="1162" y="474" font-size="12.5" fill="#263238" xml:space="preserve">(WebView)</text>
+<text x="1162" y="493" font-size="12.5" fill="#263238" xml:space="preserve">3 DuckDuckGo +</text>
+<text x="1162" y="512" font-size="12.5" fill="#263238" xml:space="preserve">3 Guard rule lists,</text>
+<text x="1162" y="531" font-size="12.5" fill="#263238" xml:space="preserve">the script and</text>
+<text x="1162" y="550" font-size="12.5" fill="#263238" xml:space="preserve">the GPC header</text>
+<path d="M1237,207 L1237,426" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<path d="M830,455 L1146,455" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<text x="940" y="447" font-size="12" font-weight="bold" text-anchor="start" fill="#37474f">active lists</text>
+<path d="M1130,640 L1237,640 L1237,571" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<rect x="30" y="790" width="26" height="16" rx="4" fill="#ffebee" stroke="#c62828" stroke-width="3" stroke-dasharray="5 3"/>
+<text x="66" y="803" font-size="12.5" fill="#263238">Untrusted network input (highest risk)</text>
+<rect x="30" y="816" width="26" height="16" rx="4" fill="#e1f5fe" stroke="#0277bd" stroke-width="1.6"/>
+<text x="66" y="829" font-size="12.5" fill="#263238">Network and WebKit adapters</text>
+<rect x="590" y="790" width="26" height="16" rx="4" fill="#ede7f6" stroke="#5e35b1" stroke-width="1.6"/>
+<text x="626" y="803" font-size="12.5" fill="#263238">Domain logic (induckgo-core)</text>
+<rect x="590" y="816" width="26" height="16" rx="4" fill="#e0f2f1" stroke="#00897b" stroke-width="1.6"/>
+<text x="626" y="829" font-size="12.5" fill="#263238">Data kept on disk</text>
+</svg>

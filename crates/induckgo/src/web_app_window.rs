@@ -14,6 +14,7 @@ use adw::prelude::AlertDialogExtManual;
 use gio::prelude::ActionMapExtManual;
 use gtk::prelude::Cast;
 use gtk::prelude::GtkWindowExt;
+use gtk::prelude::ObjectExt;
 use gtk::prelude::WidgetExt;
 use induckgo_core::web_app::installed_web_app::InstalledWebApp;
 use induckgo_core::web_app::web_app_navigation_policy::NavigationTrigger;
@@ -60,7 +61,8 @@ impl WebAppWindow {
         });
         web_app.build_layout();
         web_app.install_actions();
-        Self::keep_to_site(web_app.page.web_view(), web_app.app.start_url.clone());
+        // A link out of the app opens in the browser while the app stays where it was, so nothing closes.
+        Self::keep_to_site(web_app.page.web_view(), web_app.app.start_url.clone(), || {});
         web_app.open_pop_ups_in_app();
         web_app.page.open(&web_app.app.start_url);
         let keep_alive = Rc::clone(&web_app);
@@ -129,9 +131,12 @@ impl WebAppWindow {
         let actions: [WebAppCommand; 4] = [
             ("back", |web_app| web_app.page.web_view().go_back()),
             ("reload", |web_app| web_app.page.web_view().reload()),
+            // The page moves to the browser, so the app window closes; it stays if the browser did not start.
             ("open-in-browser", |web_app| {
-                if let Some(address) = web_app.page.web_view().uri() {
-                    ExternalLauncher::open_in_browser(&address);
+                if let Some(address) = web_app.page.web_view().uri()
+                    && ExternalLauncher::open_in_browser(&address)
+                {
+                    web_app.window.close();
                 }
             }),
             ("fire", Self::confirm_clear),
@@ -150,29 +155,34 @@ impl WebAppWindow {
     }
 
     /// A clicked link to a site other than `site_url`'s opens in the browser; see [`WebAppNavigationPolicy`].
-    fn keep_to_site(web_view: &WebView, site_url: String) {
-        web_view.connect_decide_policy(move |_, decision, kind| Self::decide(&site_url, decision, kind));
+    /// `when_page_moved` runs once the view's own page went to the browser — not for a link that asked for
+    /// a new window, since the page that opened it is still needed (a payment pop-up, for one).
+    fn keep_to_site(web_view: &WebView, site_url: String, when_page_moved: impl Fn() + 'static) {
+        web_view.connect_decide_policy(move |_, decision, kind| {
+            let Some(target) = Self::address_leaving_site(&site_url, decision, kind) else { return false };
+            decision.ignore();
+            if ExternalLauncher::open_in_browser(&target) && kind == PolicyDecisionType::NavigationAction {
+                when_page_moved();
+            }
+            true
+        });
     }
 
-    fn decide(site_url: &str, decision: &PolicyDecision, kind: PolicyDecisionType) -> bool {
+    /// The address to hand to the browser, when this navigation leaves the app's site.
+    fn address_leaving_site(site_url: &str, decision: &PolicyDecision, kind: PolicyDecisionType) -> Option<String> {
         if !matches!(kind, PolicyDecisionType::NavigationAction | PolicyDecisionType::NewWindowAction) {
-            return false;
+            return None;
         }
-        let Some(navigation) = decision.downcast_ref::<NavigationPolicyDecision>() else { return false };
-        let Some(action) = navigation.navigation_action() else { return false };
-        let Some(target) = action.request().and_then(|request| request.uri()) else { return false };
+        let action = decision.downcast_ref::<NavigationPolicyDecision>()?.navigation_action()?;
+        let target = action.request().and_then(|request| request.uri())?;
         let trigger = if action.navigation_type() == NavigationType::LinkClicked {
             NavigationTrigger::LinkClicked
         } else {
             NavigationTrigger::RedirectOrScript
         };
         match WebAppNavigationPolicy::new(site_url, &PublicSuffixList).decide(&target, trigger) {
-            WebAppNavigation::StayInWebApp => false,
-            WebAppNavigation::OpenInBrowser => {
-                decision.ignore();
-                ExternalLauncher::open_in_browser(&target);
-                true
-            }
+            WebAppNavigation::StayInWebApp => None,
+            WebAppNavigation::OpenInBrowser => Some(target.into()),
         }
     }
 
@@ -190,7 +200,6 @@ impl WebAppWindow {
                 .map(String::from)
                 .filter(|address| address.starts_with("http://") || address.starts_with("https://"))
                 .unwrap_or_else(|| web_app.app.start_url.clone());
-            Self::keep_to_site(&pop_up, opened_for);
             let title = adw::WindowTitle::new("", "");
             Self::show_current_site(&page, &title, &web_app.app);
             let header = adw::HeaderBar::builder().title_widget(&title).build();
@@ -203,6 +212,17 @@ impl WebAppWindow {
                 .default_height(720)
                 .content(&toolbar)
                 .build();
+            // The pop-up's page moved to the browser, so the empty pop-up goes. Closing waits for the policy
+            // decision to return: destroying the web view while it emits a signal is unsafe.
+            let closing = window.downgrade();
+            Self::keep_to_site(&pop_up, opened_for, move || {
+                let closing = closing.clone();
+                glib::idle_add_local_once(move || {
+                    if let Some(window) = closing.upgrade() {
+                        window.close();
+                    }
+                });
+            });
             pop_up.connect_title_notify(glib::clone!(
                 #[weak]
                 window,

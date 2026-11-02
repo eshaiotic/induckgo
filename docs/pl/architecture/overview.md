@@ -195,6 +195,14 @@ desktop, którego linia `Exec=` uruchamia `induckgo --web-app <id>`.
   otwarto (linki na stronie 3-D Secure działają, kliknięty link do trzeciej witryny otwiera się w
   przeglądarce), i ten sam wskaźnik witryny w nagłówku.
 
+Przekazanie strony do przeglądarki zamyka okno, *z którego strona się przeniosła*, i tylko je. **Open Page in
+Browser** przenosi bieżącą stronę aplikacji, więc okno aplikacji się zamyka. Wyskakujące okno, którego własna
+strona trafia do przeglądarki, też się zamyka, bo pokazywałoby już tylko stronę, którą opuściło. Okno aplikacji
+zostaje, gdy link w nim otwiera się w przeglądarce, bo aplikacja nadal jest na swojej stronie (skrzynka pocztowa
+musi przetrwać kliknięcie linku w wiadomości). Zostaje też wyskakujące okno, którego link prosił o *nowe* okno
+(`target=_blank`), bo jego strona, np. potwierdzenie płatności, jest wciąż potrzebna. Okno zamyka się dopiero
+po uruchomieniu przeglądarki.
+
 Przekierowanie może wyprowadzić aplikację poza jej witrynę, dlatego podtytuł okna zawsze pokazuje host
 widocznej strony. Gdy strona należy do innej witryny, podtytuł zmienia kolor na ostrzegawczy i dostaje
 wyjaśniający tooltip. Aplikacja banku nie może więc niepostrzeżenie pokazać obcej strony pod nazwą banku.
@@ -228,6 +236,7 @@ nim polegać.
 | `block` z `resource-type: document` i `load-context: top-frame` blokuje tylko nawigacje ramki głównej, przed żądaniem, i zgłasza błąd polityki 104. | Tak działają reguły `links`. |
 | Dla wczytań ramki głównej `unless-domain` jest porównywane z celem. | Wyjątki reguł `links` wskazują witryny docelowe. |
 | `ignore-previous-rules` sięga wstecz tylko w obrębie własnej listy. | Trzy osobne listy. |
+| Wyłączenie `gtk-enable-animations` wewnątrz aplikacji nie zmienia stronom `prefers-reduced-motion`. | Animacje interfejsu (karty, dialogi, banery, toasty, pasek wyszukiwania) są wyłączone w każdym procesie InDuckGo, więc interfejs reaguje od razu, a witryny nie dowiadują się z tego niczego nowego o użytkowniku. |
 
 ## 9. Znane ograniczenia
 

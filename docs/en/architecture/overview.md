@@ -194,6 +194,13 @@ runs `induckgo --web-app <id>`.
   (links inside a 3-D Secure page keep working, a clicked link to a third site opens in the browser), and
   the same site indicator in their header.
 
+Handing a page to the browser closes the window it *moved out of*, and only that one. **Open Page in
+Browser** moves the app's current page, so the app window closes. A pop-up whose own page goes to the browser
+closes as well, since it would only keep showing the page it left. The app window stays when a link in it
+opens in the browser: the app is still on its page (a mailbox must survive clicking a link in a message), and
+so does a pop-up whose link asked for a *new* window (`target=_blank`), because the pop-up's page — a payment
+confirmation, say — is still needed. A window closes only after the browser was started.
+
 Because a redirect may leave the app's site, the window's subtitle always shows the host of the page on
 screen. When that page belongs to another site, the subtitle turns to the warning colour and gets an
 explanatory tooltip. A bank app therefore cannot show a foreign page under the bank's name unnoticed.
@@ -227,6 +234,7 @@ code depended on it.
 | `block` with `resource-type: document` and `load-context: top-frame` blocks only main-frame navigations, before the request, and reports policy error 104. | This is how `links` rules work. |
 | For top-frame loads `unless-domain` is matched against the destination. | Exceptions of `links` rules name destination sites. |
 | `ignore-previous-rules` only reaches back within its own rule list. | Three separate lists. |
+| Switching off `gtk-enable-animations` inside the application leaves `prefers-reduced-motion` of pages unchanged. | Interface animations (tabs, dialogs, banners, toasts, find bar) are off in every InDuckGo process for a snappier interface, and sites learn nothing new about the user from it. |
 
 ## 9. Known limitations
 

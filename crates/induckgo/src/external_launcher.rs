@@ -18,11 +18,11 @@ pub struct ExternalLauncher;
 impl ExternalLauncher {
     const LOG_DOMAIN: &'static str = "induckgo";
 
-    /// Opens a web address in the default profile's browser.
-    pub fn open_in_browser(address: &str) {
-        if Url::parse(address).is_ok_and(|url| matches!(url.scheme(), "http" | "https")) {
-            Self::start_induckgo(&[address]);
-        }
+    /// Opens a web address in the default profile's browser; `false` when nothing was started (not a web
+    /// address, or InDuckGo could not be started, which is logged).
+    pub fn open_in_browser(address: &str) -> bool {
+        Url::parse(address).is_ok_and(|url| matches!(url.scheme(), "http" | "https"))
+            && Self::start_induckgo(&[address])
     }
 
     pub fn start_profile(profile: &ProfileId) {
@@ -55,19 +55,26 @@ impl ExternalLauncher {
         Ok(ProgramLocation::choose(appimage.as_deref(), std::env::current_exe()?))
     }
 
-    fn start_induckgo(arguments: &[&str]) {
+    /// `false` when the process could not be started (logged).
+    fn start_induckgo(arguments: &[&str]) -> bool {
         let executable = match Self::program() {
             Ok(executable) => executable,
             Err(error) => {
                 glib::g_warning!(Self::LOG_DOMAIN, "cannot locate the InDuckGo executable: {error}");
-                return;
+                return false;
             }
         };
         let mut command_line = vec![executable.as_os_str()];
         command_line.extend(arguments.iter().map(OsStr::new));
         match gio::Subprocess::newv(&command_line, gio::SubprocessFlags::NONE) {
-            Ok(process) => process.wait_async(None::<&gio::Cancellable>, |_| {}),
-            Err(error) => glib::g_warning!(Self::LOG_DOMAIN, "cannot start InDuckGo: {error}"),
+            Ok(process) => {
+                process.wait_async(None::<&gio::Cancellable>, |_| {});
+                true
+            }
+            Err(error) => {
+                glib::g_warning!(Self::LOG_DOMAIN, "cannot start InDuckGo: {error}");
+                false
+            }
         }
     }
 }

@@ -4,6 +4,7 @@
 //! the sites the user switched protection off for, and per-session preferences, exactly like
 //! `ContentScopeUserScript.generateSource` in DuckDuckGo's macOS app.
 
+use std::collections::BTreeSet;
 use std::path::Path;
 
 use induckgo_core::protection::content_scope_preferences::ContentScopePreferences;
@@ -81,6 +82,65 @@ impl RenderedScript {
     fn as_json(&self) -> Value {
         serde_json::from_str(&self.source).expect("rendered text is JSON")
     }
+
+    /// The configuration embedded by a `$CONTENT_SCOPE_JSON$` template: a string literal holding JSON.
+    fn embedded_configuration(&self) -> Value {
+        let text: String = serde_json::from_str(&self.source).expect("rendered text is a string literal");
+        serde_json::from_str(&text).expect("the literal holds JSON")
+    }
+
+    fn then_sends_exactly_the_features(&self, expected: &BTreeSet<String>) {
+        let configuration = self.embedded_configuration();
+        let sent: BTreeSet<String> =
+            configuration["features"].as_object().expect("features object").keys().cloned().collect();
+        assert_eq!(&sent, expected);
+    }
+}
+
+/// The features DuckDuckGo's `apple` build of Content Scope Scripts keeps from the configuration, read from
+/// the vendored bundle the same way its `pruneConfigFeatures` computes them: `platformSupport.apple` (with
+/// `baseFeatures` spread in) plus the `featureConfigDependencies` of those features.
+struct VendoredBundle {
+    source: String,
+}
+
+impl VendoredBundle {
+    fn read() -> Self {
+        let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../assets/content-scope-scripts/contentScope.js");
+        Self { source: std::fs::read_to_string(path).expect("vendored contentScope.js") }
+    }
+
+    fn kept_features(&self) -> BTreeSet<String> {
+        let apple = self.section("    apple: [", "],");
+        let spreads: Vec<&str> = apple.split("...").skip(1).collect();
+        assert!(
+            spreads.iter().all(|spread| spread.starts_with("baseFeatures")),
+            "platformSupport.apple spreads a list this test does not read: {apple}"
+        );
+        let mut bundled: BTreeSet<String> = Self::quoted_names(apple).collect();
+        if !spreads.is_empty() {
+            bundled.extend(Self::quoted_names(self.section("var baseFeatures", ");")));
+        }
+        let mut kept = bundled.clone();
+        for line in self.section("var featureConfigDependencies = {", "};").lines() {
+            if let Some((feature, dependencies)) = line.split_once(':')
+                && bundled.contains(feature.trim())
+            {
+                kept.extend(Self::quoted_names(dependencies));
+            }
+        }
+        kept
+    }
+
+    fn section(&self, start: &str, end: &str) -> &str {
+        let from = self.source.find(start).unwrap_or_else(|| panic!("bundle has no `{start}`")) + start.len();
+        let length = self.source[from..].find(end).unwrap_or_else(|| panic!("`{start}` never ends with `{end}`"));
+        &self.source[from..from + length]
+    }
+
+    fn quoted_names(text: &str) -> impl Iterator<Item = String> + '_ {
+        text.split('"').skip(1).step_by(2).map(str::to_owned)
+    }
 }
 
 #[test]
@@ -148,6 +208,44 @@ fn should_not_expand_placeholders_that_appear_inside_the_configuration() {
         .with_configuration(json!({"trap": "$USER_UNPROTECTED_DOMAINS$"}))
         .when_script_is_rendered()
         .then_reads(r#""{\"trap\":\"$USER_UNPROTECTED_DOMAINS$\"}"|[]"#);
+}
+
+#[test]
+fn should_leave_out_features_the_bundle_discards_before_every_frame_parses_them() {
+    let rendered = ContentScopeScenario::given_template("$CONTENT_SCOPE_JSON$")
+        .with_configuration(json!({
+            "version": 7,
+            "unprotectedTemporary": [{"domain": "broken.example"}],
+            "features": {
+                "gpc": {"state": "enabled"},
+                "trackerAllowlist": {"state": "enabled"},
+                "autoconsent": {"state": "enabled"},
+                "eventHub": {"state": "enabled"}
+            }
+        }))
+        .when_script_is_rendered();
+
+    assert_eq!(
+        rendered.embedded_configuration(),
+        json!({
+            "version": 7,
+            "unprotectedTemporary": [{"domain": "broken.example"}],
+            "features": {"gpc": {"state": "enabled"}, "trackerAllowlist": {"state": "enabled"}}
+        })
+    );
+}
+
+#[test]
+fn should_send_every_feature_the_vendored_bundle_keeps_and_nothing_else() {
+    let kept = VendoredBundle::read().kept_features();
+    let mut features: serde_json::Map<String, Value> =
+        kept.iter().map(|name| (name.clone(), json!({"state": "enabled"}))).collect();
+    features.insert("autoconsent".to_owned(), json!({"state": "enabled"}));
+
+    ContentScopeScenario::given_template("$CONTENT_SCOPE_JSON$")
+        .with_configuration(json!({"version": 7, "features": features}))
+        .when_script_is_rendered()
+        .then_sends_exactly_the_features(&kept);
 }
 
 #[test]

@@ -25,6 +25,35 @@ impl<'template> ContentScopeScript<'template> {
     const CONFIGURATION_OBJECT: &'static str = "$CONTENT_SCOPE$";
     const USER_UNPROTECTED_DOMAINS: &'static str = "$USER_UNPROTECTED_DOMAINS$";
     const USER_PREFERENCES: &'static str = "$USER_PREFERENCES$";
+    /// Features the bundled `apple` build runs (`platformSupport.apple` in contentScope.js) and those they read
+    /// (`featureConfigDependencies`). The bundle throws every other feature away before using the configuration
+    /// (`pruneConfigFeatures`), so they are left out here instead: every frame tokenizes and parses the
+    /// configuration again, and the discarded part — mostly `autoconsent` — is three quarters of it.
+    /// A test reads this set out of the vendored bundle, so a bundle update cannot silently drop a feature.
+    const BUNDLED_FEATURES: &'static [&'static str] = &[
+        "webCompat",
+        "duckPlayerNative",
+        "fingerprintingAudio",
+        "fingerprintingBattery",
+        "fingerprintingCanvas",
+        "googleRejected",
+        "gpc",
+        "fingerprintingHardware",
+        "referrer",
+        "fingerprintingScreenSize",
+        "fingerprintingTemporaryStorage",
+        "navigatorInterface",
+        "elementHiding",
+        "exceptionHandler",
+        "apiManipulation",
+        "pageContext",
+        "print",
+        "trackerProtection",
+        "textSelection",
+        "contentBlocking",
+        "trackerAllowlist",
+        "clickToLoad",
+    ];
 
     #[must_use]
     pub fn new(template: &'template str) -> Self {
@@ -38,7 +67,8 @@ impl<'template> ContentScopeScript<'template> {
         user_unprotected_domains: &[String],
         preferences: &ContentScopePreferences,
     ) -> String {
-        let configuration_literal = Self::javascript_string_literal(&configuration.document().to_string());
+        let configuration_literal =
+            Self::javascript_string_literal(&Self::bundled_part(configuration.document()).to_string());
         let substitutions = [
             (Self::CONFIGURATION_OBJECT, format!("JSON.parse({configuration_literal})")),
             (Self::CONFIGURATION_LITERAL, configuration_literal),
@@ -70,6 +100,26 @@ impl<'template> ContentScopeScript<'template> {
         }
         rendered.push_str(&self.template[copied_up_to..]);
         rendered
+    }
+
+    /// The configuration with only [`Self::BUNDLED_FEATURES`]; like the bundle, a document without a
+    /// `features` object is passed on as it is.
+    fn bundled_part(document: &Value) -> Value {
+        let (Some(fields), Some(features)) = (document.as_object(), document["features"].as_object()) else {
+            return document.clone();
+        };
+        let kept: serde_json::Map<String, Value> = features
+            .iter()
+            .filter(|(name, _)| Self::BUNDLED_FEATURES.contains(&name.as_str()))
+            .map(|(name, feature)| (name.clone(), feature.clone()))
+            .collect();
+        let mut pruned: serde_json::Map<String, Value> = fields
+            .iter()
+            .filter(|(field, _)| *field != "features")
+            .map(|(field, value)| (field.clone(), value.clone()))
+            .collect();
+        pruned.insert("features".to_owned(), Value::Object(kept));
+        Value::Object(pruned)
     }
 
     /// A JSON string is a valid JavaScript string literal, except that engines before ES2019 reject raw

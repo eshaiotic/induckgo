@@ -5,12 +5,17 @@
 //! and the state that feeds them (privacy configuration, Tracker Data Set, sites the user unprotected).
 //!
 //! Pages must not load before tracker blocking is active: [`ProfileSession::when_protected`] holds a load
-//! back until the first rule lists are compiled, which takes a moment only on the very first start.
+//! back until rule lists are active. Building the tracker list from the Tracker Data Set costs a few tenths of
+//! a second of processor time, so it runs on a worker thread, and a start does not wait for it: the list
+//! compiled last time is activated at once (as DuckDuckGo's macOS app does), then replaced if the new one
+//! differs. Only the very first start, with nothing compiled yet, waits for the full compilation.
 
 use std::cell::Cell;
 use std::cell::RefCell;
 use std::rc::Rc;
 use std::rc::Weak;
+use std::sync::Arc;
+use std::time::Instant;
 
 use induckgo_core::navigation::https_upgrade_policy::HttpsUpgradePolicy;
 use induckgo_core::profile::profile_directories::ProfileLocation;
@@ -32,6 +37,7 @@ use crate::download_tracker::DownloadTracker;
 use crate::http_client::HttpClient;
 use crate::installation_paths::InstallationPaths;
 use crate::page_protections::PageProtections;
+use crate::page_protections::PreparedRuleList;
 use crate::page_protections::RuleList;
 use crate::protection_feed::ProtectionDocuments;
 use crate::protection_feed::ProtectionFeed;
@@ -44,10 +50,30 @@ enum Readiness {
 
 /// What the rule lists and the content scope script are built from.
 struct ProtectionInputs {
-    tracker_data: Option<TrackerDataSet>,
+    tracker_data: Option<Arc<TrackerDataSet>>,
     configuration: Option<PrivacyConfiguration>,
     unprotected_sites: UnprotectedSites,
     https_upgrades: HttpsUpgradePolicy,
+}
+
+/// What the tracker list is built from, owned so that a worker thread can build it.
+struct TrackerListInputs {
+    tracker_data: Arc<TrackerDataSet>,
+    exceptions: RuleExceptions,
+    is_enabled: bool,
+}
+
+impl TrackerListInputs {
+    const NAME: &'static str = "trackers";
+
+    fn prepared(&self) -> PreparedRuleList {
+        let rules = if self.is_enabled {
+            ContentBlockerRulesBuilder::new(&self.tracker_data).build_rules(&self.exceptions)
+        } else {
+            Vec::new()
+        };
+        RuleList { name: Self::NAME, rules }.prepared()
+    }
 }
 
 pub struct ProfileSession {
@@ -62,6 +88,7 @@ pub struct ProfileSession {
     readiness: RefCell<Readiness>,
     /// Bumped by every rebuild; a slower, older rebuild never overwrites a newer one.
     generation: Cell<u64>,
+    started: Instant,
     _downloads: DownloadTracker,
 }
 
@@ -96,6 +123,7 @@ impl ProfileSession {
             }),
             readiness: RefCell::new(Readiness::Waiting(Vec::new())),
             generation: Cell::new(0),
+            started: Instant::now(),
         });
         if let Some(documents) = session.feed.cached() {
             session.adopt(documents);
@@ -227,7 +255,7 @@ impl ProfileSession {
             let configuration =
                 PrivacyConfiguration::new(documents.configuration, PageProtections::COMPATIBILITY_VERSION);
             inputs.https_upgrades.set_excluded_domains(&configuration.exception_domains(Self::HTTPS_FEATURE));
-            inputs.tracker_data = Some(TrackerDataSet::from_json(&documents.tracker_data));
+            inputs.tracker_data = Some(Arc::new(TrackerDataSet::from_json(&documents.tracker_data)));
             inputs.configuration = Some(configuration);
         }
         self.rebuild(|| {});
@@ -236,7 +264,7 @@ impl ProfileSession {
     /// Rebuilds rule lists and script from the current inputs, then activates them and runs `then`.
     fn rebuild(self: &Rc<Self>, then: impl FnOnce() + 'static) {
         self.install_content_scope_script();
-        let Some(lists) = self.rule_lists() else {
+        let Some((trackers, other_lists)) = self.rule_inputs() else {
             then();
             return;
         };
@@ -245,7 +273,15 @@ impl ProfileSession {
         let session = Rc::downgrade(self);
         glib::spawn_future_local(async move {
             let Some(live) = session.upgrade() else { return };
-            let filters = live.protections.compile(lists).await;
+            if trackers.is_enabled && live.is_waiting() {
+                live.protect_with_last_tracker_list(&other_lists).await;
+            }
+            let Ok(trackers) = gio::spawn_blocking(move || trackers.prepared()).await else {
+                glib::g_critical!(Self::LOG_DOMAIN, "building the tracker rule list failed");
+                return;
+            };
+            let lists: Vec<PreparedRuleList> = std::iter::once(trackers).chain(other_lists).collect();
+            let filters = live.protections.compile(&lists).await;
             if live.generation.get() != generation {
                 return;
             }
@@ -255,6 +291,22 @@ impl ProfileSession {
         });
     }
 
+    /// Lets pages load under the tracker list compiled last time, with fresh HTTPS and link lists (cheap to
+    /// build, and the HTTPS one must not carry over exemptions the user allowed in an earlier session).
+    async fn protect_with_last_tracker_list(&self, other_lists: &[PreparedRuleList]) {
+        let Some(last_trackers) = self.protections.last_compiled(TrackerListInputs::NAME).await else { return };
+        let mut filters = vec![last_trackers];
+        filters.extend(self.protections.compile(other_lists).await);
+        if self.is_waiting() {
+            self.protections.activate(&filters);
+            self.mark_protected();
+        }
+    }
+
+    fn is_waiting(&self) -> bool {
+        matches!(*self.readiness.borrow(), Readiness::Waiting(_))
+    }
+
     fn install_content_scope_script(&self) {
         let inputs = self.inputs.borrow();
         if let Some(configuration) = &inputs.configuration {
@@ -262,17 +314,17 @@ impl ProfileSession {
         }
     }
 
-    fn rule_lists(&self) -> Option<Vec<RuleList>> {
+    /// The tracker list's inputs (built later, on a worker thread) and the other lists, ready for WebKit.
+    fn rule_inputs(&self) -> Option<(TrackerListInputs, Vec<PreparedRuleList>)> {
         let inputs = self.inputs.borrow();
         let (Some(tracker_data), Some(configuration)) = (&inputs.tracker_data, &inputs.configuration) else {
             return None;
         };
         let user_hosts = inputs.unprotected_sites.hosts_to_match();
-        let trackers = if configuration.is_enabled(RuleExceptions::CONTENT_BLOCKING) {
-            let exceptions = RuleExceptions::from_configuration(configuration, user_hosts.clone());
-            ContentBlockerRulesBuilder::new(tracker_data).build_rules(&exceptions)
-        } else {
-            Vec::new()
+        let trackers = TrackerListInputs {
+            tracker_data: Arc::clone(tracker_data),
+            exceptions: RuleExceptions::from_configuration(configuration, user_hosts.clone()),
+            is_enabled: configuration.is_enabled(RuleExceptions::CONTENT_BLOCKING),
         };
         let https = if configuration.is_enabled(Self::HTTPS_FEATURE) {
             inputs.https_upgrades.content_rules()
@@ -280,16 +332,21 @@ impl ProfileSession {
             Vec::new()
         };
         let links = TrackingParameterRemover::new(configuration, &user_hosts).content_rules();
-        Some(vec![
-            RuleList { name: "trackers", rules: trackers },
-            RuleList { name: "https", rules: https },
-            RuleList { name: "links", rules: links },
-        ])
+        let other_lists = vec![
+            RuleList { name: "https", rules: https }.prepared(),
+            RuleList { name: "links", rules: links }.prepared(),
+        ];
+        Some((trackers, other_lists))
     }
 
     fn mark_protected(&self) {
         let previous = self.readiness.replace(Readiness::Protected);
         if let Readiness::Waiting(pending) = previous {
+            glib::g_debug!(
+                Self::LOG_DOMAIN,
+                "pages protected {} ms after the session started",
+                self.started.elapsed().as_millis()
+            );
             for action in pending {
                 action();
             }

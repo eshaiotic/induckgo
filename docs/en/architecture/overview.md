@@ -129,6 +129,15 @@ therefore builds three separate lists, so the exceptions of one feature cannot d
 about a second, so the compiled result is kept on disk next to a fingerprint (hash) of the source; an
 unchanged list is loaded instead of compiled.
 
+Even an unchanged tracker list costs something: building its 7,000 rules and serializing them (4.7 MB of
+JSON) to compute the fingerprint takes 0.1–0.2 s of processor time, more on a busy machine. That work runs
+on a worker thread (`gio::spawn_blocking`), and a start does not wait for it: like DuckDuckGo's macOS app,
+the session first activates the tracker list compiled last time, so pages load at once, and swaps in the new
+list when it is ready and differs. The `https` and `links` lists are always built fresh before the first
+page — they take well under a millisecond, and a stored `https` list could still exempt hosts the user
+allowed to load insecurely in an earlier session. Only the very first start, with nothing compiled yet, waits
+for the whole compilation.
+
 ### 5.3 Reacting to blocked and failed loads
 
 The rules act before a request leaves the machine. Two of them need help from the page afterwards
@@ -146,8 +155,14 @@ The rules act before a request leaves the machine. Two of them need help from th
 
 `ContentScopeScript` fills the C-S-S template with the privacy configuration, the user's unprotected sites
 and the preferences (GPC on, a random session key and message secret per process, the UI language). It runs
-at document start in every frame, in the page's own JavaScript world, as DuckDuckGo's macOS app does. Its
-messages arrive at the `contentScopeScripts` handler, which answers notifications with `{}` and requests
+at document start in every frame, in the page's own JavaScript world, as DuckDuckGo's macOS app does.
+
+Because every frame parses the embedded configuration again, `ContentScopeScript` embeds only the features
+the bundled `apple` build runs (`platformSupport.apple` plus their `featureConfigDependencies`). The bundle
+itself discards all other features first thing (`pruneConfigFeatures`), so the result is identical, but each
+frame now reads about 165 KB of configuration instead of 840 KB (`autoconsent` alone is 520 KB) and the script
+shrinks from 1.36 MB to 0.67 MB. A test reads that feature set out of the vendored bundle, so updating C-S-S
+cannot silently drop a feature. Its messages arrive at the `contentScopeScripts` handler, which answers notifications with `{}` and requests
 with an error object, since InDuckGo implements none of the native features they ask for.
 
 ### 5.5 Fire

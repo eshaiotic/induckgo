@@ -33,8 +33,16 @@ pub struct RuleList {
 }
 
 impl RuleList {
-    fn source(&self) -> String {
-        Value::Array(self.rules.iter().map(ContentBlockerRule::to_json).collect()).to_string()
+    /// The list as WebKit reads it. For the tracker list this takes a tenth of a second or more, which is why
+    /// `ProfileSession` prepares that list on a worker thread.
+    pub fn prepared(&self) -> PreparedRuleList {
+        let source = Value::Array(self.rules.iter().map(ContentBlockerRule::to_json).collect()).to_string();
+        PreparedRuleList {
+            name: self.name,
+            fingerprint: Self::fingerprint(&source),
+            source,
+            is_empty: self.rules.is_empty(),
+        }
     }
 
     fn fingerprint(source: &str) -> String {
@@ -42,6 +50,14 @@ impl RuleList {
         source.hash(&mut hasher);
         format!("{:016x}", hasher.finish())
     }
+}
+
+/// A rule list serialized for WebKit, with a fingerprint telling whether the stored compiled copy is current.
+pub struct PreparedRuleList {
+    name: &'static str,
+    source: String,
+    fingerprint: String,
+    is_empty: bool,
 }
 
 pub struct PageProtections {
@@ -101,11 +117,20 @@ impl PageProtections {
         self.content_manager.add_script(&script);
     }
 
+    /// The list compiled last time, if WebKit still has it. The store belongs to this profile alone, so this
+    /// is the profile's own last list: it can protect pages while the current one is being built.
+    pub async fn last_compiled(&self, name: &str) -> Option<UserContentFilter> {
+        if !self.marker(name).exists() {
+            return None;
+        }
+        self.filter_store.load_future(name).await.ok()
+    }
+
     /// Compiles (or loads) every non-empty list; a list WebKit rejects is logged and left out.
-    pub async fn compile(&self, lists: Vec<RuleList>) -> Vec<UserContentFilter> {
+    pub async fn compile(&self, lists: &[PreparedRuleList]) -> Vec<UserContentFilter> {
         let mut filters = Vec::new();
-        for list in lists.into_iter().filter(|list| !list.rules.is_empty()) {
-            match self.compiled(&list).await {
+        for list in lists.iter().filter(|list| !list.is_empty) {
+            match self.compiled(list).await {
                 Ok(filter) => filters.push(filter),
                 Err(error) => glib::g_critical!(Self::LOG_DOMAIN, "rule list {} rejected: {error}", list.name),
             }
@@ -121,20 +146,23 @@ impl PageProtections {
         }
     }
 
-    async fn compiled(&self, list: &RuleList) -> Result<UserContentFilter, glib::Error> {
-        let source = list.source();
-        let fingerprint = RuleList::fingerprint(&source);
-        let marker = StoredFile::new(self.filter_store_path.join(format!("{}.fingerprint", list.name)));
-        if marker.read_text().as_deref() == Some(fingerprint.as_str())
+    async fn compiled(&self, list: &PreparedRuleList) -> Result<UserContentFilter, glib::Error> {
+        let marker = self.marker(list.name);
+        if marker.read_text().as_deref() == Some(list.fingerprint.as_str())
             && let Ok(filter) = self.filter_store.load_future(list.name).await
         {
             return Ok(filter);
         }
-        let filter = self.filter_store.save_future(list.name, &glib::Bytes::from_owned(source.into_bytes())).await?;
-        if let Err(error) = marker.write(fingerprint.as_bytes()) {
+        let filter = self.filter_store.save_future(list.name, &glib::Bytes::from(list.source.as_bytes())).await?;
+        if let Err(error) = marker.write(list.fingerprint.as_bytes()) {
             glib::g_warning!(Self::LOG_DOMAIN, "cannot record rule list fingerprint: {error}");
         }
         Ok(filter)
+    }
+
+    /// Fingerprint of the source the stored compiled list `name` was made from.
+    fn marker(&self, name: &str) -> StoredFile {
+        StoredFile::new(self.filter_store_path.join(format!("{name}.fingerprint")))
     }
 
     /// Two-letter language of the user interface (`pl` from `pl_PL.UTF-8`).

@@ -131,6 +131,15 @@ buduje trzy osobne listy, żeby wyjątki jednej funkcji nie wyłączyły innej:
 trwa około sekundy, więc wynik jest trzymany na dysku obok odcisku (hasha) źródła. Niezmieniona lista jest
 wczytywana zamiast kompilowana.
 
+Nawet niezmieniona lista trackerów kosztuje: zbudowanie jej 7000 reguł i serializacja (4,7 MB JSON-a) tylko po
+to, by policzyć odcisk, zajmuje 0,1–0,2 s procesora, a na obciążonej maszynie więcej. Ta praca idzie na wątek
+roboczy (`gio::spawn_blocking`), a start na nią nie czeka. Tak jak aplikacja DuckDuckGo na macOS, sesja
+najpierw włącza listę trackerów skompilowaną poprzednio, więc strony ładują się od razu, a nową listę podmienia,
+gdy jest gotowa i się różni. Listy `https` i `links` są zawsze budowane od nowa przed pierwszą stroną. Zajmują
+znacznie poniżej milisekundy, a zapisana lista `https` mogłaby wciąż zwalniać hosty, które użytkownik pozwolił
+wczytać bez szyfrowania w poprzedniej sesji. Tylko pierwszy w historii start, bez niczego skompilowanego, czeka
+na całą kompilację.
+
 ### 5.3 Reakcja na zablokowane i nieudane wczytania
 
 Reguły działają, zanim żądanie opuści komputer. Dwie z nich potrzebują potem pomocy strony (`PageView`):
@@ -148,7 +157,14 @@ Reguły działają, zanim żądanie opuści komputer. Dwie z nich potrzebują po
 `ContentScopeScript` wypełnia szablon C-S-S konfiguracją prywatności, niechronionymi witrynami użytkownika i
 preferencjami (GPC włączone, losowy klucz sesji i sekret wiadomości na proces, język interfejsu). Skrypt
 działa na starcie dokumentu w każdej ramce, w świecie JavaScript strony, tak jak w aplikacji DuckDuckGo na
-macOS. Jego wiadomości trafiają do handlera `contentScopeScripts`. Handler odpowiada `{}` na powiadomienia i
+macOS.
+
+Każda ramka parsuje osadzoną konfigurację od nowa, dlatego `ContentScopeScript` osadza tylko funkcje, które
+uruchamia dołączony build `apple` (`platformSupport.apple` i ich `featureConfigDependencies`). Bundle sam
+odrzuca wszystkie pozostałe funkcje na samym początku (`pruneConfigFeatures`), więc wynik jest identyczny, ale
+każda ramka czyta teraz ok. 165 KB konfiguracji zamiast 840 KB (sam `autoconsent` to 520 KB), a skrypt maleje z
+1,36 MB do 0,67 MB. Test odczytuje ten zbiór funkcji z dołączonego bundla, więc aktualizacja C-S-S nie może po
+cichu wyłączyć żadnej funkcji. Wiadomości skryptu trafiają do handlera `contentScopeScripts`. Handler odpowiada `{}` na powiadomienia i
 obiektem błędu na żądania, bo InDuckGo nie implementuje natywnych funkcji, o które proszą.
 
 ### 5.5 Ogień

@@ -22,17 +22,20 @@ InDuckGo is an independent project. It is not affiliated with or endorsed by Duc
 
 ---
 
-## Measured against Chrome and Brave
+## Measured against Chrome and Brave, compared with DuckDuckGo
 
-Fresh profiles of all three browsers ran at the same time on 2026-11-02, behind a proxy that recorded only
-host names. Trackers were judged by a neutral list (Disconnect's), each server counted once per site.
+Fresh profiles of Chrome, Brave and InDuckGo ran at the same time on 2026-11-02, behind a proxy that recorded
+only host names. Trackers were judged by a neutral list (Disconnect's), each server counted once per site.
 
-| | Chrome | Brave | InDuckGo |
-|---|---|---|---|
-| Trackers let through on 12 popular sites | 94 | 5 | **2** |
-| … of which ad servers | 75 | 4 | **1** |
-| Connections in 5 minutes of doing nothing | 46 to 15 hosts | 43 to 12 hosts | **20 to 8 hosts** |
-| Fingerprint seen by sites | the same everywhere | changes per site, kept across restarts | **changes per site and per session** |
+| | Chrome | Brave | DuckDuckGo¹ | InDuckGo |
+|---|---|---|---|---|
+| Trackers let through on 12 popular sites | 94 | 5 | not measured | **2** |
+| … of which ad servers | 75 | 4 | not measured | **1** |
+| Connections in 5 minutes of doing nothing | 46 to 15 hosts | 43 to 12 hosts | not measured | **20 to 8 hosts** |
+| Fingerprint seen by sites | the same everywhere | changes per site, kept across restarts | not measured; its canvas and audio defences are off on macOS | **changes per site and per session** |
+
+¹ DuckDuckGo makes no browser for Linux, so it could not run on the same machine at the same time. Its
+features are compared, without a measurement, in the [next table](#compared-with-duckduckgos-own-browser).
 
 InDuckGo's idle connections fetch its protection data (DuckDuckGo's tracker list and privacy configuration,
 Guard's filter lists) and load the DuckDuckGo start page. The method, every host and the places where

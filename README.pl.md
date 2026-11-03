@@ -22,17 +22,20 @@ InDuckGo to niezależny projekt. Nie jest powiązany z Duck Duck Go, Inc. ani pr
 
 ---
 
-## Zmierzone wobec Chrome i Brave
+## Zmierzone wobec Chrome i Brave, porównane z DuckDuckGo
 
-Świeże profile trzech przeglądarek działały jednocześnie 2026-11-02, za proxy, które zapisywało tylko nazwy
-hostów. Trackery ocenia neutralna lista (Disconnect), każdy serwer liczony raz na serwis.
+Świeże profile Chrome, Brave i InDuckGo działały jednocześnie 2026-11-02, za proxy, które zapisywało tylko
+nazwy hostów. Trackery ocenia neutralna lista (Disconnect), każdy serwer liczony raz na serwis.
 
-| | Chrome | Brave | InDuckGo |
-|---|---|---|---|
-| Trackery przepuszczone na 12 popularnych serwisach | 94 | 5 | **2** |
-| … w tym serwery reklam | 75 | 4 | **1** |
-| Połączenia przez 5 minut bezczynności | 46 do 15 hostów | 43 do 12 hostów | **20 do 8 hostów** |
-| Odcisk przeglądarki widziany przez serwisy | wszędzie ten sam | inny na każdym serwisie, ten sam po restarcie | **inny na każdym serwisie i w każdej sesji** |
+| | Chrome | Brave | DuckDuckGo¹ | InDuckGo |
+|---|---|---|---|---|
+| Trackery przepuszczone na 12 popularnych serwisach | 94 | 5 | niezmierzone | **2** |
+| … w tym serwery reklam | 75 | 4 | niezmierzone | **1** |
+| Połączenia przez 5 minut bezczynności | 46 do 15 hostów | 43 do 12 hostów | niezmierzone | **20 do 8 hostów** |
+| Odcisk przeglądarki widziany przez serwisy | wszędzie ten sam | inny na każdym serwisie, ten sam po restarcie | niezmierzony; ochrona canvas i audio wyłączona na macOS | **inny na każdym serwisie i w każdej sesji** |
+
+¹ DuckDuckGo nie wydaje przeglądarki na Linuksa, więc nie mogła działać na tej samej maszynie w tym samym
+czasie. Jej funkcje porównuje, bez pomiaru, [następna tabela](#porównanie-z-przeglądarką-duckduckgo).
 
 Połączenia InDuckGo w bezczynności pobierają dane ochrony (listę trackerów i konfigurację prywatności
 DuckDuckGo, listy filtrów Guarda) i ładują stronę startową DuckDuckGo. Metoda, wszystkie hosty i miejsca, w

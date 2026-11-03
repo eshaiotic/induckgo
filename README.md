@@ -84,6 +84,11 @@ cargo audit                     # dependency vulnerabilities
 - [Engineering rules](docs/en/engineering-rules.md) — Object Oriented Programming First, OO Given/When/Then tests.
 - Polish mirrors live under [docs/pl](docs/pl).
 
+## Licence
+
+InDuckGo is free software under the [GNU General Public License, version 3 or later](LICENSE)
+(`GPL-3.0-or-later`). Attributions are in [NOTICE](NOTICE).
+
 ## Licences of third-party data
 
 - Content Scope Scripts 20.0.0 — Apache-2.0, vendored in `assets/content-scope-scripts` with its licence.

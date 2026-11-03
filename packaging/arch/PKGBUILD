@@ -9,7 +9,7 @@ pkgver=1.0.0
 pkgrel=1
 pkgdesc="Privacy-first WebKitGTK browser built on DuckDuckGo's open-source tracker protections"
 arch=('x86_64' 'aarch64')
-license=('Apache-2.0')
+license=('GPL-3.0-or-later')
 depends=('gcc-libs' 'glib2' 'glibc' 'gtk4' 'hicolor-icon-theme' 'libadwaita' 'libsoup3' 'webkitgtk-6.0')
 makedepends=('cargo')
 # The release profile strips symbols, so a separate debug package would be empty.

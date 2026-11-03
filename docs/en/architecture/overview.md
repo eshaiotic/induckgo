@@ -229,8 +229,9 @@ Brave Shields also read community filter lists, which is why Brave blocked more 
 closes that gap and goes past it in four ways: more lists, rules that also apply to a site's own requests,
 fingerprinting defences DuckDuckGo leaves off, and the GPC header.
 
-**Filter lists.** `FilterListFeed` downloads nine lists from their publishers. Their licences do not fit an
-Apache-2.0 package, so, like the TDS, they are never bundled:
+**Filter lists.** `FilterListFeed` downloads nine lists from their publishers. Several of their licences do not
+fit InDuckGo's GPL-3.0-or-later package: CC BY-NC-SA 4.0 forbids commercial use and CC BY-SA 3.0 is
+incompatible with the GPL. So, like the TDS, they are never bundled:
 
 | List | Blocks | Licence |
 |---|---|---|

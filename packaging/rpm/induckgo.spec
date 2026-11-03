@@ -8,7 +8,7 @@ Name:           induckgo
 Version:        1.0.0
 Release:        1%{?dist}
 Summary:        Privacy-first WebKitGTK browser built on DuckDuckGo's open-source tracker protections
-License:        Apache-2.0
+License:        GPL-3.0-or-later
 Source0:        %{name}-%{version}.tar.gz
 
 BuildRequires:  cargo

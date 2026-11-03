@@ -19,11 +19,15 @@ Upstream-Name: InDuckGo
 
 Files: *
 Copyright: 2026 Michał Ligus
-License: Apache-2.0
+License: GPL-3.0-or-later
 
 Files: assets/content-scope-scripts/*
 Copyright: 2010-2021 Duck Duck Go, Inc.
 License: Apache-2.0
+
+License: GPL-3.0-or-later
+ On Debian systems, the full text of the GNU General Public License, version 3 can be found in
+ /usr/share/common-licenses/GPL-3.
 
 License: Apache-2.0
  On Debian systems, the full text of the Apache License, Version 2.0 can be found in

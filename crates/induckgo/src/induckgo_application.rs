@@ -210,7 +210,7 @@ impl InDuckGoApplication {
             .application_name("InDuckGo")
             .application_icon(AppIcons::APPLICATION)
             .version(env!("CARGO_PKG_VERSION"))
-            .license_type(gtk::License::Apache20)
+            .license_type(gtk::License::Gpl30)
             .comments(
                 "A privacy-first browser for Linux built on DuckDuckGo's open-source protections. \
                  Not affiliated with or endorsed by DuckDuckGo.",

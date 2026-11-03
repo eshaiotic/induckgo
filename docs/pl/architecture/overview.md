@@ -233,8 +233,9 @@ trzecia. Brave Shields czytają też listy filtrów społeczności, dlatego w na
 Guard zamyka tę lukę i idzie dalej na cztery sposoby: więcej list, reguły działające też na własne żądania
 strony, ochrona przed fingerprintingiem, którą DuckDuckGo zostawia wyłączoną, oraz nagłówek GPC.
 
-**Listy filtrów.** `FilterListFeed` pobiera dziewięć list od ich wydawców. Ich licencje nie pasują do paczki
-Apache-2.0, więc tak jak TDS nigdy nie są dołączane:
+**Listy filtrów.** `FilterListFeed` pobiera dziewięć list od ich wydawców. Część ich licencji nie pasuje do
+paczki InDuckGo na GPL-3.0-or-later: CC BY-NC-SA 4.0 zabrania użytku komercyjnego, a CC BY-SA 3.0 jest
+niezgodna z GPL. Dlatego, tak jak TDS, nigdy nie są dołączane:
 
 | Lista | Co blokuje | Licencja |
 |---|---|---|

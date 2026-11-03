@@ -509,6 +509,12 @@ przez wskaźnik do tymczasowego, już zwolnionego napisu i wywracało aplikacje 
   wpisane w pasek adresu lub podane w wierszu poleceń, jaką stronę główną otwiera nowa karta i jaką wyszukiwarkę
   strona błędu proponuje dla błędnie wpisanej nazwy. Wyszukiwanie jest zwykłą nawigacją, więc ochrona działa też
   na stronach samej wyszukiwarki. Zapisana wyszukiwarka, której InDuckGo nie oferuje, jest czytana jako DuckDuckGo.
+- **Przyciski paska narzędzi**: *Preferences…* (menu okna, `Ctrl+,`) włącza i wyłącza każdy przycisk wokół
+  paska adresu osobno w każdym profilu (`ToolbarLayout`, zapis w `toolbar.json` profilu; `ToolbarPreferences`
+  dzieli go ze wszystkimi oknami procesu, więc przełącznik działa we wszystkich naraz). Plik wymienia przyciski
+  *ukryte*, więc przycisk dodany w późniejszej wersji pokaże się sam. Paska adresu i menu nie da się ukryć, bo
+  inaczej nie dałoby się wrócić do preferencji. Przycisk z cebulą otwiera okno Tor (§4.1); samo okno Tor nie
+  należy do żadnego profilu, pokazuje wszystkie przyciski i nie oferuje preferencji.
 - **Zoom strony** przechodzi przez rozmiary DuckDuckGo (`ZoomLevel`: 50, 75, 85, 100, 115, 125, 150, 175, 200, 250
   i 300 %) skrótami Ctrl `+`/`-`/`0` (także na klawiaturze numerycznej), Ctrl z kółkiem myszy albo rzędem zoomu
   w menu okna. Rozmiar inny niż 100 % widać jako znaczek obok paska adresu (w aplikacji webowej w nagłówku);

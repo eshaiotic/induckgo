@@ -14,7 +14,7 @@ through InDuckGo's own Tor.
 
 [![tests](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml/badge.svg)](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml)
 [![release](https://img.shields.io/github/v/release/eshaiotic/induckgo?color=6A5ACD)](https://github.com/eshaiotic/induckgo/releases/latest)
-![cargo nextest](https://img.shields.io/badge/cargo%20nextest-420%20tests-success)
+![cargo nextest](https://img.shields.io/badge/cargo%20nextest-426%20tests-success)
 ![stack](https://img.shields.io/badge/stack-Rust%20%E2%80%A2%20GTK%204%20%E2%80%A2%20WebKitGTK%206.0-8E7FE8)
 ![telemetry](https://img.shields.io/badge/telemetry-none-FFB300)
 [![licence](https://img.shields.io/badge/licence-GPL--3.0--or--later-2E1A87)](LICENSE)
@@ -105,7 +105,8 @@ turns any site — your bank, your mailbox — into a desktop application with t
 its own isolated session; a link you click inside it to another site opens in the browser, so the app's
 login never meets foreign pages.
 
-**Tor window.** *New Tor Window* in the menu (`Alt+Shift+N`, or `induckgo --tor`) opens a window whose every
+**Tor window.** The onion button on the toolbar, *New Tor Window* in the menu (`Alt+Shift+N`) or
+`induckgo --tor` opens a window whose every
 request goes through Tor, so sites see a Tor exit relay instead of your address. InDuckGo starts its own `tor`
 for it, never a system-wide Tor service, and shows the connection's progress until Tor is ready; until then
 no page loads, and nothing ever falls back to a direct connection. Its cookies, cache and settings live in
@@ -113,6 +114,10 @@ memory only, WebRTC is off, it searches DuckDuckGo's onion service and opens `.o
 blocked, *Tor Connection…* offers Snowflake, obfs4 (with Tor Browser's built-in bridges) or bridges of your
 own. The Fire button becomes *New Identity*: data deleted, new Tor circuits. It hides your address, not that
 you use InDuckGo: where being indistinguishable among Tor users matters, use Tor Browser.
+
+**Toolbar.** *Preferences…* in the menu (`Ctrl+,`) chooses which buttons the toolbar shows around the address
+bar (back and forward, reload, the Tor window's onion, the protection shield, Fire, new tab, the install icon),
+separately in every profile.
 
 ---
 
@@ -198,8 +203,8 @@ Installed web apps start from the desktop's application menu (`induckgo --web-ap
 
 ## Testing
 
-Stack: **cargo-nextest** — 420 object-oriented Given/When/Then scenarios: 359 for the domain in
-`crates/induckgo-core/tests/` (41 files, one per domain type) and 61 for the report tool in
+Stack: **cargo-nextest** — 426 object-oriented Given/When/Then scenarios: 365 for the domain in
+`crates/induckgo-core/tests/` (42 files, one per domain type) and 61 for the report tool in
 `crates/induckgo-test-report/tests/`.
 
 ```sh

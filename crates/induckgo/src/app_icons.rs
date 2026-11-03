@@ -13,9 +13,11 @@ impl AppIcons {
     pub const APPLICATION: &'static str = "io.github.induckgo.InDuckGo";
     pub const FIRE: &'static str = "induckgo-fire-symbolic";
     pub const INSTALL_APP: &'static str = "induckgo-install-app-symbolic";
+    pub const TOR_WINDOW: &'static str = "induckgo-tor-symbolic";
     const APPLICATION_SVG: &'static str = include_str!("../../../assets/icons/io.github.induckgo.InDuckGo.svg");
     const FIRE_SVG: &'static str = include_str!("../../../assets/icons/induckgo-fire-symbolic.svg");
     const INSTALL_APP_SVG: &'static str = include_str!("../../../assets/icons/induckgo-install-app-symbolic.svg");
+    const TOR_WINDOW_SVG: &'static str = include_str!("../../../assets/icons/induckgo-tor-symbolic.svg");
     const LOG_DOMAIN: &'static str = "induckgo";
 
     pub fn new(paths: &InstallationPaths) -> Self {
@@ -28,6 +30,7 @@ impl AppIcons {
             (self.application_icon(), Self::APPLICATION_SVG),
             (self.symbolic_icon(Self::FIRE), Self::FIRE_SVG),
             (self.symbolic_icon(Self::INSTALL_APP), Self::INSTALL_APP_SVG),
+            (self.symbolic_icon(Self::TOR_WINDOW), Self::TOR_WINDOW_SVG),
         ];
         for (path, svg) in icons {
             let file = StoredFile::new(&path);

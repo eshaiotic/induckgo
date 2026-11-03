@@ -499,6 +499,12 @@ temporary string that has already been freed, and it crashed web apps on their f
   the address bar or passed on the command line goes, which home page a new tab opens, and which engine an error
   page offers for a mistyped name. A search is an ordinary navigation, so the protections apply to the engine's
   own pages too. A stored engine InDuckGo does not offer reads as DuckDuckGo.
+- **Toolbar buttons**: *Preferences…* (window menu, `Ctrl+,`) switches each button around the address bar on or
+  off per profile (`ToolbarLayout`, saved in the profile's `toolbar.json`; `ToolbarPreferences` shares it with
+  every window of the process, so a switch takes effect in all of them at once). The file lists the *hidden*
+  buttons, so a button added by a later version shows up by itself. The address bar and the menu cannot be
+  hidden, or the preferences could not be reached again. The onion button opens the Tor window (§4.1); the Tor
+  window itself belongs to no profile, shows every button and offers no preferences.
 - **Page zoom** steps through DuckDuckGo's sizes (`ZoomLevel`: 50, 75, 85, 100, 115, 125, 150, 175, 200, 250 and
   300 %) with Ctrl `+`/`-`/`0` (also on the keypad), Ctrl with the scroll wheel, or the zoom row of the window
   menu. A size other than 100 % shows as a badge next to the address bar (in a web app, in the header); clicking

@@ -14,7 +14,7 @@ bez rozszerzeń do pilnowania, każdy profil i każda zainstalowana aplikacja we
 
 [![tests](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml/badge.svg)](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml)
 [![release](https://img.shields.io/github/v/release/eshaiotic/induckgo?color=6A5ACD)](https://github.com/eshaiotic/induckgo/releases/latest)
-![cargo nextest](https://img.shields.io/badge/cargo%20nextest-420%20test%C3%B3w-success)
+![cargo nextest](https://img.shields.io/badge/cargo%20nextest-426%20test%C3%B3w-success)
 ![stack](https://img.shields.io/badge/stack-Rust%20%E2%80%A2%20GTK%204%20%E2%80%A2%20WebKitGTK%206.0-8E7FE8)
 ![telemetria](https://img.shields.io/badge/telemetria-brak-FFB300)
 [![licencja](https://img.shields.io/badge/licencja-GPL--3.0--or--later-2E1A87)](LICENSE)
@@ -105,7 +105,8 @@ dowolny serwis — bank, pocztę — w aplikację na pulpicie z ikoną serwisu. 
 odizolowaną sesję; link do innego serwisu kliknięty w aplikacji otwiera się w przeglądarce, więc logowanie
 aplikacji nigdy nie spotyka obcych stron.
 
-**Okno Tor.** *New Tor Window* w menu (`Alt+Shift+N` albo `induckgo --tor`) otwiera okno, którego każde żądanie
+**Okno Tor.** Przycisk z cebulą na pasku narzędzi, *New Tor Window* w menu (`Alt+Shift+N`) albo
+`induckgo --tor` otwiera okno, którego każde żądanie
 idzie przez Tora, więc serwisy widzą przekaźnik wyjściowy Tora zamiast Twojego adresu. InDuckGo uruchamia dla
 niego własny `tor`, nigdy ogólnosystemową usługę Tor, i pokazuje postęp łączenia, aż Tor będzie gotowy; do
 tego czasu żadna strona się nie wczytuje i nic nigdy nie przechodzi na połączenie bezpośrednie. Ciasteczka,
@@ -114,6 +115,10 @@ onion DuckDuckGo, a strony `.onion` się otwierają. Tam, gdzie Tor jest blokowa
 Snowflake, obfs4 (z wbudowanymi mostami Tor Browsera) albo własne mosty. Przycisk Fire staje się *New
 Identity*: dane usunięte, nowe obwody Tora. Okno ukrywa Twój adres, ale nie to, że używasz InDuckGo: gdy liczy
 się nieodróżnialność wśród użytkowników Tora, używaj Tor Browsera.
+
+**Pasek narzędzi.** *Preferences…* w menu (`Ctrl+,`) wybiera, które przyciski pasek pokazuje wokół paska
+adresu (wstecz i dalej, odświeżanie, cebula okna Tor, tarcza ochrony, Fire, nowa karta, ikona instalacji),
+osobno w każdym profilu.
 
 ---
 
@@ -199,8 +204,8 @@ Zainstalowane aplikacje webowe uruchamia się z menu aplikacji pulpitu (`induckg
 
 ## Testy
 
-Stos: **cargo-nextest** — 420 obiektowych scenariuszy Given/When/Then: 359 dla domeny w
-`crates/induckgo-core/tests/` (41 plików, jeden na typ domenowy) i 61 dla narzędzia raportu w
+Stos: **cargo-nextest** — 426 obiektowych scenariuszy Given/When/Then: 365 dla domeny w
+`crates/induckgo-core/tests/` (42 plików, jeden na typ domenowy) i 61 dla narzędzia raportu w
 `crates/induckgo-test-report/tests/`.
 
 ```sh

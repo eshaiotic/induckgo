@@ -29,6 +29,8 @@ use crate::external_launcher::ExternalLauncher;
 use crate::http_client::HttpClient;
 use crate::installation_paths::InstallationPaths;
 use crate::profile_session::ProfileSession;
+use crate::stored_file::StoredFile;
+use crate::toolbar_preferences::ToolbarPreferences;
 use crate::tor_connection::TorConnection;
 use crate::tor_connection::TorState;
 use crate::web_app_window::WebAppWindow;
@@ -42,11 +44,12 @@ pub struct InDuckGoApplication {
 impl InDuckGoApplication {
     const USAGE_ERROR: u8 = 2;
     const NOT_FOUND: u8 = 1;
-    const ACCELERATORS: [(&'static str, &'static [&'static str]); 14] = [
+    const ACCELERATORS: [(&'static str, &'static [&'static str]); 15] = [
         ("win.new-tab", &["<Control>t"]),
         ("win.close-tab", &["<Control>w"]),
         ("app.new-window", &["<Control>n"]),
         ("app.new-tor-window", &["<Alt><Shift>n"]),
+        ("win.preferences", &["<Control>comma"]),
         ("win.focus-address", &["<Control>l", "F6"]),
         ("win.reload", &["<Control>r", "F5"]),
         ("win.back", &["<Alt>Left"]),
@@ -92,14 +95,15 @@ impl InDuckGoApplication {
         let paths = InstallationPaths::from_environment();
         let icons = AppIcons::new(&paths);
         icons.install();
-        let (http, session, tor) = if let Some(profile) = &self.profile {
+        let (http, session, tor, toolbar_file) = if let Some(profile) = &self.profile {
             let http = Rc::new(HttpClient::new());
             let session = ProfileSession::start(profile.clone(), &paths, Rc::clone(&http));
-            (http, session, None)
+            let toolbar_file = StoredFile::new(paths.profile(profile).data.join(ToolbarPreferences::FILE_NAME));
+            (http, session, None, toolbar_file)
         } else {
             let http = Rc::new(HttpClient::awaiting_tor());
             let session = ProfileSession::start_tor(&paths, Rc::clone(&http));
-            (http, Rc::clone(&session), Some(Self::start_tor(&paths, &session)))
+            (http, Rc::clone(&session), Some(Self::start_tor(&paths, &session)), StoredFile::discarded())
         };
         let catalogs = CatalogFiles::new(&paths);
         let _ = self.context.set(Rc::new(AppContext {
@@ -108,6 +112,7 @@ impl InDuckGoApplication {
             catalogs,
             icons,
             session,
+            toolbar: ToolbarPreferences::load(toolbar_file),
             browser_windows: BrowserWindows::default(),
             tor,
         }));

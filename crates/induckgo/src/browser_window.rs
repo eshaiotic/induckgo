@@ -28,6 +28,7 @@ use gtk::prelude::WidgetExt;
 use induckgo_core::navigation::address_bar_input::AddressBarInput;
 use induckgo_core::navigation::search_engine::SearchEngine;
 use induckgo_core::page_zoom::zoom_level::ZoomLevel;
+use induckgo_core::profile::toolbar_layout::ToolbarButton;
 use induckgo_core::protection::domain_name::DomainName;
 use induckgo_core::web_app::installed_web_app::InstalledWebApp;
 use url::Url;
@@ -40,6 +41,7 @@ use crate::find_bar::FindBar;
 use crate::management_dialogs::ProfilesDialog;
 use crate::management_dialogs::WebAppsDialog;
 use crate::page_view::PageView;
+use crate::preferences_dialog::PreferencesDialog;
 use crate::tor_connection::TorConnection;
 use crate::tor_connection::TorState;
 use crate::tor_connection_page::TorConnectionPage;
@@ -64,6 +66,8 @@ pub struct BrowserWindow {
     content: gtk::Stack,
     tor_page: Option<TorConnectionPage>,
     pages: RefCell<Vec<Rc<PageView>>>,
+    /// The header's buttons the profile can hide (`ToolbarPreferences`).
+    toolbar_buttons: RefCell<Vec<(ToolbarButton, gtk::Widget)>>,
     /// Set while the header mirrors the page, so mirroring does not trigger the switch's own handler.
     updating_header: Cell<bool>,
 }
@@ -103,6 +107,7 @@ impl BrowserWindow {
             content: gtk::Stack::new(),
             tor_page: context.tor.as_ref().map(|_| TorConnectionPage::new()),
             pages: RefCell::new(Vec::new()),
+            toolbar_buttons: RefCell::new(Vec::new()),
             updating_header: Cell::new(false),
         });
         browser.build_layout();
@@ -177,12 +182,17 @@ impl BrowserWindow {
 
     fn build_layout(self: &Rc<Self>) {
         let header = adw::HeaderBar::new();
-        for (icon, action, tooltip) in
-            [("go-previous-symbolic", "win.back", "Back"), ("go-next-symbolic", "win.forward", "Forward")]
-        {
-            header
-                .pack_start(&gtk::Button::builder().icon_name(icon).action_name(action).tooltip_text(tooltip).build());
-        }
+        let button = |icon: &str, action: &str, tooltip: &str| -> gtk::Widget {
+            gtk::Button::builder().icon_name(icon).action_name(action).tooltip_text(tooltip).build().upcast()
+        };
+        let back = button("go-previous-symbolic", "win.back", "Back");
+        let forward = button("go-next-symbolic", "win.forward", "Forward");
+        let tor_window = button(AppIcons::TOR_WINDOW, "app.new-tor-window", "New Tor Window");
+        let fire_tooltip = if self.context.tor.is_some() { "New Identity" } else { "Burn Browsing Data" };
+        let fire = button(AppIcons::FIRE, "win.fire", fire_tooltip);
+        let new_tab = button("tab-new-symbolic", "win.new-tab", "New Tab");
+        header.pack_start(&back);
+        header.pack_start(&forward);
         header.pack_start(&self.reload);
         let address_row = gtk::Box::new(gtk::Orientation::Horizontal, 6);
         address_row.append(&self.address);
@@ -199,21 +209,20 @@ impl BrowserWindow {
             }
         });
         header.pack_end(&menu);
-        header.pack_end(
-            &gtk::Button::builder()
-                .icon_name("tab-new-symbolic")
-                .action_name("win.new-tab")
-                .tooltip_text("New Tab")
-                .build(),
-        );
-        header.pack_end(
-            &gtk::Button::builder()
-                .icon_name(AppIcons::FIRE)
-                .action_name("win.fire")
-                .tooltip_text(if self.context.tor.is_some() { "New Identity" } else { "Burn Browsing Data" })
-                .build(),
-        );
+        header.pack_end(&new_tab);
+        header.pack_end(&fire);
         header.pack_end(&self.shield);
+        header.pack_end(&tor_window);
+        self.toolbar_buttons.replace(vec![
+            (ToolbarButton::BackAndForward, back),
+            (ToolbarButton::BackAndForward, forward),
+            (ToolbarButton::Reload, self.reload.clone().upcast()),
+            (ToolbarButton::TorWindow, tor_window),
+            (ToolbarButton::Protections, self.shield.clone().upcast()),
+            (ToolbarButton::BurnData, fire),
+            (ToolbarButton::NewTab, new_tab),
+        ]);
+        self.show_toolbar_buttons();
         let toolbar = adw::ToolbarView::new();
         toolbar.add_top_bar(&header);
         toolbar.add_top_bar(&adw::TabBar::builder().view(&self.tab_view).autohide(true).build());
@@ -271,13 +280,14 @@ impl BrowserWindow {
         }
         let about = gio::Menu::new();
         about.append_submenu(Some("Search Engine"), &search_engines);
+        about.append(Some("Preferences…"), Some("win.preferences"));
         about.append(Some("About InDuckGo"), Some("app.about"));
         menu.append_section(None, &about);
         menu
     }
 
     fn install_actions(self: &Rc<Self>) {
-        let actions: [BrowserCommand; 16] = [
+        let actions: [BrowserCommand; 17] = [
             ("back", |browser| browser.with_web_view(WebViewExt::go_back)),
             ("forward", |browser| browser.with_web_view(WebViewExt::go_forward)),
             ("reload", |browser| {
@@ -305,6 +315,12 @@ impl BrowserWindow {
             ("install-web-app", Self::install_web_app),
             ("manage-web-apps", |browser| WebAppsDialog::present(&browser.context, &browser.window)),
             ("manage-profiles", |browser| ProfilesDialog::present(&browser.context, &browser.window)),
+            ("preferences", |browser| {
+                // The Tor window belongs to no profile, so it has no preferences to change.
+                if browser.context.tor.is_none() {
+                    PreferencesDialog::present(&browser.context, &browser.window);
+                }
+            }),
             ("tor-retry", |browser| browser.context.tor.iter().for_each(TorConnection::start)),
             ("tor-settings", |browser| {
                 browser.context.tor.iter().for_each(|tor| TorSettingsDialog::present(tor, &browser.window));
@@ -414,6 +430,14 @@ impl BrowserWindow {
         self.tab_view.set_selected_page(&tab_page);
     }
 
+    /// Shows the header buttons the profile keeps and hides the others (the preferences changed them).
+    pub fn show_toolbar_buttons(self: &Rc<Self>) {
+        for (button, widget) in self.toolbar_buttons.borrow().iter() {
+            widget.set_visible(self.context.toolbar.shows(*button));
+        }
+        Self::refresh(&Rc::downgrade(self));
+    }
+
     /// Mirrors the selected page into the header: address, security, navigation and protection state.
     fn refresh(browser: &Weak<Self>) {
         let Some(browser) = browser.upgrade() else { return };
@@ -440,7 +464,10 @@ impl BrowserWindow {
             _ => None,
         };
         browser.address.set_icon_from_icon_name(gtk::EntryIconPosition::Primary, security_icon);
-        let is_installable = security_icon.is_some() && !page.shows_error_page() && browser.context.tor.is_none();
+        let is_installable = security_icon.is_some()
+            && !page.shows_error_page()
+            && browser.context.tor.is_none()
+            && browser.context.toolbar.shows(ToolbarButton::InstallApp);
         browser.address.set_icon_from_icon_name(
             gtk::EntryIconPosition::Secondary,
             is_installable.then_some(AppIcons::INSTALL_APP),

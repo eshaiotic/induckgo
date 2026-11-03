@@ -58,6 +58,7 @@ install -Dm0644 assets/icons/io.github.induckgo.InDuckGo.svg -t %{buildroot}%{_d
 %changelog
 * Tue Nov 03 2026 Michał Ligus <eshaiotic@eshaiotic.io> - 1.1.0-1
 - Tor window: browsing through InDuckGo's own Tor, with bridges and New Identity.
+- Toolbar: an onion button for the Tor window, and preferences to choose the toolbar's buttons.
 
 * Tue Nov 03 2026 Michał Ligus <eshaiotic@eshaiotic.io> - 1.0.1-1
 - New application icon.

@@ -77,9 +77,10 @@ impl InstallationPaths {
         self.data_root.join("tor-connection.json")
     }
 
-    /// The Tor window's compiled WebKit rules, deleted when the Tor window starts and when it quits.
-    pub fn tor_content_filters(&self) -> PathBuf {
-        self.runtime_root.join("tor-content-filters")
+    /// What the Tor window keeps while it runs (its compiled WebKit rules and its own copy of the protection
+    /// data), in memory-backed storage; deleted when the Tor window starts and when it quits.
+    pub fn tor_session(&self) -> PathBuf {
+        self.runtime_root.join("tor-session")
     }
 
     pub fn downloads(&self) -> &Path {

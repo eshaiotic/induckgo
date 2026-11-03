@@ -56,6 +56,7 @@ use webkit6::WebContext;
 use webkit6::WebView;
 use webkit6::WebsiteDataTypes;
 
+use crate::closed_proxy::ClosedProxy;
 use crate::download_tracker::DownloadTracker;
 use crate::filter_list_feed::FilterListFeed;
 use crate::http_client::HttpClient;
@@ -93,6 +94,8 @@ struct SessionStorage {
     network_session: NetworkSession,
     settings: Settings,
     content_filters: PathBuf,
+    /// Where the protection data is downloaded to.
+    feed: PathBuf,
     unprotected_sites: StoredFile,
     search_engine: StoredFile,
     site_zoom: StoredFile,
@@ -101,6 +104,8 @@ struct SessionStorage {
     /// Deleted at start and on close.
     scratch: Option<PathBuf>,
     is_routed: bool,
+    /// Where the Tor window's requests go while Tor is not connected.
+    closed_proxy: Option<ClosedProxy>,
 }
 
 /// What the rule lists and the content scope script are built from.
@@ -157,6 +162,7 @@ pub struct ProfileSession {
     search_engine: Cell<SearchEngine>,
     burned: WebsiteDataTypes,
     scratch: Option<PathBuf>,
+    closed_proxy: Option<ClosedProxy>,
     inputs: RefCell<ProtectionInputs>,
     readiness: RefCell<Readiness>,
     /// Bumped by every rebuild; a slower, older rebuild never overwrites a newer one.
@@ -182,6 +188,7 @@ impl ProfileSession {
             network_session: Self::isolated_network_session(&location),
             settings: Self::private_settings(),
             content_filters: location.cache.join("content-filters"),
+            feed: paths.protection_feed(),
             unprotected_sites: StoredFile::new(location.data.join("unprotected-sites.json")),
             search_engine: StoredFile::new(location.data.join("search-engine.json")),
             site_zoom: StoredFile::new(location.data.join("site-zoom-levels.json")),
@@ -190,6 +197,7 @@ impl ProfileSession {
             burned: WebsiteDataTypes::all() - WebsiteDataTypes::HSTS_CACHE,
             scratch: None,
             is_routed: true,
+            closed_proxy: None,
         };
         Self::assemble(storage, paths, http)
     }
@@ -197,8 +205,15 @@ impl ProfileSession {
     /// The Tor window's session: nothing on disk, no page before [`Self::route_through_tor`]; `http` must be
     /// a client awaiting Tor as well.
     pub fn start_tor(paths: &InstallationPaths, http: Rc<HttpClient>) -> Rc<Self> {
-        let content_filters = paths.tor_content_filters();
-        Self::delete_scratch(&content_filters);
+        let scratch = paths.tor_session();
+        Self::delete_scratch(&scratch);
+        let feed = scratch.join("feed");
+        Self::seed_tor_feed(&paths.protection_feed(), &feed);
+        let closed_proxy = ClosedProxy::open()
+            .inspect_err(|error| {
+                glib::g_critical!(Self::LOG_DOMAIN, "the Tor window stays unconnected, no closed proxy: {error}");
+            })
+            .ok();
         // Pages learn the preferred languages (`Accept-Language`, `navigator.languages`); the system's would set
         // Tor window users apart, so it asks for English, as Tor Browser does. This process serves only the
         // Tor window, so the default context is its own.
@@ -212,16 +227,44 @@ impl ProfileSession {
             profile: None,
             network_session: Self::protected_network_session(NetworkSession::new_ephemeral()),
             settings,
-            content_filters: content_filters.clone(),
+            content_filters: scratch.join("content-filters"),
+            feed,
             unprotected_sites: StoredFile::discarded(),
             search_engine: StoredFile::discarded(),
             site_zoom: StoredFile::discarded(),
             default_search_engine: SearchEngine::DUCKDUCKGO_ONION,
             burned: WebsiteDataTypes::all(),
-            scratch: Some(content_filters),
+            scratch: Some(scratch),
             is_routed: false,
+            closed_proxy,
         };
-        Self::assemble(storage, paths, http)
+        let session = Self::assemble(storage, paths, http);
+        session.await_tor();
+        session
+    }
+
+    /// Copies the profiles' downloaded protection data for the Tor window, so it starts protected at once,
+    /// but without the `ETag` files: a validator a server handed to a direct connection would link the Tor
+    /// window to it. The Tor window then downloads into its copy only, never into the profiles' cache.
+    fn seed_tor_feed(shared: &std::path::Path, own: &std::path::Path) {
+        let copied = std::fs::create_dir_all(own).and_then(|()| std::fs::read_dir(shared)).and_then(|entries| {
+            for entry in entries {
+                let entry = entry?;
+                let target = own.join(entry.file_name());
+                if entry.file_type()?.is_dir() {
+                    Self::seed_tor_feed(&entry.path(), &target);
+                } else if entry.path().extension().is_none_or(|extension| extension != "etag") {
+                    std::fs::copy(entry.path(), target)?;
+                }
+            }
+            Ok(())
+        });
+        match copied {
+            Err(error) if error.kind() != io::ErrorKind::NotFound => {
+                glib::g_warning!(Self::LOG_DOMAIN, "cannot copy protection data for the Tor window: {error}");
+            }
+            _ => {}
+        }
     }
 
     fn assemble(storage: SessionStorage, paths: &InstallationPaths, http: Rc<HttpClient>) -> Rc<Self> {
@@ -231,14 +274,14 @@ impl ProfileSession {
             .read_json()
             .map(|document| UnprotectedSites::from_json(&document))
             .unwrap_or_default();
-        let filter_list_feed = FilterListFeed::new(&paths.protection_feed());
+        let filter_list_feed = FilterListFeed::new(&storage.feed);
         let session = Rc::new(Self {
             profile: storage.profile,
             _downloads: DownloadTracker::watch(&storage.network_session, paths.downloads()),
             network_session: storage.network_session,
             settings: storage.settings,
             protections: PageProtections::new(&storage.content_filters),
-            feed: ProtectionFeed::new(&paths.protection_feed()),
+            feed: ProtectionFeed::new(&storage.feed),
             http,
             unprotected_sites_file: storage.unprotected_sites,
             zoom: SiteZoom::load(storage.site_zoom),
@@ -246,6 +289,7 @@ impl ProfileSession {
             search_engine: Cell::new(search_engine.unwrap_or(storage.default_search_engine)),
             burned: storage.burned,
             scratch: storage.scratch,
+            closed_proxy: storage.closed_proxy,
             inputs: RefCell::new(ProtectionInputs {
                 tracker_data: None,
                 configuration: None,
@@ -283,6 +327,10 @@ impl ProfileSession {
     /// Sends every request of this session through `proxy_uri` (Tor's SOCKS port with the identity's
     /// credentials) and lets pages load. Called again for a new identity or after Tor restarted.
     pub fn route_through_tor(&self, proxy_uri: &str) {
+        // Without the closed proxy a later disconnection could not be kept off the network: stay unrouted.
+        if self.closed_proxy.is_none() {
+            return;
+        }
         let proxy = NetworkProxySettings::new(Some(proxy_uri), &[]);
         self.network_session.set_proxy_settings(NetworkProxyMode::Custom, Some(&proxy));
         self.http.route_through_tor(proxy_uri);
@@ -296,7 +344,18 @@ impl ProfileSession {
         }
     }
 
-    /// Deletes what the session kept only while it ran (the Tor window's compiled rules).
+    /// Takes the Tor window off Tor until the next [`Self::route_through_tor`]: new pages and the browser's
+    /// own downloads wait again, and whatever open pages still request goes to the closed proxy.
+    pub fn await_tor(&self) {
+        if let Some(closed_proxy) = &self.closed_proxy {
+            let proxy = NetworkProxySettings::new(Some(closed_proxy.uri()), &[]);
+            self.network_session.set_proxy_settings(NetworkProxyMode::Custom, Some(&proxy));
+        }
+        self.http.await_tor();
+        self.readiness.borrow_mut().is_routed = false;
+    }
+
+    /// Deletes what the session kept only while it ran (the Tor window's compiled rules and protection data).
     pub fn close(&self) {
         if let Some(scratch) = &self.scratch {
             Self::delete_scratch(scratch);

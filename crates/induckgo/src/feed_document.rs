@@ -1,9 +1,10 @@
 //! One document InDuckGo downloads at run time and keeps in its cache directory: DuckDuckGo's protection data
 //! or a community filter list.
 //!
-//! Refreshes are conditional (`ETag`), so an unchanged document costs one small request. A download replaces
-//! the cached copy only after it was recognised as the expected kind of document, so a captive portal's page
-//! or a truncated body never replaces a good copy.
+//! Refreshes are conditional (`ETag`), so an unchanged document costs one small request; the Tor window's
+//! client sends no `ETag`, and a download identical to the cached copy counts as unchanged. A download
+//! replaces the cached copy only after it was recognised as the expected kind of document, so a captive
+//! portal's page or a truncated body never replaces a good copy.
 
 use std::error::Error;
 use std::path::PathBuf;
@@ -42,15 +43,18 @@ impl<T> FeedDocument<T> {
         match http.get(self.url, Self::MAX_BYTES, etag.as_deref()).await? {
             Fetched::NotModified => Ok(false),
             Fetched::Body { bytes, etag } => {
-                if (self.parse)(&bytes).is_none() {
-                    return Err(format!("{} did not return the expected document", self.url).into());
+                let is_unchanged = self.content.read_bytes().is_some_and(|cached| cached == bytes);
+                if !is_unchanged {
+                    if (self.parse)(&bytes).is_none() {
+                        return Err(format!("{} did not return the expected document", self.url).into());
+                    }
+                    self.content.write(&bytes)?;
                 }
-                self.content.write(&bytes)?;
                 match etag {
                     Some(etag) => self.etag.write(etag.as_bytes())?,
                     None => self.etag.remove()?,
                 }
-                Ok(true)
+                Ok(!is_unchanged)
             }
         }
     }

@@ -136,8 +136,11 @@ później się zatrzyma, strona wraca z powodem i przyciskiem **Try Again**.
 **Domyślnie zamknięte (fail closed).** Nic nie opuszcza okna, zanim Tor się połączy, i nic nigdy go nie
 omija. `ProfileSession::start_tor` buduje sesję, której wczytania czekają, aż ochrona będzie aktywna *i*
 trasa przez Tora ustawiona; `HttpClient`, który pobiera dane ochrony, też do tego czasu wstrzymuje żądania.
-Nie ma powrotu do połączenia bezpośredniego: gdy Tor się zatrzyma, proxy wskazuje zamknięty port i wczytania
-się nie udają. Nazwy hostów jadą wewnątrz żądania SOCKS (klient SOCKS5 GLib wysyła nazwy, nie adresy), więc
+Nie ma powrotu do połączenia bezpośredniego. Zawsze, gdy Tor nie jest połączony (zanim połączy się pierwszy
+raz, gdy startuje od nowa z innymi mostami, gdy się zatrzymał), proxy sesji to `ClosedProxy`: port pętli
+zwrotnej, który InDuckGo sam trzyma przez cały czas działania i który od razu zamyka każde połączenie. Żądania
+otwartych stron od razu się nie udają, nowe wczytania znów czekają, a żaden inny lokalny program nie przejmie
+zwolnionego portu Tora, żeby je odczytać. Nazwy hostów jadą wewnątrz żądania SOCKS (klient SOCKS5 GLib wysyła nazwy, nie adresy), więc
 rozwiązuje je Tor, a systemowy resolver DNS nie dowiaduje się, jakie strony okno odwiedza. Zmierzone na
 AppImage podczas otwierania usługi onion DuckDuckGo: przez 60 sekund, próbkując co 0,2 s, procesy interfejsu i
 sieci WebKit miały połączenia wyłącznie z portami SOCKS i kontrolnym Tora na 127.0.0.1 i żadnego z
@@ -146,9 +149,12 @@ sieci WebKit miały połączenia wyłącznie z portami SOCKS i kontrolnym Tora n
 
 **Nic na dysku.** Sesja WebKit jest efemeryczna: cookies, magazyn, cache i wpisy HSTS żyją w pamięci. Powiększenie
 witryn, witryny z wyłączoną ochroną i wyszukiwarka też są trzymane w pamięci (`StoredFile::discarded`).
-Skompilowane listy reguł trafiają do `$XDG_RUNTIME_DIR/induckgo/tor-content-filters` (pamięć, którą system
-czyści przy wylogowaniu) i są usuwane przy starcie i przy wyjściu, bo zawierają nazwy odwiedzonych witryn
-(hosty, którym nie udało się HTTPS, witryny z wyłączoną ochroną). Zapisywane są tylko własny stan Tora i wybór
+Skompilowane listy reguł i własna kopia danych ochrony okna trafiają do `$XDG_RUNTIME_DIR/induckgo/tor-session`
+(pamięć, którą system czyści przy wylogowaniu) i są usuwane przy starcie i przy wyjściu, bo listy reguł
+zawierają nazwy odwiedzonych witryn (hosty, którym nie udało się HTTPS, witryny z wyłączoną ochroną). Dane
+ochrony są kopiowane z cache profili bez plików `ETag`, klient okna Tor nigdy nie wysyła `ETag`, a jego
+pobrania nigdy nie trafiają do cache profili: walidator, który serwer dał jednej stronie, pozwoliłby mu
+inaczej powiązać okno Tor z bezpośrednim połączeniem użytkownika. Zapisywane są tylko własny stan Tora i wybór
 mostów (`tor-connection.json`).
 
 **Wycieki i łączenie aktywności.** WebRTC i przechwytywanie multimediów są wyłączone: WebRTC wysyła własny

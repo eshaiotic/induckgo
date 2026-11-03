@@ -123,8 +123,9 @@ impl InDuckGoApplication {
         let session = Rc::downgrade(session);
         tor.observe(move |state| {
             let Some(session) = session.upgrade() else { return glib::ControlFlow::Break };
-            if let TorState::Connected { proxy_uri } = state {
-                session.route_through_tor(proxy_uri);
+            match state {
+                TorState::Connected { proxy_uri } => session.route_through_tor(proxy_uri),
+                TorState::Starting | TorState::Connecting(_) | TorState::Failed(_) => session.await_tor(),
             }
             glib::ControlFlow::Continue
         });

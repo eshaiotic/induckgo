@@ -4,8 +4,9 @@
 //! session has no cookie jar: these requests carry no identity. Every body is read with a size limit, since a
 //! hostile server could otherwise stream forever.
 //!
-//! The Tor window's client sends nothing until Tor is connected: its requests wait for the route through
-//! Tor's SOCKS port, and never fall back to a direct connection.
+//! The Tor window's client sends nothing while Tor is not connected: its requests wait for the route through
+//! Tor's SOCKS port, and never fall back to a direct connection. It never sends a validator (`ETag`) either:
+//! one the server handed out earlier would let it link the requests that carry it.
 
 use std::cell::RefCell;
 use std::error::Error;
@@ -81,9 +82,19 @@ impl HttpClient {
         }
     }
 
-    /// `GET url`, revalidating with `etag` when given; the body may be at most `max_bytes` long.
+    /// Holds new requests again until the next [`Self::route_through_tor`]: Tor stopped or restarts.
+    pub fn await_tor(&self) {
+        let mut route = self.route.borrow_mut();
+        if matches!(*route, Route::ThroughTor) {
+            *route = Route::AwaitingTor(Vec::new());
+        }
+    }
+
+    /// `GET url`, revalidating with `etag` when given (never through Tor); the body may be at most
+    /// `max_bytes` long.
     pub async fn get(&self, url: &str, max_bytes: usize, etag: Option<&str>) -> Result<Fetched, FetchError> {
         self.wait_for_route().await;
+        let etag = etag.filter(|_| matches!(*self.route.borrow(), Route::Direct));
         let message = soup::Message::new("GET", url).map_err(|_| FetchError::InvalidAddress(url.to_owned()))?;
         if let (Some(etag), Some(headers)) = (etag, message.request_headers()) {
             headers.append("If-None-Match", etag);

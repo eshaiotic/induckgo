@@ -132,7 +132,11 @@ If Tor fails to start or stops later, the page returns with the reason and **Try
 **Fail closed.** Nothing leaves the window before Tor is connected, and nothing ever goes around it.
 `ProfileSession::start_tor` builds a session whose loads wait until protection is active *and* the route
 through Tor is set; the `HttpClient` that downloads protection data holds its requests until then too. There
-is no fallback to a direct connection: if Tor stops, the proxy points at a closed port and loads fail.
+is no fallback to a direct connection. Whenever Tor is not connected (before it first connects, while it
+restarts with other bridges, after it stopped) the session's proxy is `ClosedProxy`: a loopback port that
+InDuckGo itself holds for as long as it runs and that closes every connection at once, so open pages' requests
+fail immediately, new loads wait again, and no other local program can take over a freed Tor port to read
+them.
 Host names travel inside the SOCKS request (GLib's SOCKS5 client sends names, not addresses), so Tor
 resolves them and the system's DNS resolver never learns which sites the window visits. Measured on the
 AppImage while it opened DuckDuckGo's onion service: for 60 seconds, sampling every 0.2 s, the UI and WebKit
@@ -141,9 +145,12 @@ network processes held connections only to Tor's SOCKS and control ports on 127.
 
 **Nothing on disk.** The WebKit session is ephemeral: cookies, storage, cache and HSTS records are kept in
 memory. Site zoom, sites with protections off and the search engine are kept in memory too
-(`StoredFile::discarded`). The compiled rule lists go to `$XDG_RUNTIME_DIR/induckgo/tor-content-filters`
-(memory that the system empties at logout) and are deleted at start and on quit, because they name visited
-sites (hosts that failed over HTTPS, sites with protections off). Only Tor's own state and the bridge choice
+(`StoredFile::discarded`). The compiled rule lists and the window's own copy of the protection data go to
+`$XDG_RUNTIME_DIR/induckgo/tor-session` (memory that the system empties at logout) and are deleted at start
+and on quit, because the rule lists name visited sites (hosts that failed over HTTPS, sites with protections
+off). The protection data is copied from the profiles' cache without its `ETag` files, the Tor window's
+client never sends an `ETag`, and its downloads never go into the profiles' cache: a validator that a server
+handed to one side would otherwise let it link the Tor window to the user's direct connection. Only Tor's own state and the bridge choice
 (`tor-connection.json`) are stored.
 
 **Leaks and linking.** WebRTC and media capture are off: WebRTC sends its own UDP traffic around any proxy and

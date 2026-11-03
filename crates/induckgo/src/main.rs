@@ -5,6 +5,7 @@ mod app_icons;
 mod browser_window;
 mod browser_windows;
 mod catalog_files;
+mod closed_proxy;
 mod download_tracker;
 mod error_page_view;
 mod external_launcher;

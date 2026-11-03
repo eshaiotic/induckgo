@@ -121,7 +121,7 @@ The `.deb` and the AppImage are built in a Debian 13 container and the `.rpm` in
 built on the host with `makepkg` and its `makepkg.conf` flags. The AppImage runtime is pinned to a release
 and checked against its SHA-256.
 
-Pushing a version tag publishes a release: `git tag v1.0.0 && git push origin v1.0.0`. The
+Pushing a version tag publishes a release: `git tag vX.Y.Z && git push origin vX.Y.Z`. The
 [release workflow](.github/workflows/release.yml) runs the same scripts (the Arch package in an Arch Linux
 container), refuses dependencies with known vulnerabilities (`cargo audit`), and uploads the four packages
 with `SHA256SUMS` and their attestations. The tag must match the version in `Cargo.toml`.

@@ -121,7 +121,7 @@ packaging/release.sh deb appimage   # albo tylko wybrane: arch, deb, appimage, r
 linkują się z bibliotekami systemów, na które są przeznaczone. Paczkę dla Archa buduje `makepkg` na hoście,
 z flagami jego `makepkg.conf`. Runtime AppImage jest przypięty do wydania i sprawdzany po SHA-256.
 
-Wypchnięcie taga wersji publikuje wydanie: `git tag v1.0.0 && git push origin v1.0.0`.
+Wypchnięcie taga wersji publikuje wydanie: `git tag vX.Y.Z && git push origin vX.Y.Z`.
 [Workflow wydania](.github/workflows/release.yml) uruchamia te same skrypty (paczkę Archa w kontenerze Arch
 Linux), odrzuca zależności ze znanymi podatnościami (`cargo audit`) i wysyła cztery paczki z `SHA256SUMS` oraz
 atestacjami. Tag musi zgadzać się z wersją w `Cargo.toml`.

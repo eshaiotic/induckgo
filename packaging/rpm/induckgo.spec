@@ -5,7 +5,7 @@
 %global debug_package %{nil}
 
 Name:           induckgo
-Version:        1.0.0
+Version:        1.0.1
 Release:        1%{?dist}
 Summary:        Privacy-first WebKitGTK browser built on DuckDuckGo's open-source tracker protections
 License:        GPL-3.0-or-later
@@ -52,5 +52,8 @@ install -Dm0644 assets/icons/io.github.induckgo.InDuckGo.svg -t %{buildroot}%{_d
 %{_datadir}/icons/hicolor/scalable/apps/io.github.induckgo.InDuckGo.svg
 
 %changelog
+* Tue Nov 03 2026 Michał Ligus <eshaiotic@eshaiotic.io> - 1.0.1-1
+- New application icon.
+
 * Mon Nov 02 2026 Michał Ligus <eshaiotic@eshaiotic.io> - 1.0.0-1
 - First release.

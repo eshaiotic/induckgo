@@ -591,7 +591,7 @@ dependencies = [
 
 [[package]]
 name = "induckgo"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "futures-channel",
  "gdk4",
@@ -609,7 +609,7 @@ dependencies = [
 
 [[package]]
 name = "induckgo-core"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "adblock",
  "form_urlencoded",
@@ -621,7 +621,7 @@ dependencies = [
 
 [[package]]
 name = "induckgo-test-report"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "roxmltree",
  "serde_json",

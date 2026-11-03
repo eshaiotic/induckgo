@@ -17,6 +17,7 @@
     </p>
     <p>InDuckGo is an independent project, not affiliated with or endorsed by Duck Duck Go, Inc.</p>
   </description>
+  <url type="homepage">https://github.com/eshaiotic/induckgo</url>
   <launchable type="desktop-id">io.github.induckgo.InDuckGo.desktop</launchable>
   <developer id="io.github.induckgo">
     <name>Michał Ligus</name>
@@ -26,6 +27,11 @@
   </provides>
   <content_rating type="oars-1.1"/>
   <releases>
+    <release version="1.0.1" date="2026-11-03">
+      <description>
+        <p>New application icon.</p>
+      </description>
+    </release>
     <release version="1.0.0" date="2026-11-02"/>
   </releases>
 </component>

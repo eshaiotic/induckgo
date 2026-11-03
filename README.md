@@ -33,6 +33,9 @@ Usable work in progress: browsing with tabs, all protections above, profiles, we
 permission prompts and find-in-page work. Not built yet: session restore, bookmarks, history window,
 cookie-consent handling, translations. The full list with reasons is in the architecture document.
 
+In the future InDuckGo will ship as part of a new Linux distribution. It stays a standalone project and keeps
+its packages for other distributions.
+
 ## Installing
 
 On Arch Linux and its derivatives (CachyOS, EndeavourOS, Manjaro):

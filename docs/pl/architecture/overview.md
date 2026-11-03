@@ -155,7 +155,7 @@ mostów (`tor-connection.json`).
 ruch UDP z pominięciem każdego proxy i może zdradzić adresy lokalne. Okno prosi strony o angielski
 (`Accept-Language: en-US`), tak jak Tor Browser, bo język systemu wyróżniałby jego użytkowników. Usługi onion
 nigdy nie są podnoszone do HTTPS (`DomainName::is_onion`), a ich strony przez zwykłe `http://` dostają
-kłódkę, bo Tor szyfruje je od końca do końca. Pasek adresu wyszukuje w usłudze onion DuckDuckGo. Aplikacje
+kłódkę tylko w tym oknie, bo Tor szyfruje je od końca do końca. Pasek adresu wyszukuje w usłudze onion DuckDuckGo. Aplikacje
 webowe, profile i wybór wyszukiwarki nie są oferowane: wyprowadziłyby przeglądanie poza Tora. Z tego samego
 powodu odnośniki do innych aplikacji (`mailto:`, `zoommtg:` i podobne) nie otwierają się z okna Tor, a prośby
 o lokalizację są odrzucane bez pytania: położenie zdradziłoby to, co Tor ukrywa.

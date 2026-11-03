@@ -425,12 +425,17 @@ impl BrowserWindow {
             browser.address.set_text(&address);
         }
         // An error page proves nothing about the connection, so it never gets the padlock; plain HTTP stays marked,
-        // except on onion services, which Tor encrypts end to end.
-        let is_onion =
-            Url::parse(&address).ok().and_then(|url| url.host_str().map(|host| DomainName::new(host).is_onion()));
+        // except on onion services in the Tor window, which Tor encrypts end to end. Elsewhere an onion name
+        // never reaches Tor, so whatever answers it gets no padlock.
+        let is_tor_onion = browser.context.tor.is_some()
+            && Url::parse(&address)
+                .ok()
+                .as_ref()
+                .and_then(Url::host_str)
+                .is_some_and(|host| DomainName::new(host).is_onion());
         let security_icon = match address.split_once(':').map(|(scheme, _)| scheme) {
             Some("https") if !page.shows_error_page() => Some("channel-secure-symbolic"),
-            Some("http") if is_onion == Some(true) && !page.shows_error_page() => Some("channel-secure-symbolic"),
+            Some("http") if is_tor_onion && !page.shows_error_page() => Some("channel-secure-symbolic"),
             Some("http") => Some("channel-insecure-symbolic"),
             _ => None,
         };

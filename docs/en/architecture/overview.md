@@ -149,7 +149,7 @@ sites (hosts that failed over HTTPS, sites with protections off). Only Tor's own
 **Leaks and linking.** WebRTC and media capture are off: WebRTC sends its own UDP traffic around any proxy and
 can reveal local addresses. The window asks sites for English (`Accept-Language: en-US`), as Tor Browser
 does, because the system's language would set its users apart. Onion services are never upgraded to HTTPS
-(`DomainName::is_onion`) and their plain `http://` pages show the padlock, since Tor encrypts them end to end.
+(`DomainName::is_onion`) and their plain `http://` pages show the padlock in this window only, since Tor encrypts them end to end.
 The address bar searches DuckDuckGo's onion service. Web apps, profiles and the search engine choice are not
 offered: they would take browsing out of Tor. For the same reason links to other applications (`mailto:`,
 `zoommtg:` and the like) do not open from the Tor window, and location requests are refused without asking:

@@ -138,9 +138,12 @@ omija. `ProfileSession::start_tor` buduje sesję, której wczytania czekają, a�
 trasa przez Tora ustawiona; `HttpClient`, który pobiera dane ochrony, też do tego czasu wstrzymuje żądania.
 Nie ma powrotu do połączenia bezpośredniego. Zawsze, gdy Tor nie jest połączony (zanim połączy się pierwszy
 raz, gdy startuje od nowa z innymi mostami, gdy się zatrzymał), proxy sesji to `ClosedProxy`: port pętli
-zwrotnej, który InDuckGo sam trzyma przez cały czas działania i który od razu zamyka każde połączenie. Żądania
-otwartych stron od razu się nie udają, nowe wczytania znów czekają, a żaden inny lokalny program nie przejmie
-zwolnionego portu Tora, żeby je odczytać. Nazwy hostów jadą wewnątrz żądania SOCKS (klient SOCKS5 GLib wysyła nazwy, nie adresy), więc
+zwrotnej, który InDuckGo sam trzyma przez cały czas działania i który od razu zamyka każde połączenie. Adresy
+otwierane w tym czasie czekają na Tora; żądania stron już otwartych (ich własne żądania, przeładowanie,
+kliknięty odnośnik) od razu się nie udają i kończą stroną błędu, której **Try Again** wczytuje je, gdy Tor
+wróci. Żaden inny lokalny program nie przejmie zwolnionego portu Tora, żeby je odczytać. Zmierzone na
+AppImage: po zabiciu Tora żądanie przez `ClosedProxy` zostało odrzucone w 4 ms, a przeładowanie skończyło się
+stroną błędu. Nazwy hostów jadą wewnątrz żądania SOCKS (klient SOCKS5 GLib wysyła nazwy, nie adresy), więc
 rozwiązuje je Tor, a systemowy resolver DNS nie dowiaduje się, jakie strony okno odwiedza. Zmierzone na
 AppImage podczas otwierania usługi onion DuckDuckGo: przez 60 sekund, próbkując co 0,2 s, procesy interfejsu i
 sieci WebKit miały połączenia wyłącznie z portami SOCKS i kontrolnym Tora na 127.0.0.1 i żadnego z

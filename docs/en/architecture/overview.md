@@ -134,9 +134,11 @@ If Tor fails to start or stops later, the page returns with the reason and **Try
 through Tor is set; the `HttpClient` that downloads protection data holds its requests until then too. There
 is no fallback to a direct connection. Whenever Tor is not connected (before it first connects, while it
 restarts with other bridges, after it stopped) the session's proxy is `ClosedProxy`: a loopback port that
-InDuckGo itself holds for as long as it runs and that closes every connection at once, so open pages' requests
-fail immediately, new loads wait again, and no other local program can take over a freed Tor port to read
-them.
+InDuckGo itself holds for as long as it runs and that closes every connection at once. Addresses opened in
+the meantime wait for Tor; requests of pages already open (their own requests, a reload, a followed link)
+fail at once and show the error page, whose **Try Again** loads them once Tor is back. No other local program
+can take over a freed Tor port to read them. Measured on the AppImage: after Tor was killed, a request
+through `ClosedProxy` was refused within 4 ms and a reload ended on the error page.
 Host names travel inside the SOCKS request (GLib's SOCKS5 client sends names, not addresses), so Tor
 resolves them and the system's DNS resolver never learns which sites the window visits. Measured on the
 AppImage while it opened DuckDuckGo's onion service: for 60 seconds, sampling every 0.2 s, the UI and WebKit

@@ -40,6 +40,43 @@ których InDuckGo jest słabszy (brak Safe Browsing, rzadki silnik, który wyró
 [porównaniu śledzenia](docs/pl/reports/tracking-comparison.md). Jednostronicowe podsumowanie dla osób spoza
 branży to [tracking-summary.html](docs/pl/reports/tracking-summary.html) (pobierz i otwórz w przeglądarce).
 
+### Porównanie z przeglądarką DuckDuckGo
+
+DuckDuckGo nie wydaje przeglądarki na Linuksa (tylko na macOS, Windows, iOS i Androida), więc nie mogła wziąć
+udziału w pomiarze powyżej. Tabela zestawia InDuckGo z przeglądarką DuckDuckGo na macOS, której ochrony InDuckGo
+przenosi, tak jak opisuje ją DuckDuckGo (listopad 2026). Porównuje funkcje; nic tu nie było mierzone.
+
+| | DuckDuckGo na macOS | InDuckGo |
+|---|---|---|
+| **Skrypty śledzące** | | |
+| Trackery stron trzecich | blokowane według listy trackerów DuckDuckGo | blokowane według tej samej listy |
+| Reklamy i trackery spoza tej listy | nieblokowane; brak list filtrów reklam | blokowane przez EasyList, EasyPrivacy, listy uBlock Origin i inne, także w żądaniach do domeny samego serwisu |
+| Śledzenie reklam Microsoftu (`bat.bing.com`) | dozwolone na stronie reklamodawcy po kliknięciu reklamy w wyszukiwarce DuckDuckGo | blokowane; brak wyjątku dla kliknięć w reklamy |
+| Parametry śledzące w linkach (`utm_*`, `fbclid`, ...) | usuwane tylko z pierwszej nawigacji | usuwane z każdej nawigacji najwyższego poziomu |
+| Strony Google AMP | zastępowane oryginalną stroną wydawcy | zostają bez zmian |
+| Komunikaty o cookies | odpowiadane „odrzuć” | ukrywane przez listę filtrów, bez odpowiedzi |
+| **Anonimowość** | | |
+| Ochrona przed odciskiem przeglądarki (canvas, audio, bateria, ekran, referrer) | wyłączona w konfiguracji DuckDuckGo dla macOS | włączona: odcisk zmienia się na każdym serwisie i w każdej sesji |
+| Jak popularnie wygląda przeglądarka | WebKit na macOS, silnik każdego użytkownika Safari | WebKitGTK na Linuksie: mało użytkowników, więc InDuckGo się wyróżnia |
+| Global Privacy Control | w JavaScripcie dla każdego serwisu; nagłówek `Sec-GPC` tylko do serwisów, o których wiadomo, że go respektują | w JavaScripcie i jako nagłówek `Sec-GPC: 1` do każdego serwisu |
+| HTTPS | serwisy z listy DuckDuckGo | każda nawigacja; pyta przed wczytaniem serwisu bez HTTPS |
+| Dane o użyciu wysyłane do twórcy | anonimowe metryki użycia do DuckDuckGo | brak |
+| **Ukrywanie tożsamości** | | |
+| Oddzielne tożsamości | Fire Windows: odizolowane okno, którego dane znikają po zamknięciu | profile i aplikacje webowe, każda w osobnym procesie z własnymi cookies i danymi |
+| Adres e-mail | Email Protection: darmowe adresy `@duck.com`, które przekazują pocztę z usuniętymi trackerami | brak |
+| Adres IP | VPN w płatnej subskrypcji DuckDuckGo | brak wbudowanego |
+| Strony oszustów i phishing | Scam Blocker: lista od Netcraft, sprawdzana na urządzeniu | brak |
+
+W skrócie: InDuckGo blokuje więcej i daje serwisom mniej, po czym mogłyby go rozpoznać, ale rzadki silnik go
+wyróżnia. DuckDuckGo lepiej ukrywa, kim jesteś (adres e-mail, adres IP z subskrypcją), ostrzega przed stronami
+oszustów i ginie w tłumie użytkowników Safari. Źródła: strony pomocy DuckDuckGo o
+[ochronie przed śledzeniem](https://duckduckgo.com/duckduckgo-help-pages/privacy/web-tracking-protections),
+[Fire Windows](https://duckduckgo.com/duckduckgo-help-pages/privacy/fire-tabs),
+[Email Protection](https://duckduckgo.com/duckduckgo-help-pages/email-protection/what-is-duckduckgo-email-protection),
+[Scam Blocker](https://duckduckgo.com/duckduckgo-help-pages/threat-protection/scam-blocker) i
+[anonimowych metrykach](https://duckduckgo.com/duckduckgo-help-pages/privacy/atb) oraz konfiguracja prywatności
+DuckDuckGo dla macOS, którą InDuckGo pobiera.
+
 ---
 
 ## Przed czym chroni

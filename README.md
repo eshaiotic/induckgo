@@ -40,6 +40,43 @@ InDuckGo is weaker (no Safe Browsing, a rare engine that makes its users stand o
 [tracking comparison](docs/en/reports/tracking-comparison.md). A one-page summary for non-technical readers is
 [tracking-summary.html](docs/en/reports/tracking-summary.html) (download it and open it in a browser).
 
+### Compared with DuckDuckGo's own browser
+
+DuckDuckGo makes no browser for Linux (only for macOS, Windows, iOS and Android), so it could not run in the
+measurement above. The table sets InDuckGo against the DuckDuckGo browser for macOS, whose protections
+InDuckGo ports, as DuckDuckGo documents it (November 2026). It compares features; nothing here was measured.
+
+| | DuckDuckGo for macOS | InDuckGo |
+|---|---|---|
+| **Tracking scripts** | | |
+| Third-party trackers | blocked by DuckDuckGo's tracker list | blocked by the same list |
+| Ads and trackers beyond that list | not blocked; no ad filter lists | blocked by EasyList, EasyPrivacy, uBlock Origin's and other lists, on a site's own requests too |
+| Microsoft's ad tracking (`bat.bing.com`) | allowed on an advertiser's site after a click on a DuckDuckGo search ad | blocked; there is no ad-click exception |
+| Tracking parameters in links (`utm_*`, `fbclid`, ...) | removed from the first navigation only | removed from every top-level navigation |
+| Google AMP pages | replaced by the publisher's own page | left as they are |
+| Cookie notices | answered with "reject" | hidden by a filter list, not answered |
+| **Anonymity** | | |
+| Fingerprinting defences (canvas, audio, battery, screen, referrer) | off in DuckDuckGo's macOS configuration | on: the fingerprint changes per site and per session |
+| How common the browser looks | WebKit on macOS, the engine every Safari user has | WebKitGTK on Linux: few users, so InDuckGo stands out |
+| Global Privacy Control | in JavaScript to every site; the `Sec-GPC` header only to sites known to honour it | in JavaScript and as the `Sec-GPC: 1` header to every site |
+| HTTPS | the sites on DuckDuckGo's upgrade list | every navigation; asks before loading a site without HTTPS |
+| Usage data sent to its maker | anonymous usage metrics to DuckDuckGo | none |
+| **Hiding who you are** | | |
+| Separate identities | Fire Windows: an isolated window whose data is deleted when it closes | profiles and web apps, each its own process with its own cookies and storage |
+| Email address | Email Protection: free `@duck.com` addresses that forward mail with trackers removed | none |
+| IP address | a VPN in DuckDuckGo's paid subscription | none built in |
+| Scam and phishing sites | Scam Blocker: a list from Netcraft, checked on the device | none |
+
+In short: InDuckGo blocks more and gives sites less to recognise it by, but its rare engine makes it stand out.
+DuckDuckGo hides more of who you are (email address, IP address with the subscription), warns about scam sites,
+and blends into Safari's crowd. Sources: DuckDuckGo's help pages on
+[web tracking protections](https://duckduckgo.com/duckduckgo-help-pages/privacy/web-tracking-protections),
+[Fire Windows](https://duckduckgo.com/duckduckgo-help-pages/privacy/fire-tabs),
+[Email Protection](https://duckduckgo.com/duckduckgo-help-pages/email-protection/what-is-duckduckgo-email-protection),
+[Scam Blocker](https://duckduckgo.com/duckduckgo-help-pages/threat-protection/scam-blocker) and
+[anonymous metrics](https://duckduckgo.com/duckduckgo-help-pages/privacy/atb), and its privacy configuration
+for macOS, which InDuckGo downloads.
+
 ---
 
 ## What it protects you from

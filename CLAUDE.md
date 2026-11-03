@@ -39,6 +39,8 @@ This file is an index; the content lives in the linked documents.
 - `cargo run -p induckgo -- [--profile NAME | --web-app ID] [URL…]` — run the browser or an installed web app.
 - `packaging/release.sh [arch] [deb] [appimage] [rpm]` — release packages into `dist/` (deb/AppImage/rpm in podman).
 - `./install` / `./uninstall [--purge]` — install or remove the system package (Arch: built with makepkg).
+- `git tag vX.Y.Z && git push origin vX.Y.Z` — `.github/workflows/release.yml` publishes the GitHub release (tag = Cargo version).
+- `.github/workflows/tests.yml` — fmt, clippy, tests and `cargo audit` on pushes to main and on pull requests.
 
 ## Gotchas
 

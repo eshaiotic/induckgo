@@ -1,0 +1,109 @@
+# Publishes a GitHub release with every InDuckGo package when a version tag (v1.2.3) is pushed.
+#
+# The packages are built by the same scripts as a local `packaging/release.sh`: the .deb and the AppImage in a
+# Debian 13 container, the .rpm in a Fedora 44 container, the pacman package with makepkg in an Arch Linux
+# container. The release job adds SHA256SUMS and signed build provenance attestations, so anyone can check
+# that a download was built here from this repository (`gh attestation verify FILE --repo OWNER/REPO`).
+#
+# Third-party actions are pinned to commit SHAs: a moved tag cannot change what runs with the release token.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  containers:
+    name: Packages (${{ matrix.name }})
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        include:
+          - name: debian
+            formats: deb appimage
+          - name: fedora
+            formats: rpm
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build ${{ matrix.formats }}
+        env:
+          CONTAINER_ENGINE: docker
+          FORMATS: ${{ matrix.formats }}
+        run: packaging/release.sh $FORMATS # unquoted on purpose: one argument per format
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: packages-${{ matrix.name }}
+          path: |
+            dist/*
+            !dist/SHA256SUMS
+          if-no-files-found: error
+
+  arch:
+    name: Packages (arch)
+    runs-on: ubuntu-24.04
+    container: archlinux:latest
+    steps:
+      - name: Install build tools and InDuckGo's libraries
+        run: >-
+          pacman -Syu --noconfirm --needed base-devel git rust cargo-audit
+          gtk4 libadwaita libsoup3 webkitgtk-6.0 hicolor-icon-theme
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Refuse dependencies with known vulnerabilities
+        run: cargo audit
+      - name: Build the pacman package
+        # makepkg refuses to run as root.
+        run: |
+          useradd --create-home builder
+          chown -R builder "$GITHUB_WORKSPACE"
+          runuser -u builder -- packaging/release.sh arch
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: packages-arch
+          path: dist/*.pkg.tar.*
+          if-no-files-found: error
+
+  release:
+    name: GitHub release
+    needs: [containers, arch]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check that the tag names the version in Cargo.toml
+        run: |
+          version=$(sed -n 's/^version = "\(.*\)"$/\1/p' Cargo.toml | head -n 1)
+          if [ "$GITHUB_REF_NAME" != "v$version" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match version $version in Cargo.toml"
+            exit 1
+          fi
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: packages-*
+          path: dist
+          merge-multiple: true
+      - name: Write SHA256SUMS
+        working-directory: dist
+        run: sha256sum -- * > SHA256SUMS && cat SHA256SUMS
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: dist/*
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          gh release create "$GITHUB_REF_NAME" dist/*
+          --title "InDuckGo ${GITHUB_REF_NAME#v}"
+          --notes-file .github/release-notes.md
+          --generate-notes

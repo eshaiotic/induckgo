@@ -1,0 +1,41 @@
+# Formatting, lints, tests and the dependency audit on every push to main and every pull request.
+# Runs in an Arch Linux container: it has current WebKitGTK 6.0, GTK 4 and libadwaita, the libraries the app
+# crate needs to compile, and ships rustfmt, clippy and cargo-audit as packages.
+name: Tests
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["docs/**"]
+  pull_request:
+    paths-ignore: ["docs/**"]
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: fmt, clippy, test, audit
+    runs-on: ubuntu-24.04
+    container: archlinux:latest
+    timeout-minutes: 60
+    steps:
+      - name: Install Rust and InDuckGo's libraries
+        run: >-
+          pacman -Syu --noconfirm --needed base-devel git rust cargo-audit
+          gtk4 libadwaita libsoup3 webkitgtk-6.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Formatting
+        run: cargo fmt --all --check
+      - name: Lints
+        run: cargo clippy --all-targets --locked -- --deny warnings
+      - name: Tests
+        run: cargo test --workspace --locked
+      - name: Known vulnerabilities in dependencies
+        run: cargo audit

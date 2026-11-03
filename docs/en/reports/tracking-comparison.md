@@ -162,6 +162,13 @@ Each cell is tracker hosts / all third-party hosts contacted while the site was 
 | forbes.com | 7 / 24 | 0 / 14 | 0 / 13 |
 | **Total** | **94 / 243** | **5 / 82** | **2 / 72** |
 
+Split by Disconnect's category, the same tracker hosts are:
+
+| | Chrome | Brave | InDuckGo |
+|---|---|---|---|
+| Advertising | 75 | 4 | 1 |
+| Analytics and other categories | 19 | 1 | 1 |
+
 - **Chrome** blocks no trackers. It only filters ads on sites that fail the Better Ads Standards
   ([Google help](https://support.google.com/chrome/answer/7632919)). Since July 2025 it no longer runs the full
   uBlock Origin (Manifest V2 is gone)
@@ -222,6 +229,7 @@ A fingerprint that stays the same across sites lets two unrelated sites recognis
 | Fingerprinting | no defence | per-site randomisation | per-site, per-session noise |
 | GPC | not in stable; proposed ([status](https://chromestatus.com/feature/5137324344213504)) | on | on (header and script value) |
 | Safe Browsing (phishing warnings) | Standard: 4-byte hash prefixes through an Oblivious HTTP relay | proxied through Brave | **none** (WebKitGTK has no such service) |
+| Installed web apps (Gmail, a bank) | share the browser profile's cookies and storage: Chrome's web-app team called separate storage "not really viable" ([W3C thread, May 2020](https://lists.w3.org/Archives/Public/public-webapps-github/2020May/1169.html); not measured here) | Chromium's behaviour, as in Chrome (not measured here) | each app has its own process, cookies and storage (overview §6) |
 | Privacy Sandbox ad APIs | Topics, Protected Audience and others announced for retirement in October 2025 ([Google](https://privacysandbox.google.com/blog/update-on-plans-for-privacy-sandbox-technologies)) | disabled | do not exist in WebKit |
 
 **Independent check.** privacytests.org run 105 (22 October 2026, desktop, default settings):

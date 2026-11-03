@@ -18,8 +18,10 @@ This file is an index; the content lives in the linked documents.
 
 - [Tracking comparison](docs/en/reports/tracking-comparison.md) — InDuckGo vs Chrome vs Brave: telemetry, trackers, fingerprinting (measured).
 - [Porównanie śledzenia (PL)](docs/pl/reports/tracking-comparison.md) — polish mirror of the tracking comparison.
-- [Podsumowanie dla PO (HTML, PL)](docs/pl/reports/tracking-summary.html) — one-page tracker and ad blocking summary for non-technical readers.
+- [Tracking summary (HTML)](docs/en/reports/tracking-summary.html) — one-page tracker and ad blocking summary for non-technical readers.
+- [Podsumowanie dla PO (HTML, PL)](docs/pl/reports/tracking-summary.html) — polish mirror of the tracking summary.
 - [Product context](PRODUCT.md) — users, positioning and evidence used by design work.
+- [Design system](DESIGN.md) — report and error-page visual worlds: colours, type, rules (sidecar `.impeccable/design.json`).
 
 ## Code map
 

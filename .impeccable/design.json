@@ -1,0 +1,824 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-03T07:06:27+00:00",
+  "title": "Design System: InDuckGo",
+  "extensions": {
+    "colorMeta": {
+      "ink": {
+        "role": "primary",
+        "displayName": "Deep Indigo Ink",
+        "canonical": "#1e1060",
+        "oklch": "oklch(26.0% 0.131 280.3)",
+        "tonalRamp": [
+          "#09002f",
+          "#1f1161",
+          "#383484",
+          "#5555a9",
+          "#7477ce",
+          "#969bf5",
+          "#bec4ff",
+          "#ebedff"
+        ]
+      },
+      "indigo": {
+        "role": "primary",
+        "displayName": "Logo Indigo",
+        "canonical": "#2e1a87",
+        "oklch": "oklch(33.1% 0.167 280.6)",
+        "tonalRamp": [
+          "#09002f",
+          "#21006e",
+          "#382b96",
+          "#544ebc",
+          "#7372e3",
+          "#9598ff",
+          "#bec4ff",
+          "#ebedff"
+        ]
+      },
+      "field-floor": {
+        "role": "primary",
+        "displayName": "Field Floor",
+        "canonical": "#120a3d",
+        "oklch": "oklch(19.9% 0.092 281.3)",
+        "tonalRamp": [
+          "#09002f",
+          "#1f1c4f",
+          "#3b3a71",
+          "#595a94",
+          "#797cb8",
+          "#9b9ede",
+          "#bfc3ff",
+          "#ebedff"
+        ]
+      },
+      "field-track": {
+        "role": "primary",
+        "displayName": "Field Track",
+        "canonical": "rgb(255 255 255 / 9%)",
+        "note": "Alpha overlay; it takes its tone from the surface beneath, so it has no tonal ramp."
+      },
+      "field-lead": {
+        "role": "neutral",
+        "displayName": "Field Lead",
+        "canonical": "#dcd7ff",
+        "oklch": "oklch(89.6% 0.055 291.0)",
+        "tonalRamp": [
+          "#0c0520",
+          "#25203d",
+          "#423d5d",
+          "#615c7e",
+          "#827da1",
+          "#a5a0c5",
+          "#c9c4eb",
+          "#eeecff"
+        ]
+      },
+      "field-muted": {
+        "role": "neutral",
+        "displayName": "Field Muted",
+        "canonical": "#bdb5f2",
+        "oklch": "oklch(80.1% 0.086 290.3)",
+        "tonalRamp": [
+          "#0e002b",
+          "#261a4b",
+          "#42396c",
+          "#61588e",
+          "#8279b2",
+          "#a49cd7",
+          "#c8c0fe",
+          "#eeecff"
+        ]
+      },
+      "violet": {
+        "role": "secondary",
+        "displayName": "Logo Violet",
+        "canonical": "#6a5acd",
+        "oklch": "oklch(54.4% 0.171 285.5)",
+        "tonalRamp": [
+          "#0c002d",
+          "#26006a",
+          "#402696",
+          "#5c4abc",
+          "#7c6ee3",
+          "#9d95ff",
+          "#c3c2ff",
+          "#ecedff"
+        ]
+      },
+      "lilac": {
+        "role": "secondary",
+        "displayName": "Logo Lilac",
+        "canonical": "#8e7fe8",
+        "oklch": "oklch(65.6% 0.153 288.0)",
+        "tonalRamp": [
+          "#0d002c",
+          "#280068",
+          "#422b8c",
+          "#604db1",
+          "#8070d7",
+          "#a193fe",
+          "#c6c1ff",
+          "#edecff"
+        ]
+      },
+      "amber": {
+        "role": "secondary",
+        "displayName": "InDuckGo Amber",
+        "canonical": "#ffb300",
+        "oklch": "oklch(81.8% 0.171 77.9)",
+        "tonalRamp": [
+          "#120900",
+          "#342100",
+          "#593c00",
+          "#815800",
+          "#ab7700",
+          "#d89700",
+          "#ffbb42",
+          "#ffeccf"
+        ]
+      },
+      "amber-shade": {
+        "role": "secondary",
+        "displayName": "Amber Shade",
+        "canonical": "#f08c00",
+        "oklch": "oklch(73.1% 0.167 62.6)",
+        "tonalRamp": [
+          "#150700",
+          "#391d00",
+          "#623600",
+          "#8d5000",
+          "#bb6c00",
+          "#ec8900",
+          "#ffb877",
+          "#ffead9"
+        ]
+      },
+      "chrome": {
+        "role": "tertiary",
+        "displayName": "Chrome Neutral Grey",
+        "canonical": "#b9b5c9",
+        "oklch": "oklch(78.3% 0.028 294.9)",
+        "tonalRamp": [
+          "#0c0916",
+          "#262232",
+          "#433f50",
+          "#625e70",
+          "#837f92",
+          "#a6a2b5",
+          "#cac6da",
+          "#efebff"
+        ]
+      },
+      "brave": {
+        "role": "tertiary",
+        "displayName": "Brave Ember",
+        "canonical": "#ff7a45",
+        "oklch": "oklch(72.7% 0.176 41.2)",
+        "tonalRamp": [
+          "#1a0400",
+          "#441300",
+          "#722500",
+          "#a43a00",
+          "#d55317",
+          "#fd7843",
+          "#ffb599",
+          "#ffe9e1"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "#ffffff",
+        "oklch": "oklch(100.0% 0.000 89.9)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#a5a5a5",
+          "#c9c9c9",
+          "#eeeeee"
+        ]
+      },
+      "mist": {
+        "role": "neutral",
+        "displayName": "Lilac Mist",
+        "canonical": "#f4f2fc",
+        "oklch": "oklch(96.6% 0.013 295.3)",
+        "tonalRamp": [
+          "#0b0a10",
+          "#25242b",
+          "#424149",
+          "#626068",
+          "#83818a",
+          "#a5a3ad",
+          "#c9c8d1",
+          "#efedf7"
+        ]
+      },
+      "text": {
+        "role": "neutral",
+        "displayName": "Indigo Night Text",
+        "canonical": "#1d1a33",
+        "oklch": "oklch(23.5% 0.047 287.7)",
+        "tonalRamp": [
+          "#0b071e",
+          "#24213b",
+          "#403e5a",
+          "#5f5d7b",
+          "#807e9e",
+          "#a3a1c2",
+          "#c7c5e7",
+          "#edecff"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Dusk Muted",
+        "canonical": "#575270",
+        "oklch": "oklch(45.5% 0.049 292.0)",
+        "tonalRamp": [
+          "#0c061e",
+          "#26203b",
+          "#423d5a",
+          "#615c7b",
+          "#827d9e",
+          "#a5a0c2",
+          "#c9c4e7",
+          "#eeecff"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Hairline Lilac",
+        "canonical": "#e1ddf2",
+        "oklch": "oklch(90.7% 0.029 294.6)",
+        "tonalRamp": [
+          "#0c0916",
+          "#262232",
+          "#433f50",
+          "#625e70",
+          "#837f92",
+          "#a6a2b6",
+          "#cac6da",
+          "#efebff"
+        ]
+      },
+      "good": {
+        "role": "status",
+        "displayName": "Fact Green",
+        "canonical": "#17703a",
+        "oklch": "oklch(48.1% 0.118 151.5)",
+        "tonalRamp": [
+          "#001004",
+          "#002e12",
+          "#005024",
+          "#1c733d",
+          "#44965e",
+          "#69ba7f",
+          "#8ddfa2",
+          "#c7ffd3"
+        ]
+      },
+      "bad": {
+        "role": "status",
+        "displayName": "Fact Red",
+        "canonical": "#b3261e",
+        "oklch": "oklch(50.1% 0.178 28.7)",
+        "tonalRamp": [
+          "#1f0000",
+          "#4d0001",
+          "#810002",
+          "#b0221b",
+          "#d84c3f",
+          "#ff7363",
+          "#ffb3a8",
+          "#ffe9e5"
+        ]
+      },
+      "weakness-wash": {
+        "role": "status",
+        "displayName": "Weakness Wash",
+        "canonical": "#fff7e0",
+        "oklch": "oklch(97.6% 0.031 91.0)",
+        "tonalRamp": [
+          "#100a00",
+          "#2b2513",
+          "#48422f",
+          "#68614d",
+          "#89826d",
+          "#aca58f",
+          "#d1c9b3",
+          "#f6eed7"
+        ]
+      },
+      "weakness-ink": {
+        "role": "status",
+        "displayName": "Weakness Ink",
+        "canonical": "#5c3d00",
+        "oklch": "oklch(38.6% 0.081 76.6)",
+        "tonalRamp": [
+          "#130900",
+          "#342100",
+          "#593b00",
+          "#7b5b26",
+          "#9e7c48",
+          "#c29f6a",
+          "#e7c38d",
+          "#ffebd0"
+        ]
+      },
+      "weakness-marker": {
+        "role": "status",
+        "displayName": "Weakness Marker",
+        "canonical": "#b97800",
+        "oklch": "oklch(62.6% 0.134 71.8)",
+        "tonalRamp": [
+          "#130900",
+          "#362000",
+          "#5c3900",
+          "#865500",
+          "#b27300",
+          "#d89536",
+          "#ffba5e",
+          "#ffebd4"
+        ]
+      },
+      "operate-accent-default": {
+        "role": "operate",
+        "displayName": "Desktop Accent (stock Adwaita blue)",
+        "canonical": "#3584e4",
+        "oklch": "oklch(61.4% 0.164 255.3)",
+        "tonalRamp": [
+          "#000b1f",
+          "#00244e",
+          "#004083",
+          "#005fbb",
+          "#3382e2",
+          "#62a7ff",
+          "#a5ccff",
+          "#e4f0ff"
+        ]
+      },
+      "operate-bg": {
+        "role": "operate",
+        "displayName": "Operate Bg (light)",
+        "canonical": "#fafafb",
+        "oklch": "oklch(98.5% 0.001 286.4)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#252526",
+          "#424243",
+          "#616162",
+          "#828283",
+          "#a5a5a6",
+          "#c9c9ca",
+          "#eeeeef"
+        ]
+      },
+      "operate-fg": {
+        "role": "operate",
+        "displayName": "Operate Fg (light)",
+        "canonical": "rgb(0 0 6 / 80%)",
+        "note": "Alpha overlay; it takes its tone from the surface beneath, so it has no tonal ramp."
+      },
+      "operate-muted": {
+        "role": "operate",
+        "displayName": "Operate Muted (light)",
+        "canonical": "rgb(0 0 6 / 60%)",
+        "note": "Alpha overlay; it takes its tone from the surface beneath, so it has no tonal ramp."
+      },
+      "operate-ghost": {
+        "role": "operate",
+        "displayName": "Operate Ghost (light)",
+        "canonical": "rgb(0 0 6 / 7%)",
+        "note": "Alpha overlay; it takes its tone from the surface beneath, so it has no tonal ramp."
+      },
+      "operate-ghost-strong": {
+        "role": "operate",
+        "displayName": "Operate Ghost Strong (light)",
+        "canonical": "rgb(0 0 6 / 26%)",
+        "note": "Alpha overlay; it takes its tone from the surface beneath, so it has no tonal ramp."
+      },
+      "operate-button": {
+        "role": "operate",
+        "displayName": "Operate Button (light)",
+        "canonical": "rgb(0 0 6 / 8%)",
+        "note": "Alpha overlay; it takes its tone from the surface beneath, so it has no tonal ramp."
+      },
+      "operate-button-hover": {
+        "role": "operate",
+        "displayName": "Operate Button Hover (light)",
+        "canonical": "rgb(0 0 6 / 12%)",
+        "note": "Alpha overlay; it takes its tone from the surface beneath, so it has no tonal ramp."
+      },
+      "operate-button-active": {
+        "role": "operate",
+        "displayName": "Operate Button Active (light)",
+        "canonical": "rgb(0 0 6 / 22%)",
+        "note": "Alpha overlay; it takes its tone from the surface beneath, so it has no tonal ramp."
+      },
+      "operate-danger": {
+        "role": "operate",
+        "displayName": "Operate Danger (light)",
+        "canonical": "#e01b24",
+        "oklch": "oklch(57.9% 0.224 26.6)",
+        "tonalRamp": [
+          "#1f0001",
+          "#4d0004",
+          "#81000b",
+          "#b80014",
+          "#eb2b2e",
+          "#ff7368",
+          "#ffb3aa",
+          "#ffe9e6"
+        ]
+      },
+      "operate-danger-text": {
+        "role": "operate",
+        "displayName": "Operate Danger Text (light)",
+        "canonical": "#c01c28",
+        "oklch": "oklch(52.0% 0.196 24.7)",
+        "tonalRamp": [
+          "#1f0001",
+          "#4d0006",
+          "#800011",
+          "#b60920",
+          "#df4142",
+          "#ff726d",
+          "#ffb2ac",
+          "#ffe9e6"
+        ]
+      },
+      "operate-warning": {
+        "role": "operate",
+        "displayName": "Operate Warning (light)",
+        "canonical": "#e5a50a",
+        "oklch": "oklch(76.3% 0.156 80.3)",
+        "tonalRamp": [
+          "#120900",
+          "#332100",
+          "#573c00",
+          "#7f5a00",
+          "#a97800",
+          "#d59900",
+          "#febc39",
+          "#ffeccc"
+        ]
+      },
+      "operate-bg-dark": {
+        "role": "operate",
+        "displayName": "Operate Bg (dark)",
+        "canonical": "#222226",
+        "oklch": "oklch(25.4% 0.007 285.9)",
+        "tonalRamp": [
+          "#0b0b0e",
+          "#252529",
+          "#414146",
+          "#616165",
+          "#828287",
+          "#a4a4aa",
+          "#c8c8ce",
+          "#eeeef3"
+        ]
+      },
+      "operate-fg-dark": {
+        "role": "operate",
+        "displayName": "Operate Fg (dark)",
+        "canonical": "#ffffff",
+        "oklch": "oklch(100.0% 0.000 89.9)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#a5a5a5",
+          "#c9c9c9",
+          "#eeeeee"
+        ]
+      },
+      "operate-muted-dark": {
+        "role": "operate",
+        "displayName": "Operate Muted (dark)",
+        "canonical": "rgb(255 255 255 / 62%)",
+        "note": "Alpha overlay; it takes its tone from the surface beneath, so it has no tonal ramp."
+      },
+      "operate-ghost-dark": {
+        "role": "operate",
+        "displayName": "Operate Ghost (dark)",
+        "canonical": "rgb(255 255 255 / 7%)",
+        "note": "Alpha overlay; it takes its tone from the surface beneath, so it has no tonal ramp."
+      },
+      "operate-ghost-strong-dark": {
+        "role": "operate",
+        "displayName": "Operate Ghost Strong (dark)",
+        "canonical": "rgb(255 255 255 / 28%)",
+        "note": "Alpha overlay; it takes its tone from the surface beneath, so it has no tonal ramp."
+      },
+      "operate-button-dark": {
+        "role": "operate",
+        "displayName": "Operate Button (dark)",
+        "canonical": "rgb(255 255 255 / 10%)",
+        "note": "Alpha overlay; it takes its tone from the surface beneath, so it has no tonal ramp."
+      },
+      "operate-button-hover-dark": {
+        "role": "operate",
+        "displayName": "Operate Button Hover (dark)",
+        "canonical": "rgb(255 255 255 / 15%)",
+        "note": "Alpha overlay; it takes its tone from the surface beneath, so it has no tonal ramp."
+      },
+      "operate-button-active-dark": {
+        "role": "operate",
+        "displayName": "Operate Button Active (dark)",
+        "canonical": "rgb(255 255 255 / 26%)",
+        "note": "Alpha overlay; it takes its tone from the surface beneath, so it has no tonal ramp."
+      },
+      "operate-danger-dark": {
+        "role": "operate",
+        "displayName": "Operate Danger (dark)",
+        "canonical": "#c01c28",
+        "oklch": "oklch(52.0% 0.196 24.7)",
+        "tonalRamp": [
+          "#1f0001",
+          "#4d0006",
+          "#800011",
+          "#b60920",
+          "#df4142",
+          "#ff726d",
+          "#ffb2ac",
+          "#ffe9e6"
+        ]
+      },
+      "operate-danger-text-dark": {
+        "role": "operate",
+        "displayName": "Operate Danger Text (dark)",
+        "canonical": "#ff7b63",
+        "oklch": "oklch(73.2% 0.166 31.9)",
+        "tonalRamp": [
+          "#1e0100",
+          "#4b0600",
+          "#7d1000",
+          "#ab2d19",
+          "#d3533d",
+          "#fb7860",
+          "#ffb3a4",
+          "#ffe9e4"
+        ]
+      },
+      "operate-warning-dark": {
+        "role": "operate",
+        "displayName": "Operate Warning (dark)",
+        "canonical": "#cd9309",
+        "oklch": "oklch(70.1% 0.144 80.0)",
+        "tonalRamp": [
+          "#120900",
+          "#332100",
+          "#583c00",
+          "#7f5900",
+          "#a97800",
+          "#d4991a",
+          "#fabe4d",
+          "#ffeccd"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Hero claim on persuasion surfaces; one sentence, at most 22ch."
+      },
+      "figure": {
+        "displayName": "Figure",
+        "purpose": "Hero lane counts; the heaviest type on a report, tabular figures."
+      },
+      "figure-compact": {
+        "displayName": "Figure Compact",
+        "purpose": "Counts beside compact bars, tabular figures."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section headlines on paper in Deep Indigo Ink."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Chart titles above compact bar groups."
+      },
+      "lead": {
+        "displayName": "Lead",
+        "purpose": "The hero's method sentence on the field."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Running text on persuasion surfaces."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Version labels, source line, table headers, footer."
+      },
+      "operate-title": {
+        "displayName": "Operate Title",
+        "purpose": "Error page headline (system face)."
+      },
+      "operate-body": {
+        "displayName": "Operate Body",
+        "purpose": "Error page lead and points (system face)."
+      },
+      "operate-detail": {
+        "displayName": "Operate Detail",
+        "purpose": "Raw error detail in monospace."
+      }
+    },
+    "surfaces": {
+      "persuasion": {
+        "files": [
+          "docs/pl/reports/tracking-summary.html",
+          "docs/en/reports/tracking-summary.html"
+        ],
+        "heroField": "radial-gradient(120% 140% at 0% 0%, #2e1a87 0%, #1e1060 55%, #120a3d 100%)",
+        "font": "InDuckGo Sans: embedded WOFF2 subset of Adwaita Sans (Latin and Polish), SIL OFL 1.1, weights 100-900"
+      },
+      "operate": {
+        "files": [
+          "assets/error-page/error-page.html"
+        ],
+        "accentSource": "libadwaita StyleManager accent_color_rgba(), written into --accent at render time",
+        "schemes": [
+          "light",
+          "dark"
+        ],
+        "tones": [
+          "accent",
+          "danger",
+          "warning"
+        ]
+      }
+    },
+    "waivers": [
+      {
+        "date": "2026-11-02",
+        "surface": "persuasion",
+        "text": "No concept roll (concept-seed) was run because the user imposed a time limit; the form was chosen directly (data-led report, comparison bars at hero scale)."
+      }
+    ],
+    "shadows": [],
+    "motion": [
+      {
+        "name": "bar-grow",
+        "value": "transform scaleX(0 -> 1) 1.1s cubic-bezier(.16, 1, .3, 1) both",
+        "purpose": "Hero bar fills grow from the left on load; disabled under prefers-reduced-motion and in print."
+      },
+      {
+        "name": "bar-stagger",
+        "value": "0.12s",
+        "purpose": "Delay step between lanes, in the order Chrome, Brave, InDuckGo."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "report-narrow",
+        "value": "760px"
+      },
+      {
+        "name": "operate-narrow",
+        "value": "520px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Race lanes",
+      "kind": "custom",
+      "refersTo": "race-track",
+      "description": "Signature hero comparison on the indigo field: one lane per browser, count at hero scale, amber for InDuckGo only.",
+      "html": "<div class=\"ds-race\" role=\"img\" aria-label=\"Ad and tracking servers on 12 sites: Chrome 94, Brave 5, InDuckGo 2\"><div class=\"ds-lane ds-chrome\"><div class=\"ds-who\">Chrome<small>version 156</small></div><div class=\"ds-track\"><div class=\"ds-fill\" style=\"width:100%\"></div></div><div class=\"ds-count\">94</div></div><div class=\"ds-lane ds-brave\"><div class=\"ds-who\">Brave<small>version 1.98</small></div><div class=\"ds-track\"><div class=\"ds-fill\" style=\"width:5.3%\"></div></div><div class=\"ds-count\">5</div></div><div class=\"ds-lane ds-us\"><div class=\"ds-who\"><svg class=\"ds-mark\" viewBox=\"0 0 128 128\" width=\"26\" height=\"26\" aria-hidden=\"true\"><defs><linearGradient id=\"ds-mark-shield\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#6A5ACD\"/><stop offset=\"1\" stop-color=\"#2E1A87\"/></linearGradient><linearGradient id=\"ds-mark-rim\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#8E7FE8\"/><stop offset=\"1\" stop-color=\"#1E1060\"/></linearGradient></defs><path d=\"M64 6 L114 22 V60 C114 93 93 113 64 124 C35 113 14 93 14 60 V22 Z\" fill=\"url(#ds-mark-rim)\"/><path d=\"M64 11 L109 25.5 V60 C109 89 90 107.5 64 118 C38 107.5 19 89 19 60 V25.5 Z\" fill=\"url(#ds-mark-shield)\"/><path d=\"M36 84 C50 97 80 98 94 84 C88 103 44 106 36 84 Z\" fill=\"#FFFFFF\" opacity=\"0.92\"/><circle cx=\"60\" cy=\"57\" r=\"24\" fill=\"#FFFFFF\"/><path d=\"M79 52 L104 60 L79 69 Z\" fill=\"#FFB300\"/><path d=\"M79 60.5 L104 60 L79 69 Z\" fill=\"#F08C00\"/><circle cx=\"67\" cy=\"50\" r=\"4.5\" fill=\"#2A1B6E\"/><circle cx=\"68.6\" cy=\"48.6\" r=\"1.4\" fill=\"#FFFFFF\"/></svg>InDuckGo<small>version 1.0 with Guard</small></div><div class=\"ds-track\"><div class=\"ds-fill\" style=\"width:2.1%\"></div></div><div class=\"ds-count\">2</div></div></div>",
+      "css": ".ds-race { display: grid; gap: 18px; padding: 40px 28px; color: #fff; font: 17px/1.6 \"InDuckGo Sans\", \"Adwaita Sans\", system-ui, sans-serif; background: radial-gradient(120% 140% at 0% 0%, var(--indigo, #2e1a87) 0%, var(--ink, #1e1060) 55%, #120a3d 100%); } .ds-lane { display: grid; grid-template-columns: 150px 1fr 96px; align-items: center; gap: 18px; } .ds-who { font-weight: 700; font-size: 19px; } .ds-who small { display: block; font-weight: 400; font-size: 14px; color: #bdb5f2; } .ds-mark { vertical-align: -6px; margin-right: 8px; } .ds-track { height: 46px; border-radius: 10px; background: rgb(255 255 255 / 9%); overflow: hidden; } .ds-fill { height: 100%; border-radius: 10px; min-width: 10px; transform-origin: left; animation: ds-grow 1.1s cubic-bezier(.16, 1, .3, 1) both; } .ds-count { font-size: 44px; font-weight: 800; line-height: 1; text-align: right; font-variant-numeric: tabular-nums; } .ds-chrome .ds-fill { background: var(--chrome, #b9b5c9); } .ds-brave .ds-fill { background: var(--brave, #ff7a45); animation-delay: .12s; } .ds-us .ds-fill { background: var(--amber, #ffb300); animation-delay: .24s; } .ds-us .ds-who, .ds-us .ds-count { color: var(--amber, #ffb300); } @keyframes ds-grow { from { transform: scaleX(0); } } @media (prefers-reduced-motion: reduce) { .ds-fill { animation: none; } }"
+    },
+    {
+      "name": "Compact comparison rows",
+      "kind": "custom",
+      "refersTo": "mini-track",
+      "description": "Bars on paper for one sub-measure; InDuckGo's label and count in Logo Indigo.",
+      "html": "<div class=\"ds-mini\"><h3>Ad servers</h3><div class=\"ds-row ds-chrome\"><span>Chrome</span><div class=\"ds-track\"><div class=\"ds-fill\" style=\"width:100%\"></div></div><b>75</b></div><div class=\"ds-row ds-brave\"><span>Brave</span><div class=\"ds-track\"><div class=\"ds-fill\" style=\"width:5.3%\"></div></div><b>4</b></div><div class=\"ds-row ds-us\"><span>InDuckGo</span><div class=\"ds-track\"><div class=\"ds-fill\" style=\"width:1.3%\"></div></div><b>1</b></div></div>",
+      "css": ".ds-mini { display: grid; gap: 10px; max-width: 480px; padding: 24px; background: #fff; color: #1d1a33; font: 17px/1.6 \"InDuckGo Sans\", \"Adwaita Sans\", system-ui, sans-serif; } .ds-mini h3 { margin: 0 0 4px; font-size: 18px; } .ds-row { display: grid; grid-template-columns: 92px 1fr 44px; align-items: center; gap: 12px; } .ds-track { height: 24px; border-radius: 6px; background: var(--mist, #f4f2fc); overflow: hidden; } .ds-fill { height: 100%; border-radius: 6px; min-width: 6px; } .ds-row b { text-align: right; font-size: 19px; font-variant-numeric: tabular-nums; } .ds-chrome .ds-fill { background: var(--chrome, #b9b5c9); } .ds-brave .ds-fill { background: var(--brave, #ff7a45); } .ds-us .ds-fill { background: var(--amber, #ffb300); } .ds-us span, .ds-us b { color: var(--indigo, #2e1a87); font-weight: 700; }"
+    },
+    {
+      "name": "Comparison table",
+      "kind": "card",
+      "refersTo": "comparison-cell-induckgo",
+      "description": "Yes/no behaviour facts per browser; InDuckGo's column carries the mist wash; green/red dots judge facts, not browsers.",
+      "html": "<table class=\"ds-table\"><thead><tr><th></th><th>Chrome</th><th>Brave</th><th class=\"ds-us\">InDuckGo</th></tr></thead><tbody><tr><th>Third-party tracking cookies</th><td class=\"ds-no\">allowed</td><td class=\"ds-yes\">blocked</td><td class=\"ds-us ds-yes\">blocked</td></tr><tr><th>Global Privacy Control signal</th><td class=\"ds-no\">no</td><td class=\"ds-yes\">yes</td><td class=\"ds-us ds-yes\">yes</td></tr></tbody></table>",
+      "css": ".ds-table { width: 100%; border-collapse: collapse; font: 16px/1.6 \"InDuckGo Sans\", \"Adwaita Sans\", system-ui, sans-serif; color: #1d1a33; background: #fff; } .ds-table th, .ds-table td { text-align: left; padding: 14px 12px; border-bottom: 1px solid var(--line, #e1ddf2); vertical-align: top; } .ds-table thead th { font-size: 14px; color: var(--muted, #575270); font-weight: 600; } .ds-table thead th.ds-us { color: var(--indigo, #2e1a87); } .ds-table tbody th { font-weight: 600; width: 34%; } .ds-table td.ds-us { background: var(--mist, #f4f2fc); color: var(--ink, #1e1060); font-weight: 600; } .ds-yes::before, .ds-no::before { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 8px; content: \"\"; vertical-align: 1px; } .ds-yes::before { background: var(--good, #17703a); } .ds-no::before { background: var(--bad, #b3261e); }"
+    },
+    {
+      "name": "Weakness band",
+      "kind": "card",
+      "refersTo": "weakness-band",
+      "description": "Full-bleed warm band that states where InDuckGo is weaker, at body size.",
+      "html": "<section class=\"ds-gaps\"><h2>Where InDuckGo is still weaker</h2><ul><li><b>No phishing or malware warnings.</b> Chrome and Brave have Safe Browsing; WebKitGTK has no such service.</li><li><b>A rare engine.</b> Few people use WebKitGTK on Linux, so a site can notice it.</li></ul></section>",
+      "css": ".ds-gaps { background: var(--weakness-wash, #fff7e0); color: #1d1a33; padding: 44px 28px 40px; font: 17px/1.6 \"InDuckGo Sans\", \"Adwaita Sans\", system-ui, sans-serif; } .ds-gaps h2 { margin: 0 0 8px; color: #5c3d00; font-size: clamp(24px, 3vw, 30px); line-height: 1.2; letter-spacing: -0.01em; } .ds-gaps ul { margin: 18px 0 0; padding-left: 22px; max-width: 72ch; } .ds-gaps li { margin-bottom: 12px; } .ds-gaps li::marker { color: #b97800; }"
+    },
+    {
+      "name": "Report link",
+      "kind": "custom",
+      "refersTo": "link",
+      "description": "Indigo underlined link with the amber keyboard focus ring.",
+      "html": "<p class=\"ds-method\">Details are in the <a class=\"ds-link\" href=\"#\">full report with method and sources</a>.</p>",
+      "css": ".ds-method { color: var(--muted, #575270); font: 15px/1.6 \"InDuckGo Sans\", \"Adwaita Sans\", system-ui, sans-serif; max-width: 75ch; } .ds-link { color: var(--indigo, #2e1a87); text-underline-offset: 3px; } .ds-link:focus-visible { outline: 3px solid var(--amber, #ffb300); outline-offset: 3px; border-radius: 3px; }"
+    },
+    {
+      "name": "Operate button",
+      "kind": "button",
+      "refersTo": "operate-button",
+      "description": "Flat libadwaita pill button on error pages; alpha fill deepens with state.",
+      "html": "<a class=\"ds-op-button\" href=\"#\">Reload Page</a>",
+      "css": ".ds-op-button { display: inline-flex; align-items: center; min-height: 40px; padding: 9px 26px; border-radius: 9999px; background: var(--button, rgb(0 0 6 / 8%)); color: var(--fg, rgb(0 0 6 / 80%)); font: 700 15px/1.55 system-ui, \"Cantarell\", \"Noto Sans\", sans-serif; text-decoration: none; outline: 2px solid transparent; outline-offset: 2px; } .ds-op-button:hover { background: var(--button-hover, rgb(0 0 6 / 12%)); } .ds-op-button:active { background: var(--button-active, rgb(0 0 6 / 22%)); } .ds-op-button:focus-visible { outline-color: color-mix(in srgb, var(--accent, #3584e4) 55%, transparent); }"
+    },
+    {
+      "name": "Operate primary button",
+      "kind": "button",
+      "refersTo": "operate-button-primary",
+      "description": "Pill button in the desktop's accent colour; white overlay on hover, black overlay when pressed.",
+      "html": "<a class=\"ds-op-primary\" href=\"#\">Try Again</a>",
+      "css": ".ds-op-primary { display: inline-flex; align-items: center; min-height: 40px; padding: 9px 26px; border-radius: 9999px; background: var(--accent, #3584e4); color: #fff; font: 700 15px/1.55 system-ui, \"Cantarell\", \"Noto Sans\", sans-serif; text-decoration: none; outline: 2px solid transparent; outline-offset: 2px; } .ds-op-primary:hover { background: linear-gradient(rgb(255 255 255 / 10%), rgb(255 255 255 / 10%)) var(--accent, #3584e4); } .ds-op-primary:active { background: linear-gradient(rgb(0 0 0 / 20%), rgb(0 0 0 / 20%)) var(--accent, #3584e4); } .ds-op-primary:focus-visible { outline-color: color-mix(in srgb, var(--accent, #3584e4) 55%, transparent); }"
+    },
+    {
+      "name": "Error header",
+      "kind": "custom",
+      "refersTo": "operate-page",
+      "description": "Ghost-grey shield silhouette with a state badge, then title and lead; the operate surface's version of the shared shield.",
+      "html": "<div class=\"ds-op-page\"><svg class=\"ds-illustration\" viewBox=\"0 0 128 128\" aria-hidden=\"true\"><path class=\"ds-shield\" d=\"M64 11 L109 25.5 V60 C109 89 90 107.5 64 118 C38 107.5 19 89 19 60 V25.5 Z\"/><path class=\"ds-cutout\" d=\"M36 84 C50 97 80 98 94 84 C88 103 44 106 36 84 Z\"/><circle class=\"ds-cutout\" cx=\"60\" cy=\"57\" r=\"24\"/><path class=\"ds-feature\" d=\"M79 52 L104 60 L79 69 Z\"/><circle class=\"ds-feature\" cx=\"67\" cy=\"50\" r=\"4.5\"/><circle class=\"ds-cutout\" cx=\"100\" cy=\"98\" r=\"26\"/><circle class=\"ds-badge\" cx=\"100\" cy=\"98\" r=\"21\"/><g class=\"ds-glyph\"><path d=\"M100 87.5 V100\"/><circle class=\"ds-solid\" cx=\"100\" cy=\"107.5\" r=\"2.4\"/></g></svg><h1>This site can’t be reached</h1><p class=\"ds-lead\"><strong>example.org</strong> took too long to respond.</p><ul class=\"ds-points\"><li>Check your internet connection.</li><li>Try again in a few minutes.</li></ul></div>",
+      "css": ".ds-op-page { max-width: 640px; padding: 48px 40px 40px; background: var(--bg, #fafafb); color: var(--fg, rgb(0 0 6 / 80%)); font: 15px/1.55 system-ui, \"Cantarell\", \"Noto Sans\", sans-serif; } .ds-illustration { display: block; width: 104px; height: 104px; margin: 0 0 28px -6px; } .ds-shield { fill: rgb(0 0 6 / 7%); } .ds-cutout { fill: var(--bg, #fafafb); } .ds-feature { fill: rgb(0 0 6 / 26%); } .ds-badge { fill: var(--accent, #3584e4); } .ds-glyph { fill: none; stroke: #fff; stroke-width: 3.25; stroke-linecap: round; stroke-linejoin: round; } .ds-solid { fill: #fff; stroke: none; } .ds-op-page h1 { margin: 0 0 12px; font-size: 1.875rem; line-height: 1.2; font-weight: 750; letter-spacing: -0.015em; text-wrap: balance; } .ds-lead { margin: 0; max-width: 62ch; } .ds-lead strong { font-weight: 700; } .ds-points { margin: 22px 0 0; padding: 0; list-style: none; } .ds-points li { position: relative; margin: 0 0 8px; padding-left: 22px; color: rgb(0 0 6 / 60%); } .ds-points li::before { content: \"\"; position: absolute; left: 4px; top: 0.62em; width: 6px; height: 6px; border-radius: 50%; background: rgb(0 0 6 / 26%); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Honest Scoreboard",
+    "overview": "InDuckGo has two kinds of web surface, and they deliberately do not wear the same clothes. **Persuasion surfaces** are the HTML reports the author shares with people who evaluate the browser (today `docs/pl/reports/tracking-summary.html` and its English mirror `docs/en/reports/tracking-summary.html`). They behave like a scoreboard: a deep indigo field taken from the logo, measured counts at hero scale, every browser in its own recognisable colour, and the logo's amber reserved for InDuckGo alone. Nothing decorates the data; the bars and their printed figures are the composition, and the page states where InDuckGo is weaker in a band of its own instead of in fine print.\n\n**Operate surfaces** are pages the browser itself shows while someone is working, today the error pages rendered from `assets/error-page/error-page.html`. They step back into GNOME's libadwaita world: near-neutral greys written as alpha over near-black, a light and a dark scheme, the desktop's own accent colour delivered at runtime, pill buttons and the system face. A failed page load is not a moment to advertise, so these pages carry no brand colour at all.\n\nWhat ties the two together is the shield. Both surfaces draw the same shield geometry with identical path data from `assets/icons/io.github.induckgo.InDuckGo.svg`: the report shows it in the full indigo gradient with its amber beak beside InDuckGo's bar, and the error page shows it as a ghost-grey silhouette whose round badge takes the state colour (accent, danger or warning). Brand colour belongs to the claim; the operate surface belongs to the user's desktop. Density is calm on both: a 17px or 15px body, measures between 62ch and 75ch, generous vertical rhythm, and a plain, factual voice.\n\n**Provenance.** No concept roll (concept-seed) was run for the report surface because the user imposed a time limit on 2026-11-02; its form was chosen directly (a data-led report with comparison bars at hero scale). The North Star name is the documenter's reading of the report's direction contract, recorded from the built pages; no separate language interview was held in this pass.",
+    "keyCharacteristics": [
+      "Two surface families: a branded persuasion surface and a native, GNOME-like operate surface.",
+      "The deep indigo field and amber exist only on persuasion surfaces; amber marks InDuckGo and nothing else.",
+      "Numbers are the heaviest type on a report, always tabular, always printed beside their bar.",
+      "Flat everywhere: depth comes from tonal fields and washes, never from shadows.",
+      "Self-contained pages: fonts embedded or taken from the system, no network assets.",
+      "One shared shield silhouette is the visual signature on both surfaces."
+    ],
+    "rules": [
+      {
+        "name": "The Amber Is Us Rule",
+        "body": "Full-strength amber (#ffb300) marks only InDuckGo: its bar, its name and count on the field, and the logo's beak. The single functional exception is the keyboard focus ring. A competitor, a headline, a link or a button never turns amber.",
+        "section": "colors"
+      },
+      {
+        "name": "The Indigo On Paper Rule",
+        "body": "Amber text is legible on the field (9.0:1 on ink) and illegible on paper (1.6:1 on mist). When InDuckGo's name or figure sits on paper, it speaks in Logo Indigo (#2e1a87), and its table column gets the Lilac Mist wash.",
+        "section": "colors"
+      },
+      {
+        "name": "The Their Own Colours Rule",
+        "body": "Each competitor appears in a colour a reader already associates with it (Brave in ember orange, Chrome in neutral grey). Red and green are reserved for yes/no facts and are never used to colour a browser.",
+        "section": "colors"
+      },
+      {
+        "name": "The Desktop Owns The Operate Surface Rule",
+        "body": "Operate surfaces carry no brand colour. Their accent and their light or dark scheme come from the desktop at render time, so a user with a purple accent gets purple buttons. Indigo and amber never enter an error page.",
+        "section": "colors"
+      },
+      {
+        "name": "The Figures Outrank Words Rule",
+        "body": "On a scoreboard the count is the heaviest type on the page (800 against the headline's 700), and every count uses tabular figures and sits right-aligned so 94, 5 and 2 line up in one column.",
+        "section": "typography"
+      },
+      {
+        "name": "The Embedded Face Rule",
+        "body": "Persuasion surfaces embed their face as a subset; operate surfaces never embed a face and use the desktop's.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tone Not Shadow Rule",
+        "body": "Layers are told apart by tone (field, paper, mist, wash), never by drop shadows. The only gradients are the hero field and the logo; bars and tracks are solid.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** draw every measured comparison as bars with the count printed beside each bar in tabular figures, the largest value at 100% of the track.",
+      "**Do** order browsers Chrome, Brave, InDuckGo in every chart and table.",
+      "**Do** place the measurement date and sources directly under a measured chart, and link the full method from the page.",
+      "**Do** give InDuckGo's weaknesses their own Weakness Wash band at body size.",
+      "**Do** switch InDuckGo's text to Logo Indigo (#2e1a87) whenever it sits on paper or mist.",
+      "**Do** draw the shield from the logo's own path data on every surface.",
+      "**Do** take the accent and the light or dark scheme from the desktop on operate surfaces.",
+      "**Do** stop the bar growth under `prefers-reduced-motion` and force exact colours in print."
+    ],
+    "donts": [
+      "**Don't** use amber (#ffb300) on a competitor, a headline, a link or a button; it marks InDuckGo and the focus ring only.",
+      "**Don't** set amber text on paper or mist.",
+      "**Don't** colour a browser red or green; those colours judge yes/no facts.",
+      "**Don't** bring indigo, amber or the embedded face into an error page.",
+      "**Don't** add drop shadows to bars, tracks or bands, or gradients to bars.",
+      "**Don't** restate a measured comparison as metric tiles or feature cards.",
+      "**Don't** load fonts, images or scripts from the network on either surface."
+    ]
+  }
+}

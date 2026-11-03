@@ -168,6 +168,13 @@ gdy witryna była otwarta.
 | forbes.com | 7 / 24 | 0 / 14 | 0 / 13 |
 | **Razem** | **94 / 243** | **5 / 82** | **2 / 72** |
 
+Te same hosty trackerów, podzielone według kategorii Disconnect:
+
+| | Chrome | Brave | InDuckGo |
+|---|---|---|---|
+| Reklama | 75 | 4 | 1 |
+| Analityka i inne kategorie | 19 | 1 | 1 |
+
 - **Chrome** nie blokuje trackerów. Filtruje tylko reklamy na stronach, które nie spełniają Better Ads
   Standards ([pomoc Google](https://support.google.com/chrome/answer/7632919)). Od lipca 2025 nie uruchamia
   już pełnego uBlock Origin, bo Manifest V2 zniknął
@@ -229,6 +236,7 @@ osobę.
 | Fingerprinting | bez ochrony | losowanie osobne dla każdej witryny | szum osobny dla każdej witryny i sesji |
 | GPC | brak w wersji stabilnej; tylko propozycja ([status](https://chromestatus.com/feature/5137324344213504)) | włączone | włączone (nagłówek i wartość w skryptach) |
 | Safe Browsing (ostrzeżenia przed phishingiem) | Standard: 4-bajtowe prefiksy skrótów przez przekaźnik Oblivious HTTP | przez proxy Brave | **brak** (WebKitGTK nie ma takiej usługi) |
+| Zainstalowane aplikacje webowe (Gmail, bank) | dzielą ciasteczka i dane z profilem przeglądarki: zespół Chrome od aplikacji webowych nazwał osobny magazyn „not really viable” ([wątek W3C, maj 2020](https://lists.w3.org/Archives/Public/public-webapps-github/2020May/1169.html); nie mierzone tutaj) | zachowanie Chromium, jak w Chrome (nie mierzone tutaj) | każda aplikacja ma własny proces, ciasteczka i dane (przegląd architektury §6) |
 | Reklamowe API Privacy Sandbox | Topics, Protected Audience i inne zapowiedziane do wycofania w październiku 2025 ([Google](https://privacysandbox.google.com/blog/update-on-plans-for-privacy-sandbox-technologies)) | wyłączone | nie istnieją w WebKit |
 
 **Niezależne porównanie.** privacytests.org, przebieg 105 (22 października 2026, desktop, ustawienia

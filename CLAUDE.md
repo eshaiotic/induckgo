@@ -25,7 +25,7 @@ This file is an index; the content lives in the linked documents.
 
 ## Code map
 
-- `crates/induckgo-core` — domain logic without GTK/WebKit: protection rules, Guard filter lists, profiles, web apps, zoom, launch.
+- `crates/induckgo-core` — domain logic without GTK/WebKit: protection rules, Guard filter lists, profiles, web apps, zoom, launch, Tor.
 - `crates/induckgo-core/tests` — one OO scenario test file per domain type.
 - `crates/induckgo-test-report` — dev tool behind `./run-tests`: nextest JUnit + llvm-cov → HTML test report (not packaged).
 - `crates/induckgo` — GTK 4 + libadwaita app: adapters that carry out core decisions in WebKitGTK/libsoup/GIO.
@@ -38,7 +38,7 @@ This file is an index; the content lives in the linked documents.
 - `./run-tests` — all tests via cargo-nextest + HTML report in `tests/reports/` ([format](docs/en/tests/test-report.md)).
 - `cargo clippy --all-targets` — lints (pedantic, `unsafe_code` forbidden).
 - `cargo audit` — dependency vulnerability check (zero-vulnerability policy).
-- `cargo run -p induckgo -- [--profile NAME | --web-app ID] [URL…]` — run the browser or an installed web app.
+- `cargo run -p induckgo -- [--profile NAME | --web-app ID | --tor] [URL…]` — run the browser, a web app or the Tor window.
 - `packaging/release.sh [arch] [deb] [appimage] [rpm]` — release packages into `dist/` (deb/AppImage/rpm in podman).
 - `./install` / `./uninstall [--purge]` — install or remove the system package (Arch: built with makepkg).
 - `git tag vX.Y.Z && git push origin vX.Y.Z` — `.github/workflows/release.yml` publishes the GitHub release (tag = Cargo version).
@@ -49,3 +49,4 @@ This file is an index; the content lives in the linked documents.
 - Never call `soup::tld_get_base_domain` (soup3 0.9 binding reads freed memory); use `RegistrableDomainLookup`.
 - Changing Guard's list conversion (or upgrading `adblock`): bump `GuardRuleList::CONVERSION_REVISION`, else old compiled lists stay.
 - Manual GUI runs: isolate `XDG_DATA_HOME`/`XDG_CACHE_HOME`/`XDG_CONFIG_HOME` so the user's real profiles stay untouched.
+- Tor window (`--tor`): never let it load before Tor is connected or fall back to a direct connection (architecture §4.1).

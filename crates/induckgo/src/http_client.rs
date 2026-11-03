@@ -3,9 +3,15 @@
 //! It uses libsoup, the HTTP stack WebKitGTK already ships, so InDuckGo adds no second TLS implementation. The
 //! session has no cookie jar: these requests carry no identity. Every body is read with a size limit, since a
 //! hostile server could otherwise stream forever.
+//!
+//! The Tor window's client sends nothing until Tor is connected: its requests wait for the route through
+//! Tor's SOCKS port, and never fall back to a direct connection.
 
+use std::cell::RefCell;
 use std::error::Error;
 use std::fmt;
+
+use futures_channel::oneshot;
 
 use gio::prelude::InputStreamExt;
 use soup::prelude::SessionExt;
@@ -40,8 +46,16 @@ impl fmt::Display for FetchError {
 
 impl Error for FetchError {}
 
+enum Route {
+    Direct,
+    /// Requests waiting for Tor to connect.
+    AwaitingTor(Vec<oneshot::Sender<()>>),
+    ThroughTor,
+}
+
 pub struct HttpClient {
     session: soup::Session,
+    route: RefCell<Route>,
 }
 
 impl HttpClient {
@@ -49,13 +63,27 @@ impl HttpClient {
     const CHUNK_BYTES: usize = 64 * 1024;
 
     pub fn new() -> Self {
-        let session = soup::Session::new();
-        session.set_timeout(Self::TIMEOUT_SECONDS);
-        Self { session }
+        Self::routed(Route::Direct)
+    }
+
+    /// A client whose requests wait until [`Self::route_through_tor`] gives them Tor's SOCKS port.
+    pub fn awaiting_tor() -> Self {
+        Self::routed(Route::AwaitingTor(Vec::new()))
+    }
+
+    /// Sends every request through `proxy_uri` (Tor's SOCKS port) from now on, and releases the waiting ones.
+    pub fn route_through_tor(&self, proxy_uri: &str) {
+        self.session.set_proxy_resolver(Some(&gio::SimpleProxyResolver::new(Some(proxy_uri), glib::StrV::new())));
+        if let Route::AwaitingTor(waiting) = self.route.replace(Route::ThroughTor) {
+            for request in waiting {
+                let _ = request.send(());
+            }
+        }
     }
 
     /// `GET url`, revalidating with `etag` when given; the body may be at most `max_bytes` long.
     pub async fn get(&self, url: &str, max_bytes: usize, etag: Option<&str>) -> Result<Fetched, FetchError> {
+        self.wait_for_route().await;
         let message = soup::Message::new("GET", url).map_err(|_| FetchError::InvalidAddress(url.to_owned()))?;
         if let (Some(etag), Some(headers)) = (etag, message.request_headers()) {
             headers.append("If-None-Match", etag);
@@ -70,6 +98,24 @@ impl HttpClient {
             }
             status => Err(FetchError::Status(status, url.to_owned())),
         }
+    }
+
+    fn routed(route: Route) -> Self {
+        let session = soup::Session::new();
+        session.set_timeout(Self::TIMEOUT_SECONDS);
+        Self { session, route: RefCell::new(route) }
+    }
+
+    async fn wait_for_route(&self) {
+        let waiting = match &mut *self.route.borrow_mut() {
+            Route::AwaitingTor(waiting) => {
+                let (released, release) = oneshot::channel();
+                waiting.push(released);
+                release
+            }
+            Route::Direct | Route::ThroughTor => return,
+        };
+        let _ = waiting.await;
     }
 
     async fn read_limited(stream: &gio::InputStream, url: &str, max_bytes: usize) -> Result<Vec<u8>, FetchError> {

@@ -74,3 +74,16 @@ fn should_offer_duckduckgo_brave_search_and_google() {
 
     assert_eq!(names, ["DuckDuckGo", "Brave Search", "Google"]);
 }
+
+#[test]
+fn should_search_duckduckgo_onion_service_in_the_tor_window() {
+    SearchEngineScenario::given_chosen(SearchEngine::DUCKDUCKGO_ONION)
+        .then_search_for_opens("tor", "https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/?q=tor");
+}
+
+#[test]
+fn should_never_restore_the_onion_engine_into_an_ordinary_profile() {
+    SearchEngineScenario::given_chosen(SearchEngine::DUCKDUCKGO_ONION)
+        .after_saving_and_loading()
+        .then_new_tabs_open("https://duckduckgo.com/");
+}

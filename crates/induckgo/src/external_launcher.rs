@@ -33,6 +33,11 @@ impl ExternalLauncher {
         }
     }
 
+    /// Opens a Tor window, in the Tor window's own process.
+    pub fn start_tor_window() {
+        Self::start_induckgo(&[LaunchRequest::TOR_SWITCH]);
+    }
+
     /// `false` when the app's process could not be started (logged).
     pub fn start_web_app(web_app: &WebAppId) -> bool {
         Self::start_induckgo(&[DesktopEntry::WEB_APP_SWITCH, web_app.as_str()])

@@ -4,7 +4,8 @@
 //!   request leaves the machine; WebKit reports it as a failed load, and the page opens the cleaned address.
 //! * HTTPS upgrades: when an upgraded load fails, a banner explains that the site has no secure version and
 //!   offers to load it insecurely (never silently, so an attacker cannot force a downgrade).
-//! * Links to other applications (`mailto:`, `tel:`, ...) open outside, and only after a real click.
+//! * Links to other applications (`mailto:`, `tel:`, ...) open outside, and only after a real click; never from
+//!   the Tor window, since the other application would connect outside Tor and could reveal the address.
 //! * Permission requests are asked, never granted silently.
 //! * A page that cannot be shown (unknown host, refused connection, untrusted certificate, crash, an error
 //!   status with an empty body) is replaced by an InDuckGo error page that explains it.
@@ -21,6 +22,7 @@ use gtk::prelude::BoxExt;
 use gtk::prelude::Cast;
 use gtk::prelude::EventControllerExt;
 use gtk::prelude::IsA;
+use gtk::prelude::StaticType;
 use induckgo_core::navigation::load_failure::FailureCause;
 use induckgo_core::navigation::load_failure::LoadFailure;
 use induckgo_core::page_zoom::zoom_level::ZoomLevel;
@@ -172,7 +174,9 @@ impl PageView {
         });
         let page = Rc::downgrade(self);
         self.insecure_banner.connect_button_clicked(move |_| Self::load_insecurely(&page));
-        self.web_view.connect_permission_request(PermissionPrompt::ask);
+        let in_tor_window = self.session.is_tor_window();
+        self.web_view
+            .connect_permission_request(move |view, request| PermissionPrompt::ask(view, request, in_tor_window));
     }
 
     /// Ctrl with the scroll wheel zooms (up enlarges), as in every browser. The event is caught before it
@@ -229,10 +233,26 @@ impl PageView {
             return false;
         }
         decision.ignore();
-        if action.is_user_gesture() {
+        if !action.is_user_gesture() {
+            return true;
+        }
+        if self.session.is_tor_window() {
+            self.announce("Other applications do not open from the Tor window: they would connect outside Tor.");
+        } else {
             ExternalLauncher::open_outside(&address, self.window().as_ref());
         }
         true
+    }
+
+    /// A toast in the window showing this page.
+    fn announce(&self, text: &str) {
+        if let Some(overlay) = self
+            .web_view
+            .ancestor(adw::ToastOverlay::static_type())
+            .and_then(|widget| widget.downcast::<adw::ToastOverlay>().ok())
+        {
+            overlay.add_toast(adw::Toast::new(text));
+        }
     }
 
     /// A server that answers an error status with an empty body (`Content-Length: 0`) would leave a blank page.

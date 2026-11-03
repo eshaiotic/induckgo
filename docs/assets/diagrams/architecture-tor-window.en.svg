@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900" font-family="DejaVu Sans, Noto Sans, sans-serif">
+<title>InDuckGo — the Tor window: its own Tor, nothing on disk, nothing around Tor</title>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#37474f"/></marker><marker id="arrow-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#c62828"/></marker></defs>
+<rect width="1440" height="900" fill="#ffffff"/>
+<text x="720.0" y="34" font-size="18" font-weight="bold" text-anchor="middle" fill="#263238">InDuckGo — the Tor window: its own Tor, nothing on disk, nothing around Tor</text>
+<rect x="40" y="64" width="420" height="130" rx="9" fill="#e8eaf6" stroke="#3949ab" stroke-width="1.6"/>
+<text x="52" y="87" font-size="14" font-weight="bold" text-anchor="start" fill="#263238">Tor window (BrowserWindow)</text>
+<text x="52" y="110" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">Connection page until Tor reaches 100 %</text>
+<text x="52" y="129" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">New Identity: data burned, NEWNYM,</text>
+<text x="52" y="148" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">new SOCKS credentials</text>
+<text x="52" y="167" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">Tor Connection…: direct, Snowflake, obfs4, own</text>
+<rect x="40" y="250" width="420" height="130" rx="9" fill="#e8eaf6" stroke="#c62828" stroke-width="3"/>
+<text x="52" y="273" font-size="14" font-weight="bold" text-anchor="start" fill="#263238">Session in memory (start_tor)</text>
+<text x="52" y="296" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">ephemeral WebKit NetworkSession</text>
+<text x="52" y="315" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">WebRTC and media capture off, English</text>
+<text x="52" y="334" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">settings in memory, rules in XDG_RUNTIME_DIR</text>
+<text x="52" y="353" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">pages wait: protected AND routed</text>
+<rect x="40" y="430" width="420" height="80" rx="9" fill="#e8eaf6" stroke="#c62828" stroke-width="3"/>
+<text x="52" y="453" font-size="14" font-weight="bold" text-anchor="start" fill="#263238">HttpClient (protection data)</text>
+<text x="52" y="476" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">requests wait for the route</text>
+<text x="52" y="495" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">never a direct connection</text>
+<rect x="520" y="64" width="400" height="170" rx="9" fill="#f3e5f5" stroke="#8e24aa" stroke-width="1.6"/>
+<text x="532" y="87" font-size="14" font-weight="bold" text-anchor="start" fill="#263238">TorConnection</text>
+<text x="532" y="110" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">1  writes torrc (TorConfiguration)</text>
+<text x="532" y="129" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">2  starts tor: bundled, else /usr/bin…, never PATH</text>
+<text x="532" y="148" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">3  waits for the control port file</text>
+<text x="532" y="167" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">4  AUTHENTICATE (cookie), TAKEOWNERSHIP</text>
+<text x="532" y="186" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">5  SETEVENTS STATUS_CLIENT → bootstrap %</text>
+<text x="532" y="205" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">6  GETINFO net/listeners/socks</text>
+<rect x="520" y="330" width="400" height="130" rx="9" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.6"/>
+<text x="532" y="353" font-size="14" font-weight="bold" text-anchor="start" fill="#263238">tor — InDuckGo's own process</text>
+<text x="532" y="376" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">tor -f torrc --defaults-torrc /dev/null</text>
+<text x="532" y="395" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">SocksPort auto, ControlPort auto (127.0.0.1)</text>
+<text x="532" y="414" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">DataDirectory ~/.local/share/induckgo/tor</text>
+<text x="532" y="433" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">exits with InDuckGo</text>
+<rect x="520" y="560" width="400" height="60" rx="9" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.6"/>
+<text x="532" y="583" font-size="14" font-weight="bold" text-anchor="start" fill="#263238">Bridge transport (when chosen)</text>
+<text x="532" y="606" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">obfs4proxy or lyrebird, snowflake-client</text>
+<rect x="1020" y="64" width="380" height="100" rx="9" fill="#f5f5f5" stroke="#9e9e9e" stroke-width="1.6" stroke-dasharray="7 5"/>
+<text x="1032" y="87" font-size="14" font-weight="bold" text-anchor="start" fill="#263238">Never used</text>
+<text x="1032" y="110" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">system Tor service (tor.service)</text>
+<text x="1032" y="129" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">system DNS resolver</text>
+<text x="1032" y="148" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">direct connection, WebRTC</text>
+<rect x="1020" y="330" width="380" height="80" rx="9" fill="#fff3e0" stroke="#ef6c00" stroke-width="1.6"/>
+<text x="1032" y="353" font-size="14" font-weight="bold" text-anchor="start" fill="#263238">Tor network</text>
+<text x="1032" y="376" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">guard → middle → exit</text>
+<text x="1032" y="395" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">or a bridge: an unlisted relay</text>
+<rect x="1020" y="540" width="380" height="80" rx="9" fill="#fff3e0" stroke="#ef6c00" stroke-width="1.6"/>
+<text x="1032" y="563" font-size="14" font-weight="bold" text-anchor="start" fill="#263238">Websites</text>
+<text x="1032" y="586" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">clearnet through the exit</text>
+<text x="1032" y="605" font-size="12.5" font-weight="normal" text-anchor="start" fill="#263238">.onion end to end inside Tor</text>
+<path d="M250,194 L250,246" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<text x="260" y="226" font-size="12" font-weight="bold" text-anchor="start" fill="#37474f">loads</text>
+<path d="M520,130 L464,130" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<text x="492" y="122" font-size="12" font-weight="bold" text-anchor="middle" fill="#37474f">state</text>
+<path d="M560,234 L560,300 L464,300" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<text x="572" y="262" font-size="12" font-weight="bold" text-anchor="start" fill="#37474f">route through Tor</text>
+<text x="572" y="278" font-size="12" font-weight="bold" text-anchor="start" fill="#37474f">once connected</text>
+<path d="M460,350 L516,380" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<path d="M460,470 L516,420" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<text x="470" y="532" font-size="12" font-weight="bold" text-anchor="start" fill="#c62828">SOCKS5 127.0.0.1 · identityN:tor</text>
+<path d="M820,234 L820,326" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<text x="830" y="286" font-size="12" font-weight="bold" text-anchor="start" fill="#37474f">starts and controls</text>
+<path d="M820,460 L820,556" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<text x="830" y="514" font-size="12" font-weight="bold" text-anchor="start" fill="#37474f">starts it</text>
+<path d="M920,370 L1016,370" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<text x="968" y="344" font-size="12" font-weight="bold" text-anchor="middle" fill="#37474f">encrypted</text>
+<text x="968" y="360" font-size="12" font-weight="bold" text-anchor="middle" fill="#37474f">circuits</text>
+<path d="M920,590 L990,590 L990,400 L1016,400" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<text x="998" y="500" font-size="12" font-weight="bold" text-anchor="start" fill="#37474f">disguised</text>
+<path d="M1210,410 L1210,536" fill="none" stroke="#37474f" stroke-width="1.8" marker-end="url(#arrow)"/>
+<text x="1220" y="478" font-size="12" font-weight="bold" text-anchor="start" fill="#37474f">exit</text>
+<rect x="40" y="690" width="1360" height="170" rx="9" fill="#fafafa" stroke="#cfd8dc"/>
+<text x="54" y="716" font-size="14" font-weight="bold" text-anchor="start" fill="#263238">Legend</text>
+<rect x="54" y="734" width="34" height="20" rx="4" fill="#e8eaf6" stroke="#3949ab" stroke-width="1.6"/>
+<text x="98" y="749" font-size="13" font-weight="normal" text-anchor="start" fill="#263238">Tor window: interface and session</text>
+<rect x="504" y="734" width="34" height="20" rx="4" fill="#f3e5f5" stroke="#8e24aa" stroke-width="1.6"/>
+<text x="548" y="749" font-size="13" font-weight="normal" text-anchor="start" fill="#263238">InDuckGo controlling Tor</text>
+<rect x="954" y="734" width="34" height="20" rx="4" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.6"/>
+<text x="998" y="749" font-size="13" font-weight="normal" text-anchor="start" fill="#263238">tor and its transports</text>
+<rect x="54" y="768" width="34" height="20" rx="4" fill="#fff3e0" stroke="#ef6c00" stroke-width="1.6"/>
+<text x="98" y="783" font-size="13" font-weight="normal" text-anchor="start" fill="#263238">network</text>
+<rect x="504" y="768" width="34" height="20" rx="4" fill="#f5f5f5" stroke="#9e9e9e" stroke-width="1.6" stroke-dasharray="5 4"/>
+<text x="548" y="783" font-size="13" font-weight="normal" text-anchor="start" fill="#263238">never used</text>
+<rect x="54" y="802" width="34" height="20" rx="4" fill="#ffffff" stroke="#c62828" stroke-width="3"/>
+<text x="98" y="817" font-size="13" font-weight="normal" text-anchor="start" fill="#263238">red frame: the fail-closed gate — the place a leak would happen</text>
+</svg>

@@ -15,6 +15,14 @@ This product includes adblock-rust 0.13.5 by Brave Software, Inc., licensed unde
 License, Version 2.0, compiled in unmodified. Its source code is available at
 https://github.com/brave/adblock-rust and https://crates.io/crates/adblock.
 
+The Tor window runs tor by The Tor Project, Inc. (BSD-3-Clause, https://gitlab.torproject.org/tpo/core/tor):
+the distribution's own package on Arch Linux and Fedora; inside the Debian package and the AppImage, Debian's
+build of it, unmodified, in usr/lib/induckgo/tor. The AppImage also carries Debian's builds of obfs4proxy
+(BSD-2-Clause) and snowflake-client (BSD-3-Clause) and the libraries tor needs; their licences are in
+usr/share/doc/induckgo/third-party. crates/induckgo-core/src/tor/built_in_bridges.rs copies the built-in
+bridge lines of Tor Browser (tor-browser-build, BSD-3-Clause). "Tor" is a trademark of The Tor Project, Inc.;
+InDuckGo is not affiliated with or endorsed by The Tor Project.
+
 Data downloaded at run time, not distributed with InDuckGo:
 
   - DuckDuckGo Tracker Data Set, licensed CC BY-NC-SA 4.0 (non-commercial use only);

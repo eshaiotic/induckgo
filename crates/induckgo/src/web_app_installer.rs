@@ -145,9 +145,9 @@ impl WebAppInstaller {
         let app = catalog.install(name, &draft.start_url)?.clone();
         let icon = match Self::icon_png(context, &draft.icons, favicon).await {
             Some(png) => {
-                let icon = StoredFile::new(context.paths.web_app_icon(&app.id));
-                icon.write(&png)?;
-                icon.path().to_owned()
+                let icon = context.paths.web_app_icon(&app.id);
+                StoredFile::new(&icon).write(&png)?;
+                icon
             }
             None => context.icons.application_icon(),
         };

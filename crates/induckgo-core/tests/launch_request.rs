@@ -28,7 +28,16 @@ impl LaunchOutcome {
 
     fn then_runs_as(&self, application_id: &str, profile_id: &str) {
         let request = self.request();
-        assert_eq!((request.application_id().as_str(), request.profile_id().as_str()), (application_id, profile_id));
+        let profile = request.profile_id().map(|profile| profile.as_str().to_owned());
+        assert_eq!((request.application_id().as_str(), profile.as_deref()), (application_id, Some(profile_id)));
+    }
+
+    fn then_runs_tor_window_without_profile(&self) {
+        let request = self.request();
+        assert_eq!(
+            (request.application_id().as_str(), request.profile_id(), request.is_tor_window()),
+            ("io.github.induckgo.InDuckGo.Tor", None, true)
+        );
     }
 
     fn then_opens(&self, addresses: &[&str]) {
@@ -104,4 +113,25 @@ fn should_reject_unknown_switches() {
     CommandLineScenario::given_arguments(&["--remote-debugging-port=9222"])
         .when_parsed()
         .then_is_rejected_with(&LaunchRequestError::UnknownSwitch("--remote-debugging-port=9222".to_owned()));
+}
+
+#[test]
+fn should_start_the_tor_window_in_its_own_process_without_a_profile() {
+    CommandLineScenario::given_arguments(&["--tor"]).when_parsed().then_runs_tor_window_without_profile();
+}
+
+#[test]
+fn should_open_addresses_in_the_tor_window() {
+    CommandLineScenario::given_arguments(&["--tor", "http://abcdefgh.onion/"])
+        .when_parsed()
+        .then_opens(&["http://abcdefgh.onion/"]);
+}
+
+#[test]
+fn should_reject_tor_window_combined_with_a_profile_or_a_web_app() {
+    for arguments in [["--tor", "--profile", "work"].as_slice(), ["--tor", "--web-app", "gmail"].as_slice()] {
+        CommandLineScenario::given_arguments(arguments)
+            .when_parsed()
+            .then_is_rejected_with(&LaunchRequestError::ConflictingTargets);
+    }
 }

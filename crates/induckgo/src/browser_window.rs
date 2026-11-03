@@ -1,4 +1,8 @@
 //! A browser window: tabs, address bar, navigation, per-site protection switch, Fire button and menu.
+//!
+//! In the Tor window's process the same window covers its tabs with the Tor connection page until Tor is
+//! connected, and its Fire button gives a New Identity: data burned, new circuits, new SOCKS credentials. It
+//! offers no web apps, profiles or search engines, which would take browsing out of Tor.
 
 use std::cell::Cell;
 use std::cell::RefCell;
@@ -24,7 +28,9 @@ use gtk::prelude::WidgetExt;
 use induckgo_core::navigation::address_bar_input::AddressBarInput;
 use induckgo_core::navigation::search_engine::SearchEngine;
 use induckgo_core::page_zoom::zoom_level::ZoomLevel;
+use induckgo_core::protection::domain_name::DomainName;
 use induckgo_core::web_app::installed_web_app::InstalledWebApp;
+use url::Url;
 use webkit6::WebView;
 use webkit6::prelude::WebViewExt;
 
@@ -34,6 +40,10 @@ use crate::find_bar::FindBar;
 use crate::management_dialogs::ProfilesDialog;
 use crate::management_dialogs::WebAppsDialog;
 use crate::page_view::PageView;
+use crate::tor_connection::TorConnection;
+use crate::tor_connection::TorState;
+use crate::tor_connection_page::TorConnectionPage;
+use crate::tor_settings_dialog::TorSettingsDialog;
 use crate::web_app_installer::WebAppInstaller;
 use crate::zoom_controls::ZoomControls;
 
@@ -50,6 +60,9 @@ pub struct BrowserWindow {
     find_bar: Rc<FindBar>,
     zoom: ZoomControls,
     toasts: adw::ToastOverlay,
+    /// The tabs, or in the Tor window the connection page until Tor is connected.
+    content: gtk::Stack,
+    tor_page: Option<TorConnectionPage>,
     pages: RefCell<Vec<Rc<PageView>>>,
     /// Set while the header mirrors the page, so mirroring does not trigger the switch's own handler.
     updating_header: Cell<bool>,
@@ -57,6 +70,8 @@ pub struct BrowserWindow {
 
 impl BrowserWindow {
     const PRODUCT: &'static str = "InDuckGo";
+    const TABS: &'static str = "tabs";
+    const TOR_PAGE: &'static str = "tor";
 
     /// Opens a window with one tab per typed address (or the search engine's home page).
     pub fn open(application: &adw::Application, context: &Rc<AppContext>, addresses: &[String]) -> Rc<Self> {
@@ -85,6 +100,8 @@ impl BrowserWindow {
             find_bar,
             zoom: ZoomControls::new(),
             toasts,
+            content: gtk::Stack::new(),
+            tor_page: context.tor.as_ref().map(|_| TorConnectionPage::new()),
             pages: RefCell::new(Vec::new()),
             updating_header: Cell::new(false),
         });
@@ -92,6 +109,7 @@ impl BrowserWindow {
         browser.install_actions();
         browser.connect_signals();
         browser.show_search_engine();
+        browser.follow_tor();
         if !browser.open_typed(addresses) {
             browser.open_tab(browser.home_page());
         }
@@ -192,7 +210,7 @@ impl BrowserWindow {
             &gtk::Button::builder()
                 .icon_name(AppIcons::FIRE)
                 .action_name("win.fire")
-                .tooltip_text("Burn Browsing Data")
+                .tooltip_text(if self.context.tor.is_some() { "New Identity" } else { "Burn Browsing Data" })
                 .build(),
         );
         header.pack_end(&self.shield);
@@ -200,7 +218,11 @@ impl BrowserWindow {
         toolbar.add_top_bar(&header);
         toolbar.add_top_bar(&adw::TabBar::builder().view(&self.tab_view).autohide(true).build());
         toolbar.add_top_bar(self.find_bar.widget());
-        toolbar.set_content(Some(&self.tab_view));
+        self.content.add_named(&self.tab_view, Some(Self::TABS));
+        if let Some(tor_page) = &self.tor_page {
+            self.content.add_named(tor_page.widget(), Some(Self::TOR_PAGE));
+        }
+        toolbar.set_content(Some(&self.content));
         self.toasts.set_child(Some(&toolbar));
         self.window.set_content(Some(&self.toasts));
         self.window.set_title(Some(&self.product_title()));
@@ -210,12 +232,25 @@ impl BrowserWindow {
         let menu = gio::Menu::new();
         let tabs = gio::Menu::new();
         tabs.append(Some("New Tab"), Some("win.new-tab"));
-        tabs.append(Some("New Window"), Some("app.new-window"));
+        if context.tor.is_none() {
+            tabs.append(Some("New Window"), Some("app.new-window"));
+        }
+        tabs.append(Some("New Tor Window"), Some("app.new-tor-window"));
         menu.append_section(None, &tabs);
         let page = gio::Menu::new();
         page.append(Some("Find in Page…"), Some("win.find"));
         menu.append_section(None, &page);
         menu.append_item(&ZoomControls::menu_row(zoom));
+        if context.tor.is_some() {
+            let tor = gio::Menu::new();
+            tor.append(Some("New Identity"), Some("win.fire"));
+            tor.append(Some("Tor Connection…"), Some(TorConnectionPage::SETTINGS_ACTION));
+            menu.append_section(None, &tor);
+            let about = gio::Menu::new();
+            about.append(Some("About InDuckGo"), Some("app.about"));
+            menu.append_section(None, &about);
+            return menu;
+        }
         let apps = gio::Menu::new();
         apps.append(Some("Install Site as App…"), Some("win.install-web-app"));
         apps.append(Some("Installed Apps…"), Some("win.manage-web-apps"));
@@ -242,7 +277,7 @@ impl BrowserWindow {
     }
 
     fn install_actions(self: &Rc<Self>) {
-        let actions: [BrowserCommand; 14] = [
+        let actions: [BrowserCommand; 16] = [
             ("back", |browser| browser.with_web_view(WebViewExt::go_back)),
             ("forward", |browser| browser.with_web_view(WebViewExt::go_forward)),
             ("reload", |browser| {
@@ -270,6 +305,10 @@ impl BrowserWindow {
             ("install-web-app", Self::install_web_app),
             ("manage-web-apps", |browser| WebAppsDialog::present(&browser.context, &browser.window)),
             ("manage-profiles", |browser| ProfilesDialog::present(&browser.context, &browser.window)),
+            ("tor-retry", |browser| browser.context.tor.iter().for_each(TorConnection::start)),
+            ("tor-settings", |browser| {
+                browser.context.tor.iter().for_each(|tor| TorSettingsDialog::present(tor, &browser.window));
+            }),
         ];
         for (name, activate) in actions {
             let browser = Rc::downgrade(self);
@@ -385,14 +424,18 @@ impl BrowserWindow {
         if !browser.address.has_focus() {
             browser.address.set_text(&address);
         }
-        // An error page proves nothing about the connection, so it never gets the padlock; plain HTTP stays marked.
+        // An error page proves nothing about the connection, so it never gets the padlock; plain HTTP stays marked,
+        // except on onion services, which Tor encrypts end to end.
+        let is_onion =
+            Url::parse(&address).ok().and_then(|url| url.host_str().map(|host| DomainName::new(host).is_onion()));
         let security_icon = match address.split_once(':').map(|(scheme, _)| scheme) {
             Some("https") if !page.shows_error_page() => Some("channel-secure-symbolic"),
+            Some("http") if is_onion == Some(true) && !page.shows_error_page() => Some("channel-secure-symbolic"),
             Some("http") => Some("channel-insecure-symbolic"),
             _ => None,
         };
         browser.address.set_icon_from_icon_name(gtk::EntryIconPosition::Primary, security_icon);
-        let is_installable = security_icon.is_some() && !page.shows_error_page();
+        let is_installable = security_icon.is_some() && !page.shows_error_page() && browser.context.tor.is_none();
         browser.address.set_icon_from_icon_name(
             gtk::EntryIconPosition::Secondary,
             is_installable.then_some(AppIcons::INSTALL_APP),
@@ -414,11 +457,26 @@ impl BrowserWindow {
     }
 
     fn confirm_fire(self: &Rc<Self>) {
-        let dialog = adw::AlertDialog::new(
-            Some("Burn Browsing Data?"),
-            Some("Closes all tabs and windows of this profile and deletes its cookies, site data, cache and history."),
-        );
-        dialog.add_responses(&[("cancel", "_Cancel"), ("burn", "_Burn")]);
+        let dialog = if self.context.tor.is_some() {
+            let dialog = adw::AlertDialog::new(
+                Some("New Identity?"),
+                Some(
+                    "Closes all Tor tabs and windows, deletes their cookies, site data and cache, and switches to \
+                     new Tor circuits, so sites cannot link what you do next to what you did before.",
+                ),
+            );
+            dialog.add_responses(&[("cancel", "_Cancel"), ("burn", "_New Identity")]);
+            dialog
+        } else {
+            let dialog = adw::AlertDialog::new(
+                Some("Burn Browsing Data?"),
+                Some(
+                    "Closes all tabs and windows of this profile and deletes its cookies, site data, cache and history.",
+                ),
+            );
+            dialog.add_responses(&[("cancel", "_Cancel"), ("burn", "_Burn")]);
+            dialog
+        };
         dialog.set_response_appearance("burn", adw::ResponseAppearance::Destructive);
         dialog.set_close_response("cancel");
         let browser = Rc::downgrade(self);
@@ -433,10 +491,16 @@ impl BrowserWindow {
             }
             glib::spawn_future_local(async move {
                 let result = browser.context.session.burn_website_data().await;
+                let identity = match &browser.context.tor {
+                    Some(tor) => tor.new_identity().await,
+                    None => Ok(()),
+                };
                 browser.start_over();
-                let message = match result {
-                    Ok(()) => "Browsing data burned".to_owned(),
-                    Err(error) => format!("Some data could not be deleted: {error}"),
+                let message = match (result, identity) {
+                    (Ok(()), Ok(())) if browser.context.tor.is_some() => "New identity".to_owned(),
+                    (Ok(()), Ok(())) => "Browsing data burned".to_owned(),
+                    (Err(error), _) => format!("Some data could not be deleted: {error}"),
+                    (_, Err(error)) => format!("Tor could not switch circuits: {error}"),
                 };
                 browser.toasts.add_toast(adw::Toast::new(&message));
             });
@@ -490,8 +554,25 @@ impl BrowserWindow {
         }
     }
 
+    /// Covers the tabs with the Tor connection page while Tor is not connected (Tor window only).
+    fn follow_tor(self: &Rc<Self>) {
+        let Some(tor) = &self.context.tor else { return };
+        let browser = Rc::downgrade(self);
+        tor.observe(move |state| {
+            let Some(browser) = browser.upgrade() else { return glib::ControlFlow::Break };
+            if let Some(tor_page) = &browser.tor_page {
+                tor_page.show(state);
+            }
+            let shown = if matches!(state, TorState::Connected { .. }) { Self::TABS } else { Self::TOR_PAGE };
+            browser.content.set_visible_child_name(shown);
+            glib::ControlFlow::Continue
+        });
+    }
+
     fn product_title(&self) -> String {
-        let profile = self.context.session.profile_id();
+        let Some(profile) = self.context.session.profile_id() else {
+            return format!("{} (Tor)", Self::PRODUCT);
+        };
         if profile.is_default() {
             return Self::PRODUCT.to_owned();
         }

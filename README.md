@@ -9,11 +9,12 @@
 **A privacy-first web browser for Linux.** It rebuilds the protections of the open-source DuckDuckGo macOS
 browser on top of **WebKitGTK 6.0** (the Linux port of the same WebKit engine Safari and the DuckDuckGo macOS
 app use), with a **GTK 4 + libadwaita** user interface written in **Rust**. No telemetry, no extensions to
-manage, and every profile and installed web app kept apart from the others.
+manage, every profile and installed web app kept apart from the others, and a **Tor window** that browses
+through InDuckGo's own Tor.
 
 [![tests](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml/badge.svg)](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml)
 [![release](https://img.shields.io/github/v/release/eshaiotic/induckgo?color=6A5ACD)](https://github.com/eshaiotic/induckgo/releases/latest)
-![cargo nextest](https://img.shields.io/badge/cargo%20nextest-365%20tests-success)
+![cargo nextest](https://img.shields.io/badge/cargo%20nextest-420%20tests-success)
 ![stack](https://img.shields.io/badge/stack-Rust%20%E2%80%A2%20GTK%204%20%E2%80%A2%20WebKitGTK%206.0-8E7FE8)
 ![telemetry](https://img.shields.io/badge/telemetry-none-FFB300)
 [![licence](https://img.shields.io/badge/licence-GPL--3.0--or--later-2E1A87)](LICENSE)
@@ -65,14 +66,14 @@ InDuckGo ports, as DuckDuckGo documents it (November 2026). It compares features
 | HTTPS | the sites on DuckDuckGo's upgrade list | every navigation; asks before loading a site without HTTPS |
 | Usage data sent to its maker | anonymous usage metrics to DuckDuckGo | none |
 | **Hiding who you are** | | |
-| Separate identities | Fire Windows: an isolated window whose data is deleted when it closes | profiles and web apps, each its own process with its own cookies and storage |
+| Separate identities | Fire Windows: an isolated window whose data is deleted when it closes | profiles and web apps, each its own process with its own cookies and storage; the Tor window keeps nothing on disk |
 | Email address | Email Protection: free `@duck.com` addresses that forward mail with trackers removed | none |
-| IP address | a VPN in DuckDuckGo's paid subscription | none built in |
+| IP address | a VPN in DuckDuckGo's paid subscription | the Tor window: free, through InDuckGo's own Tor, with onion services and bridges; slower than a VPN |
 | Scam and phishing sites | Scam Blocker: a list from Netcraft, checked on the device | none |
 
 In short: InDuckGo blocks more and gives sites less to recognise it by, but its rare engine makes it stand out.
-DuckDuckGo hides more of who you are (email address, IP address with the subscription), warns about scam sites,
-and blends into Safari's crowd. Sources: DuckDuckGo's help pages on
+Both can hide the IP address: DuckDuckGo with a paid VPN, InDuckGo with its free Tor window. DuckDuckGo also
+hides the email address, warns about scam sites, and blends into Safari's crowd. Sources: DuckDuckGo's help pages on
 [web tracking protections](https://duckduckgo.com/duckduckgo-help-pages/privacy/web-tracking-protections),
 [Fire Windows](https://duckduckgo.com/duckduckgo-help-pages/privacy/fire-tabs),
 [Email Protection](https://duckduckgo.com/duckduckgo-help-pages/email-protection/what-is-duckduckgo-email-protection),
@@ -95,6 +96,7 @@ for macOS, which InDuckGo downloads.
 | Plain HTTP | Navigations are upgraded to HTTPS; if a site has no HTTPS, a banner asks before loading it insecurely. |
 | Leftover data | The Fire button erases the profile's cookies, storage, cache and favicons in one click. |
 | Mixing identities | Every profile and every installed web app runs as its own process with its own cookies and storage. |
+| Your IP address | The Tor window sends everything through InDuckGo's own Tor; its session lives in memory only. |
 
 There is no extension support — by design, and because WebKitGTK has no extension API.
 
@@ -103,12 +105,21 @@ turns any site — your bank, your mailbox — into a desktop application with t
 its own isolated session; a link you click inside it to another site opens in the browser, so the app's
 login never meets foreign pages.
 
+**Tor window.** *New Tor Window* in the menu (`Alt+Shift+N`, or `induckgo --tor`) opens a window whose every
+request goes through Tor, so sites see a Tor exit relay instead of your address. InDuckGo starts its own `tor`
+for it, never a system-wide Tor service, and shows the connection's progress until Tor is ready; until then
+no page loads, and nothing ever falls back to a direct connection. Its cookies, cache and settings live in
+memory only, WebRTC is off, it searches DuckDuckGo's onion service and opens `.onion` sites. Where Tor is
+blocked, *Tor Connection…* offers Snowflake, obfs4 (with Tor Browser's built-in bridges) or bridges of your
+own. The Fire button becomes *New Identity*: data deleted, new Tor circuits. It hides your address, not that
+you use InDuckGo: where being indistinguishable among Tor users matters, use Tor Browser.
+
 ---
 
 ## Status
 
-Usable work in progress: browsing with tabs, all protections above, profiles, web apps, downloads,
-permission prompts and find-in-page work. Not built yet: session restore, bookmarks, history window,
+Usable work in progress: browsing with tabs, all protections above, profiles, web apps, the Tor window,
+downloads, permission prompts and find-in-page work. Not built yet: session restore, bookmarks, history window,
 cookie-consent handling, translations. The full list with reasons is in the architecture document.
 
 In the future InDuckGo will ship as part of a new Linux distribution. It stays a standalone project and keeps
@@ -136,7 +147,10 @@ gh attestation verify induckgo_*_amd64.deb --repo eshaiotic/induckgo
 ```
 
 The packages use the system's WebKitGTK, GTK and libadwaita, so the browser engine keeps receiving your
-distribution's security updates. The AppImage needs no installation:
+distribution's security updates. For the Tor window, the Arch and Fedora packages pull in the distribution's
+`tor` (no Tor service is started); the `.deb` carries Debian's `tor` itself, because Debian's package would
+start a system-wide Tor service, and recommends `obfs4proxy` and `snowflake-client` for bridges; the AppImage
+carries all three. The AppImage needs no installation:
 `chmod +x InDuckGo-*-x86_64.AppImage && ./InDuckGo-*-x86_64.AppImage`.
 
 From a checkout of this repository:
@@ -171,10 +185,11 @@ with `SHA256SUMS` and their attestations. The tag must match the version in `Car
 ## Running from source
 
 ```sh
-sudo pacman -S --needed rust webkitgtk-6.0 gtk4 libadwaita
+sudo pacman -S --needed rust webkitgtk-6.0 gtk4 libadwaita tor
 cargo run -p induckgo                          # browser, default profile
 cargo run -p induckgo -- --profile work        # browser, profile "work"
 cargo run -p induckgo -- https://example.com/  # open a page
+cargo run -p induckgo -- --tor                 # Tor window
 ```
 
 Installed web apps start from the desktop's application menu (`induckgo --web-app <id>`).
@@ -183,8 +198,8 @@ Installed web apps start from the desktop's application menu (`induckgo --web-ap
 
 ## Testing
 
-Stack: **cargo-nextest** — 365 object-oriented Given/When/Then scenarios: 304 for the domain in
-`crates/induckgo-core/tests/` (33 files, one per domain type) and 61 for the report tool in
+Stack: **cargo-nextest** — 420 object-oriented Given/When/Then scenarios: 359 for the domain in
+`crates/induckgo-core/tests/` (41 files, one per domain type) and 61 for the report tool in
 `crates/induckgo-test-report/tests/`.
 
 ```sh

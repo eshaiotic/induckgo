@@ -2,8 +2,10 @@
 # Builds InDuckGo release packages into dist/, with SHA256SUMS.
 #
 #   arch      pacman package, built here with makepkg (makepkg.conf flags apply: for this machine)
-#   deb       built in a Debian 13 container; installs on Debian 13, Ubuntu 24.04 LTS and newer
-#   appimage  the Debian 13 build as an AppImage; the host needs WebKitGTK 6.0, GTK 4.14, libadwaita 1.5
+#   deb       built in a Debian 13 container; installs on Debian 13, Ubuntu 24.04 LTS and newer; carries
+#             Debian's tor for the Tor window (Debian's tor package would start a system-wide Tor service)
+#   appimage  the Debian 13 build as an AppImage, with tor, its libraries, obfs4proxy and snowflake-client;
+#             the host needs WebKitGTK 6.0, GTK 4.14, libadwaita 1.5
 #   rpm       built in a Fedora 44 container
 #
 # Usage: packaging/release.sh [arch] [deb] [appimage] [rpm]      (no argument: all of them)

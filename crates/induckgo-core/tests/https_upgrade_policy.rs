@@ -104,6 +104,20 @@ fn should_not_upgrade_local_network_addresses() {
 }
 
 #[test]
+fn should_leave_onion_services_on_plain_http_because_tor_encrypts_them() {
+    HttpsUpgradeScenario::given_https_first_browsing()
+        .when_navigating_to("http://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/")
+        .then_proceeds_unchanged();
+}
+
+#[test]
+fn should_upgrade_ordinary_site_whose_name_merely_contains_onion() {
+    HttpsUpgradeScenario::given_https_first_browsing()
+        .when_navigating_to("http://onion.example.com/")
+        .then_loads("https://onion.example.com/");
+}
+
+#[test]
 fn should_not_upgrade_site_excluded_by_privacy_configuration() {
     HttpsUpgradeScenario::given_https_first_browsing()
         .when_navigating_to("http://www.legacy-portal.com/")
@@ -147,6 +161,8 @@ fn should_keep_local_network_and_excluded_hosts_on_plain_http() {
         "http://localhost:3000/",
         "http://printer.local/",
         "http://router.home.arpa/",
+        "http://abcdefgh.onion/",
+        "http://www.abcdefgh.onion:8080/forum",
         "http://www.legacy-portal.com/",
         "http://old-blog.com/other",
     ] {
@@ -167,6 +183,8 @@ fn should_upgrade_public_sites_hiding_behind_user_info_that_looks_like_an_exempt
         "http://nas:x@example.com/",
         "http://localhost:3000@example.com/",
         "http://printer.local:x@example.com/",
+        "http://abcdefgh.onion:x@example.com/",
+        "http://onion.example.com/",
         "http://legacy-portal.com:x@example.com/",
         "http://old-blog.com:x@example.com/",
         "http://old-blog.com.example.com/",

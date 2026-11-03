@@ -15,6 +15,11 @@
       Every profile and every site installed as an app runs in its own process with its own cookies and
       storage, so a link clicked in the browser never reaches the session of your bank or mailbox.
     </p>
+    <p>
+      The Tor window browses through InDuckGo's own Tor, never a system-wide one. Its session lives in memory
+      only, WebRTC is off, onion services open directly, and bridges (Snowflake, obfs4 or your own) reach Tor
+      where it is blocked. New Identity deletes the session and switches to new Tor circuits.
+    </p>
     <p>InDuckGo is an independent project, not affiliated with or endorsed by Duck Duck Go, Inc.</p>
   </description>
   <url type="homepage">https://github.com/eshaiotic/induckgo</url>
@@ -27,6 +32,11 @@
   </provides>
   <content_rating type="oars-1.1"/>
   <releases>
+    <release version="1.1.0" date="2026-11-03">
+      <description>
+        <p>Tor window: browsing through InDuckGo's own Tor, with bridges, onion services and New Identity.</p>
+      </description>
+    </release>
     <release version="1.0.1" date="2026-11-03">
       <description>
         <p>New application icon.</p>

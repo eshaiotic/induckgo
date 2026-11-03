@@ -30,6 +30,8 @@ install -Dm0644 /src/packaging/linux/io.github.induckgo.InDuckGo.metainfo.xml -t
 install -Dm0644 /src/assets/icons/io.github.induckgo.InDuckGo.svg -t "$app"
 install -Dm0644 /src/assets/icons/io.github.induckgo.InDuckGo.svg -t "$app/usr/share/icons/hicolor/scalable/apps"
 install -Dm0644 /src/NOTICE /src/LICENSE -t "$app/usr/share/doc/induckgo"
+# The Tor window's tor, its bridges' transports and their libraries: an AppImage cannot install packages.
+sh /src/packaging/debian/tor-bundle.sh "$app/usr" --transports --libraries
 ln -s io.github.induckgo.InDuckGo.svg "$app/.DirIcon"
 
 mksquashfs "$app" "$work/image.squashfs" -root-owned -noappend -comp zstd -quiet

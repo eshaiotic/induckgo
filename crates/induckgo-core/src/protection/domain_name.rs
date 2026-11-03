@@ -12,6 +12,8 @@ pub struct DomainName {
 impl DomainName {
     /// Names (and their subdomains) that only resolve inside a home or office network.
     pub const LOCAL_NETWORK_DOMAINS: [&'static str; 5] = ["localhost", "local", "lan", "internal", "home.arpa"];
+    /// Tor onion services (RFC 7686): reachable only through Tor, which encrypts them end to end.
+    pub const ONION_DOMAIN: &'static str = "onion";
 
     #[must_use]
     pub fn new(raw: &str) -> Self {
@@ -43,6 +45,12 @@ impl DomainName {
             || Self::LOCAL_NETWORK_DOMAINS.iter().any(|domain| {
                 self.ascii == *domain || self.ascii.strip_suffix(domain).is_some_and(|rest| rest.ends_with('.'))
             })
+    }
+
+    /// An onion service address (`duckduckgogg42….onion`) or one of its subdomains.
+    #[must_use]
+    pub fn is_onion(&self) -> bool {
+        self.ascii.strip_suffix(Self::ONION_DOMAIN).is_some_and(|rest| rest.ends_with('.'))
     }
 }
 

@@ -30,11 +30,11 @@ impl AppIcons {
             (self.symbolic_icon(Self::INSTALL_APP), Self::INSTALL_APP_SVG),
         ];
         for (path, svg) in icons {
-            let file = StoredFile::new(path);
+            let file = StoredFile::new(&path);
             if file.read_text().as_deref() != Some(svg)
                 && let Err(error) = file.write(svg.as_bytes())
             {
-                glib::g_warning!(Self::LOG_DOMAIN, "cannot install icon {}: {error}", file.path().display());
+                glib::g_warning!(Self::LOG_DOMAIN, "cannot install icon {}: {error}", path.display());
             }
         }
         if let Some(display) = gdk::Display::default() {

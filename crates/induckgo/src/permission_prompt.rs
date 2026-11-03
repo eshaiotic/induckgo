@@ -2,7 +2,7 @@
 //!
 //! Requests that only serve fingerprinting or features InDuckGo cannot provide (device lists before any
 //! camera was granted, DRM key systems, XR) are denied without asking. Answers are not remembered: the next
-//! request asks again.
+//! request asks again. The Tor window never gives out the location: it would undo what Tor hides.
 
 use adw::prelude::AdwDialogExt;
 use adw::prelude::AlertDialogExt;
@@ -33,14 +33,20 @@ impl PermissionPrompt {
     const ALLOW: &'static str = "allow";
     const DENY: &'static str = "deny";
 
-    /// Handles a `permission-request` signal; always claims the request.
-    pub fn ask(web_view: &WebView, request: &PermissionRequest) -> bool {
+    /// Handles a `permission-request` signal of a page in the Tor window (`in_tor_window`) or elsewhere; always
+    /// claims the request.
+    pub fn ask(web_view: &WebView, request: &PermissionRequest, in_tor_window: bool) -> bool {
         let site = web_view
             .uri()
             .and_then(|address| Url::parse(&address).ok())
             .and_then(|url| url.host_str().map(str::to_owned))
             .unwrap_or_else(|| "This page".to_owned());
-        match Self::answer(&site, request) {
+        let answer = if in_tor_window && request.is::<GeolocationPermissionRequest>() {
+            Answer::Deny
+        } else {
+            Self::answer(&site, request)
+        };
+        match answer {
             Answer::Allow => request.allow(),
             Answer::Deny => request.deny(),
             Answer::Ask(question) => {

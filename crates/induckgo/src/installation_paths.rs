@@ -1,8 +1,10 @@
 //! Where InDuckGo keeps its files, following the XDG base directory layout.
 //!
 //! Data that must survive (`~/.local/share/induckgo`): profile and web app catalogs, each profile's cookies
-//! and site storage, web app icons. Data that can be rebuilt (`~/.cache/induckgo`): HTTP caches, the
-//! downloaded tracker lists and compiled WebKit rules.
+//! and site storage, web app icons, the Tor window's Tor state and connection settings. Data that can be
+//! rebuilt (`~/.cache/induckgo`): HTTP caches, the downloaded tracker lists and compiled WebKit rules. Data
+//! of the running Tor window (`$XDG_RUNTIME_DIR/induckgo`, memory that the system empties at logout): its
+//! compiled WebKit rules, which name sites it visited.
 
 use std::path::Path;
 use std::path::PathBuf;
@@ -15,6 +17,7 @@ use induckgo_core::web_app::web_app_id::WebAppId;
 pub struct InstallationPaths {
     data_root: PathBuf,
     cache_root: PathBuf,
+    runtime_root: PathBuf,
     applications: PathBuf,
     downloads: PathBuf,
 }
@@ -27,6 +30,7 @@ impl InstallationPaths {
         Self {
             data_root: data_home.join(Self::DIRECTORY),
             cache_root: glib::user_cache_dir().join(Self::DIRECTORY),
+            runtime_root: glib::user_runtime_dir().join(Self::DIRECTORY),
             applications: data_home.join("applications"),
             downloads: glib::user_special_dir(glib::UserDirectory::Downloads)
                 .unwrap_or_else(|| glib::home_dir().join("Downloads")),
@@ -61,6 +65,21 @@ impl InstallationPaths {
     /// Icon theme directory holding InDuckGo's own icon.
     pub fn icon_theme(&self) -> PathBuf {
         self.data_root.join("icons")
+    }
+
+    /// Tor's own data directory (`DataDirectory`): its entry guards and cached relay directory.
+    pub fn tor_data(&self) -> PathBuf {
+        self.data_root.join("tor")
+    }
+
+    /// How the Tor window reaches Tor: directly or through which bridges.
+    pub fn tor_connection_settings(&self) -> PathBuf {
+        self.data_root.join("tor-connection.json")
+    }
+
+    /// The Tor window's compiled WebKit rules, deleted when the Tor window starts and when it quits.
+    pub fn tor_content_filters(&self) -> PathBuf {
+        self.runtime_root.join("tor-content-filters")
     }
 
     pub fn downloads(&self) -> &Path {

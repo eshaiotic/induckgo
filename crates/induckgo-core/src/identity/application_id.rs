@@ -2,7 +2,8 @@
 //!
 //! The desktop groups windows and shows icons by application id, so every installed web app gets its own id
 //! (and runs as its own process): the mBank app is a separate program in the dock, not a browser window.
-//! Extra browsing profiles get their own id too, so no two profiles ever share a process.
+//! Extra browsing profiles get their own id too, so no two profiles ever share a process, and so does the Tor
+//! window, whose process is the only one that runs InDuckGo's private Tor.
 
 use std::fmt;
 
@@ -17,6 +18,7 @@ impl ApplicationId {
     const BROWSER: &'static str = "io.github.induckgo.InDuckGo";
     const WEB_APP_NAMESPACE: &'static str = "WebApp";
     const PROFILE_NAMESPACE: &'static str = "Profile";
+    const TOR_WINDOW: &'static str = "Tor";
 
     #[must_use]
     pub fn browser() -> Self {
@@ -27,6 +29,12 @@ impl ApplicationId {
     #[must_use]
     pub fn browser_profile(slug: &Slug) -> Self {
         Self { value: format!("{}.{}.{slug}", Self::BROWSER, Self::PROFILE_NAMESPACE) }
+    }
+
+    /// `io.github.induckgo.InDuckGo.Tor`: one process for every Tor window.
+    #[must_use]
+    pub fn tor_window() -> Self {
+        Self { value: format!("{}.{}", Self::BROWSER, Self::TOR_WINDOW) }
     }
 
     /// `io.github.induckgo.InDuckGo.WebApp.<slug>`; a slug always starts with a letter, as D-Bus requires.

@@ -3,6 +3,8 @@
 //!
 //! DuckDuckGo is the default; Brave Search and Google can be chosen instead. A search is an ordinary
 //! top-level navigation to the engine, so InDuckGo's protections apply to the engine's pages as to any site.
+//! The Tor window always searches DuckDuckGo's own onion service, so its searches never leave Tor through an
+//! exit relay.
 
 use serde_json::Value;
 use serde_json::json;
@@ -34,6 +36,15 @@ impl SearchEngine {
         name: "Google",
         home_page: "https://www.google.com/",
         query_address: "https://www.google.com/search?q=",
+    };
+    /// DuckDuckGo's onion service, as DuckDuckGo publishes it; the Tor window's fixed engine, never offered in the
+    /// menu of a profile, whose connections do not go through Tor. It serves HTTPS with a certificate for the
+    /// onion name (plain HTTP only redirects there), so the address saves that redirect through Tor.
+    pub const DUCKDUCKGO_ONION: Self = Self {
+        id: "duckduckgo-onion",
+        name: "DuckDuckGo",
+        home_page: "https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/",
+        query_address: "https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/?q=",
     };
     /// Every engine the user can choose, in menu order.
     pub const ALL: [Self; 3] = [Self::DUCKDUCKGO, Self::BRAVE_SEARCH, Self::GOOGLE];

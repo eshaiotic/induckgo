@@ -141,7 +141,7 @@ impl ProfilesDialog {
     }
 
     fn rebuild(self: &Rc<Self>) {
-        let current = self.context.session.profile_id().clone();
+        let current = self.context.session.profile_id().cloned();
         let rows = self
             .context
             .catalogs
@@ -150,7 +150,7 @@ impl ProfilesDialog {
             .map(|profile| {
                 let id = profile.id.clone();
                 let mut buttons = vec![RowList::button("Open", false, move || ExternalLauncher::start_profile(&id))];
-                if !profile.id.is_default() && profile.id != current {
+                if !profile.id.is_default() && Some(&profile.id) != current.as_ref() {
                     let (manager, id, name) = (Rc::downgrade(self), profile.id.clone(), profile.name.clone());
                     buttons.push(RowList::button("Delete", true, move || {
                         if let Some(manager) = manager.upgrade() {

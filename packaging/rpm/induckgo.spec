@@ -5,7 +5,7 @@
 %global debug_package %{nil}
 
 Name:           induckgo
-Version:        1.0.1
+Version:        1.1.0
 Release:        1%{?dist}
 Summary:        Privacy-first WebKitGTK browser built on DuckDuckGo's open-source tracker protections
 License:        GPL-3.0-or-later
@@ -18,11 +18,15 @@ BuildRequires:  pkgconfig(libadwaita-1)
 BuildRequires:  pkgconfig(libsoup-3.0)
 BuildRequires:  pkgconfig(webkitgtk-6.0)
 Requires:       hicolor-icon-theme
+# The Tor window starts its own tor; Fedora's tor package leaves its system service off.
+Requires:       tor
+Recommends:     obfs4
 
 %description
 InDuckGo blocks third-party trackers with DuckDuckGo's open-source protections, upgrades connections to
 HTTPS, removes tracking parameters from links and announces Global Privacy Control. Every profile and every
-site installed as an app runs in its own process with its own cookies and storage.
+site installed as an app runs in its own process with its own cookies and storage. The Tor window browses
+through InDuckGo's own Tor, with a session that lives in memory only.
 
 %prep
 %autosetup
@@ -52,6 +56,9 @@ install -Dm0644 assets/icons/io.github.induckgo.InDuckGo.svg -t %{buildroot}%{_d
 %{_datadir}/icons/hicolor/scalable/apps/io.github.induckgo.InDuckGo.svg
 
 %changelog
+* Tue Nov 03 2026 Michał Ligus <eshaiotic@eshaiotic.io> - 1.1.0-1
+- Tor window: browsing through InDuckGo's own Tor, with bridges and New Identity.
+
 * Tue Nov 03 2026 Michał Ligus <eshaiotic@eshaiotic.io> - 1.0.1-1
 - New application icon.
 

@@ -9,11 +9,12 @@
 **Przeglądarka dla Linuksa, w której prywatność jest na pierwszym miejscu.** Odtwarza ochronę z otwartej
 przeglądarki DuckDuckGo dla macOS na silniku **WebKitGTK 6.0** (linuksowa wersja tego samego WebKita, którego
 używają Safari i DuckDuckGo na macOS), z interfejsem **GTK 4 + libadwaita** napisanym w **Rust**. Bez telemetrii,
-bez rozszerzeń do pilnowania, a każdy profil i każda zainstalowana aplikacja webowa są od siebie odizolowane.
+bez rozszerzeń do pilnowania, każdy profil i każda zainstalowana aplikacja webowa są od siebie odizolowane, a
+**okno Tor** przegląda sieć przez własnego Tora InDuckGo.
 
 [![tests](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml/badge.svg)](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml)
 [![release](https://img.shields.io/github/v/release/eshaiotic/induckgo?color=6A5ACD)](https://github.com/eshaiotic/induckgo/releases/latest)
-![cargo nextest](https://img.shields.io/badge/cargo%20nextest-365%20test%C3%B3w-success)
+![cargo nextest](https://img.shields.io/badge/cargo%20nextest-420%20test%C3%B3w-success)
 ![stack](https://img.shields.io/badge/stack-Rust%20%E2%80%A2%20GTK%204%20%E2%80%A2%20WebKitGTK%206.0-8E7FE8)
 ![telemetria](https://img.shields.io/badge/telemetria-brak-FFB300)
 [![licencja](https://img.shields.io/badge/licencja-GPL--3.0--or--later-2E1A87)](LICENSE)
@@ -65,14 +66,14 @@ przenosi, tak jak opisuje ją DuckDuckGo (listopad 2026). Porównuje funkcje; ni
 | HTTPS | serwisy z listy DuckDuckGo | każda nawigacja; pyta przed wczytaniem serwisu bez HTTPS |
 | Dane o użyciu wysyłane do twórcy | anonimowe metryki użycia do DuckDuckGo | brak |
 | **Ukrywanie tożsamości** | | |
-| Oddzielne tożsamości | Fire Windows: odizolowane okno, którego dane znikają po zamknięciu | profile i aplikacje webowe, każda w osobnym procesie z własnymi cookies i danymi |
+| Oddzielne tożsamości | Fire Windows: odizolowane okno, którego dane znikają po zamknięciu | profile i aplikacje webowe, każda w osobnym procesie z własnymi cookies i danymi; okno Tor nic nie zapisuje na dysku |
 | Adres e-mail | Email Protection: darmowe adresy `@duck.com`, które przekazują pocztę z usuniętymi trackerami | brak |
-| Adres IP | VPN w płatnej subskrypcji DuckDuckGo | brak wbudowanego |
+| Adres IP | VPN w płatnej subskrypcji DuckDuckGo | okno Tor: za darmo, przez własnego Tora InDuckGo, z usługami onion i mostami; wolniejsze niż VPN |
 | Strony oszustów i phishing | Scam Blocker: lista od Netcraft, sprawdzana na urządzeniu | brak |
 
 W skrócie: InDuckGo blokuje więcej i daje serwisom mniej, po czym mogłyby go rozpoznać, ale rzadki silnik go
-wyróżnia. DuckDuckGo lepiej ukrywa, kim jesteś (adres e-mail, adres IP z subskrypcją), ostrzega przed stronami
-oszustów i ginie w tłumie użytkowników Safari. Źródła: strony pomocy DuckDuckGo o
+wyróżnia. Obie ukrywają adres IP: DuckDuckGo z płatnym VPN, InDuckGo darmowym oknem Tor. DuckDuckGo ukrywa też
+adres e-mail, ostrzega przed stronami oszustów i ginie w tłumie użytkowników Safari. Źródła: strony pomocy DuckDuckGo o
 [ochronie przed śledzeniem](https://duckduckgo.com/duckduckgo-help-pages/privacy/web-tracking-protections),
 [Fire Windows](https://duckduckgo.com/duckduckgo-help-pages/privacy/fire-tabs),
 [Email Protection](https://duckduckgo.com/duckduckgo-help-pages/email-protection/what-is-duckduckgo-email-protection),
@@ -95,6 +96,7 @@ DuckDuckGo dla macOS, którą InDuckGo pobiera.
 | Zwykłe HTTP | Nawigacje są podnoszone do HTTPS; jeśli serwis nie ma HTTPS, baner pyta przed niezabezpieczonym załadowaniem. |
 | Pozostawione dane | Przycisk Fire jednym kliknięciem kasuje ciasteczka, magazyn, pamięć podręczną i favikony profilu. |
 | Mieszanie tożsamości | Każdy profil i każda zainstalowana aplikacja webowa działa jako osobny proces z własnymi ciasteczkami i danymi. |
+| Twój adres IP | Okno Tor wysyła wszystko przez własnego Tora InDuckGo; jego sesja żyje tylko w pamięci. |
 
 Rozszerzeń nie ma — celowo, i dlatego, że WebKitGTK nie ma API rozszerzeń.
 
@@ -103,12 +105,22 @@ dowolny serwis — bank, pocztę — w aplikację na pulpicie z ikoną serwisu. 
 odizolowaną sesję; link do innego serwisu kliknięty w aplikacji otwiera się w przeglądarce, więc logowanie
 aplikacji nigdy nie spotyka obcych stron.
 
+**Okno Tor.** *New Tor Window* w menu (`Alt+Shift+N` albo `induckgo --tor`) otwiera okno, którego każde żądanie
+idzie przez Tora, więc serwisy widzą przekaźnik wyjściowy Tora zamiast Twojego adresu. InDuckGo uruchamia dla
+niego własny `tor`, nigdy ogólnosystemową usługę Tor, i pokazuje postęp łączenia, aż Tor będzie gotowy; do
+tego czasu żadna strona się nie wczytuje i nic nigdy nie przechodzi na połączenie bezpośrednie. Ciasteczka,
+pamięć podręczna i ustawienia okna żyją tylko w pamięci, WebRTC jest wyłączone, wyszukiwanie idzie przez usługę
+onion DuckDuckGo, a strony `.onion` się otwierają. Tam, gdzie Tor jest blokowany, *Tor Connection…* oferuje
+Snowflake, obfs4 (z wbudowanymi mostami Tor Browsera) albo własne mosty. Przycisk Fire staje się *New
+Identity*: dane usunięte, nowe obwody Tora. Okno ukrywa Twój adres, ale nie to, że używasz InDuckGo: gdy liczy
+się nieodróżnialność wśród użytkowników Tora, używaj Tor Browsera.
+
 ---
 
 ## Stan
 
 Projekt w toku, ale używalny: działają karty, wszystkie powyższe zabezpieczenia, profile, aplikacje webowe,
-pobieranie plików, pytania o uprawnienia i wyszukiwanie na stronie. Jeszcze nie ma: przywracania sesji,
+okno Tor, pobieranie plików, pytania o uprawnienia i wyszukiwanie na stronie. Jeszcze nie ma: przywracania sesji,
 zakładek, okna historii, obsługi zgód na cookies, tłumaczeń. Pełna lista z uzasadnieniem jest w dokumencie
 architektury.
 
@@ -137,7 +149,10 @@ gh attestation verify induckgo_*_amd64.deb --repo eshaiotic/induckgo
 ```
 
 Paczki korzystają z systemowych WebKitGTK, GTK i libadwaita, więc silnik przeglądarki dostaje aktualizacje
-bezpieczeństwa Twojej dystrybucji. AppImage nie wymaga instalacji:
+bezpieczeństwa Twojej dystrybucji. Na potrzeby okna Tor paczki dla Arch i Fedory dociągają `tor` z
+dystrybucji (żadna usługa Tor nie jest uruchamiana); `.deb` niesie Debianowy `tor` sam, bo paczka Debiana
+uruchamiałaby ogólnosystemową usługę Tor, i poleca `obfs4proxy` oraz `snowflake-client` dla mostów; AppImage
+niesie wszystkie trzy. AppImage nie wymaga instalacji:
 `chmod +x InDuckGo-*-x86_64.AppImage && ./InDuckGo-*-x86_64.AppImage`.
 
 Z kopii tego repozytorium:
@@ -171,10 +186,11 @@ atestacjami. Tag musi zgadzać się z wersją w `Cargo.toml`.
 ## Uruchamianie ze źródeł
 
 ```sh
-sudo pacman -S --needed rust webkitgtk-6.0 gtk4 libadwaita
+sudo pacman -S --needed rust webkitgtk-6.0 gtk4 libadwaita tor
 cargo run -p induckgo                          # przeglądarka, profil domyślny
 cargo run -p induckgo -- --profile work        # przeglądarka, profil "work"
 cargo run -p induckgo -- https://example.com/  # otwórz stronę
+cargo run -p induckgo -- --tor                 # okno Tor
 ```
 
 Zainstalowane aplikacje webowe uruchamia się z menu aplikacji pulpitu (`induckgo --web-app <id>`).
@@ -183,8 +199,8 @@ Zainstalowane aplikacje webowe uruchamia się z menu aplikacji pulpitu (`induckg
 
 ## Testy
 
-Stos: **cargo-nextest** — 365 obiektowych scenariuszy Given/When/Then: 304 dla domeny w
-`crates/induckgo-core/tests/` (33 pliki, jeden na typ domenowy) i 61 dla narzędzia raportu w
+Stos: **cargo-nextest** — 420 obiektowych scenariuszy Given/When/Then: 359 dla domeny w
+`crates/induckgo-core/tests/` (41 plików, jeden na typ domenowy) i 61 dla narzędzia raportu w
 `crates/induckgo-test-report/tests/`.
 
 ```sh

@@ -46,6 +46,10 @@ Two more goals shape the design:
 | Filter list | A text file of blocking and hiding rules in Adblock Plus syntax (`\|\|ads.example^` blocks a domain, `##.ad` hides elements, `@@` marks an exception), maintained by volunteers. uBlock Origin, Brave and AdGuard read the same lists. |
 | Fingerprinting | Recognising a browser without cookies, from what it gives away: how it draws a canvas, how its audio stack rounds numbers, its screen and fonts. |
 | Link-click ping | The request `<a ping="…">` sends when a link is clicked, telling the site's analytics which link it was. |
+| Tor | An anonymity network of volunteer relays. A connection is passed through three of them (a *circuit*: guard, middle, exit), each knowing only its neighbours, so the site sees the exit's address and nobody on the way sees both you and the site. |
+| Onion service | A site reachable only inside Tor (`….onion`, RFC 7686). The connection never leaves Tor and is encrypted end to end, even over plain `http://`. |
+| Bridge, pluggable transport | A *bridge* is an unlisted Tor relay for networks that block the listed ones. A *pluggable transport* (`obfs4`, `snowflake`, `webtunnel`, `meek_lite`) is a program that also disguises the connection to it. |
+| SOCKS port, control port | The two local ports of a running `tor`: applications send their connections through the *SOCKS port*; the program that owns Tor configures and watches it over the *control port*. |
 
 ## 3. Two crates
 
@@ -72,8 +76,9 @@ Every profile and every installed web app runs as **its own process with its own
 | Browser, default profile | `io.github.induckgo.InDuckGo` | `profiles/default` |
 | Browser, profile "work" | `io.github.induckgo.InDuckGo.Profile.work` | `profiles/work` |
 | Web app "mBank" | `io.github.induckgo.InDuckGo.WebApp.mbank_pl` | `profiles/app_mbank_pl` |
+| Tor window | `io.github.induckgo.InDuckGo.Tor` | none: the session lives in memory (§4.1) |
 
-`LaunchRequest` (core) turns the command line `induckgo [--profile NAME | --web-app ID] [URL …]` into one of
+`LaunchRequest` (core) turns the command line `induckgo [--profile NAME | --web-app ID | --tor] [URL …]` into one of
 these IDs. GTK then asks D-Bus whether that ID already runs: if it does, the new command line is handed over
 to the running process (which opens the URL in a window) and the new process exits.
 
@@ -93,6 +98,85 @@ rename), so a process never reads half a file.
 
 Before deleting a profile or uninstalling an app, InDuckGo asks D-Bus whether its application ID is still
 running (`RunningInstances`) and refuses to delete data that a live process uses.
+
+### 4.1 The Tor window
+
+![The Tor window's process holds a browser window with the connection page, a session kept in memory and an HTTP client that both wait for Tor; TorConnection writes the configuration, starts InDuckGo's own tor and follows it over the control port; all traffic goes through tor's local SOCKS port, optionally through a bridge transport, into the Tor network; the system's Tor service, DNS resolver and direct connections are never used](../../assets/diagrams/architecture-tor-window.en.svg)
+
+`induckgo --tor` (also the menu's **New Tor Window**, `Alt+Shift+N`, or the desktop entry's action) opens a
+**Tor window**: a browser window whose every request goes through Tor, so the sites it visits see a Tor exit
+relay's address instead of the user's. It is a process of its own, `io.github.induckgo.InDuckGo.Tor`, like a
+profile, but it has no profile directory: its session lives in memory and is gone when the process ends.
+
+**InDuckGo's own Tor, never the system's.** The process starts its own `tor` program and nothing else on the
+machine uses it; a system-wide Tor service is neither needed nor touched. `TorPrograms` (core) looks for `tor`
+first in `lib/induckgo/tor/` next to InDuckGo's `bin/` (where the Debian package and the AppImage put their
+copy), then in `/usr/bin`, `/usr/sbin` and `/usr/local/bin`. It never searches `PATH`: a program planted in a
+user-writable directory on the `PATH` must not become the Tor window's Tor. `TorConfiguration` (core) writes
+the configuration file, and Tor starts as `tor -f <data directory>/torrc --defaults-torrc /dev/null`, so
+neither `/etc/tor/torrc` nor a defaults file can change it. Tor runs as a client only, picks free loopback
+ports for SOCKS and control itself (`auto`), writes the control port into a file InDuckGo waits for, protects
+the control port with a cookie file, and exits when InDuckGo does (`__OwningControllerProcess`, and the
+control connection takes ownership with `TAKEOWNERSHIP`). Its data directory,
+`~/.local/share/induckgo/tor`, persists: it keeps Tor's entry guards (choosing new ones every run would make
+meeting a malicious one likelier) and the cached relay directory, which makes later connections take seconds.
+
+**Following the connection.** `TorConnection` (app) starts Tor, reads the control port file, proves access
+with the cookie (`AUTHENTICATE`), takes ownership, subscribes to client status events and asks where Tor
+listens for SOCKS. `ControlReplyReader` (core) assembles Tor's reply lines, `BootstrapStatus` reads the
+`BOOTSTRAP PROGRESS=… SUMMARY=…` reports and `TorEndpoint` accepts only loopback addresses. Every window of
+the process covers its tabs with the connection page (`TorConnectionPage`), showing how far Tor got and any
+problem it reports, until Tor reaches 100 %; then the session is told the proxy address and the tabs appear.
+If Tor fails to start or stops later, the page returns with the reason and **Try Again**.
+
+**Fail closed.** Nothing leaves the window before Tor is connected, and nothing ever goes around it.
+`ProfileSession::start_tor` builds a session whose loads wait until protection is active *and* the route
+through Tor is set; the `HttpClient` that downloads protection data holds its requests until then too. There
+is no fallback to a direct connection: if Tor stops, the proxy points at a closed port and loads fail.
+Host names travel inside the SOCKS request (GLib's SOCKS5 client sends names, not addresses), so Tor
+resolves them and the system's DNS resolver never learns which sites the window visits. Measured on the
+AppImage while it opened DuckDuckGo's onion service: for 60 seconds, sampling every 0.2 s, the UI and WebKit
+network processes held connections only to Tor's SOCKS and control ports on 127.0.0.1, and none to
+`systemd-resolved` (sampling can miss a very short-lived socket, so this is evidence, not proof).
+
+**Nothing on disk.** The WebKit session is ephemeral: cookies, storage, cache and HSTS records are kept in
+memory. Site zoom, sites with protections off and the search engine are kept in memory too
+(`StoredFile::discarded`). The compiled rule lists go to `$XDG_RUNTIME_DIR/induckgo/tor-content-filters`
+(memory that the system empties at logout) and are deleted at start and on quit, because they name visited
+sites (hosts that failed over HTTPS, sites with protections off). Only Tor's own state and the bridge choice
+(`tor-connection.json`) are stored.
+
+**Leaks and linking.** WebRTC and media capture are off: WebRTC sends its own UDP traffic around any proxy and
+can reveal local addresses. The window asks sites for English (`Accept-Language: en-US`), as Tor Browser
+does, because the system's language would set its users apart. Onion services are never upgraded to HTTPS
+(`DomainName::is_onion`) and their plain `http://` pages show the padlock, since Tor encrypts them end to end.
+The address bar searches DuckDuckGo's onion service. Web apps, profiles and the search engine choice are not
+offered: they would take browsing out of Tor. For the same reason links to other applications (`mailto:`,
+`zoommtg:` and the like) do not open from the Tor window, and location requests are refused without asking:
+the location would give away what Tor hides.
+
+**New Identity.** In the Tor window the Fire button gives a new identity: it deletes all of the session's data
+(HSTS included), closes the tabs, sends `SIGNAL NEWNYM` (new circuits for new connections) and moves the
+session to new SOCKS credentials (`identityN:tor`). Tor puts connections with different SOCKS credentials on
+different circuits (`IsolateSOCKSAuth`, on by default), so nothing that follows shares a circuit with what
+came before.
+
+**Bridges.** Where Tor is blocked, **Tor Connection…** (menu or connection page) offers Snowflake, obfs4 with
+the bridges Tor Browser ships (`BuiltInBridges`, copied from `tor-browser-build`), or bridges the user pastes.
+`BridgeLine` (core) accepts a pasted line only in the exact shape of a bridge line: the lines end up in Tor's
+configuration file, where a line break, `#` (a comment) or `\` (a line continuation) could otherwise smuggle in
+options of their own. Saving the choice restarts Tor with it. `TorPrograms` finds the transport programs
+(`lyrebird` or `obfs4proxy`, `snowflake-client`) in the same directories as `tor`, and the dialog names the
+package to install when one is missing.
+
+**Packages.** The Arch and Fedora packages depend on the distribution's `tor`, which starts no system service
+by itself. Debian's `tor` package would start a system-wide Tor service at every boot, so the Debian package
+carries Debian's own `tor` build in `/usr/lib/induckgo/tor` instead (its libraries are ordinary package
+dependencies) and recommends `obfs4proxy` and `snowflake-client`. The AppImage carries `tor`, the libraries it
+needs except the C library, `obfs4proxy` and `snowflake-client`, with their licences in
+`usr/share/doc/induckgo/third-party`. Measured on the AppImage: Tor connected directly in about 5 s, through
+the built-in obfs4 bridges in about 30 s and through Snowflake in about 50 s, and `check.torproject.org`
+confirmed each time that the window was using Tor.
 
 ## 5. From DuckDuckGo data to protected pages
 
@@ -448,6 +532,9 @@ code depended on it.
 | The user interface is English only. | No translation catalogue yet. | gettext is introduced. |
 | Every profile appears as a separate application in the dock. | One application ID per profile process. | Users prefer grouping. |
 | A sign-in that starts with a *clicked link* to another site inside a web app opens in the browser. | Clicked off-site links leave the app on purpose (phishing). Most sign-ins redirect or use a pop-up and keep working. | A real app needs it; then an allowlist per app. |
+| The Tor window hides the user's address, not the fact that it is InDuckGo: its fingerprint (WebKitGTK, window size, fonts) differs from Tor Browser's, whose users are made to look alike. | WebKitGTK has no letterboxing and none of Tor Browser's uniformity patches. | Use Tor Browser when being indistinguishable among Tor users matters. |
+| Sites visited under one identity share Tor circuits (Tor Browser separates them per site). | WebKitGTK sets one proxy, and with it one set of SOCKS credentials, per session. | WebKitGTK offers per-request proxy credentials. |
+| The Debian package and the AppImage carry their own `tor`, updated with InDuckGo releases, not with Debian's security updates. | Debian's `tor` package would start a system-wide Tor service. | Debian ships the program without enabling the service. |
 
 ## 10. Trust boundaries
 
@@ -461,3 +548,7 @@ code depended on it.
   `.part` file first and renamed into place, so a crash cannot leave a half-written catalog.
 - **Desktop entries** are generated by `DesktopEntry`, which escapes names taken from websites. A page title
   can therefore never inject a line such as `Exec=` into the file.
+- **The Tor window's Tor** listens on loopback only, and InDuckGo accepts only loopback addresses from it. Its
+  control port needs the cookie Tor writes into its `0700` data directory. Bridge lines are checked token by
+  token before they reach Tor's configuration file, and `tor` and its transports are run only from fixed
+  directories, never found through `PATH`.

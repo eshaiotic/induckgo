@@ -2,8 +2,8 @@
 //!
 //! DuckDuckGo decides with its Smarter Encryption list; InDuckGo simply tries HTTPS for every public host and
 //! falls back to HTTP for the rest of the session once a host fails over HTTPS. Hosts in the privacy
-//! configuration's `https` exceptions and local-network hosts (which almost never have valid certificates)
-//! are left alone.
+//! configuration's `https` exceptions, local-network hosts (which almost never have valid certificates) and
+//! onion services (encrypted end to end by Tor; most offer only plain HTTP) are left alone.
 //!
 //! The upgrade itself is a WebKit `make-https` content rule, applied before any byte leaves the machine and
 //! in every frame. A navigation hook cannot do that: WebKitGTK does not tell whether a navigation targets the
@@ -44,7 +44,11 @@ impl HttpsUpgradePolicy {
         let mut parsed = Url::parse(url).ok().filter(|parsed| parsed.scheme() == "http")?;
         let Some(Host::Domain(host)) = parsed.host() else { return None };
         let host = DomainName::new(host);
-        if host.is_local_network() || self.excluded.covers(host.as_str()) || self.failed_hosts.contains(&host) {
+        if host.is_local_network()
+            || host.is_onion()
+            || self.excluded.covers(host.as_str())
+            || self.failed_hosts.contains(&host)
+        {
             return None;
         }
         parsed.set_scheme("https").ok()?;
@@ -56,13 +60,16 @@ impl HttpsUpgradePolicy {
     #[must_use]
     pub fn content_rules(&self) -> Vec<ContentBlockerRule> {
         let address_hosts = [UrlFilter::plain_http_ipv4_host(), UrlFilter::plain_http_ipv6_host()];
-        let local_names = DomainName::LOCAL_NETWORK_DOMAINS.into_iter().map(UrlFilter::plain_http_on_domain);
+        let special_domains = DomainName::LOCAL_NETWORK_DOMAINS
+            .into_iter()
+            .chain([DomainName::ONION_DOMAIN])
+            .map(UrlFilter::plain_http_on_domain);
         let excluded = self.excluded.domains().map(UrlFilter::plain_http_on_domain);
         let failed = self.failed_hosts.iter().map(|host| UrlFilter::plain_http_on_exact_host(host.as_str()));
         let exemptions = address_hosts
             .into_iter()
             .chain([UrlFilter::plain_http_single_label_host()])
-            .chain(local_names)
+            .chain(special_domains)
             .chain(excluded)
             .chain(failed)
             .map(|filter| ContentBlockerRule::new(Trigger::new(filter), RuleAction::IgnorePreviousRules));

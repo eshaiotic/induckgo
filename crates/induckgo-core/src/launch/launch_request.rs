@@ -1,9 +1,10 @@
 //! The command line of one InDuckGo process.
 //!
 //! `induckgo [--profile <id>] [address...]` opens a browser window in a profile; `induckgo --web-app <id>`
-//! starts one installed web app (that is what its `.desktop` file runs). The target decides the GTK
-//! application id, and with it the process: a second launch with the same target is handed to the
-//! process that is already running instead of starting another one.
+//! starts one installed web app (that is what its `.desktop` file runs); `induckgo --tor [address...]` opens a
+//! Tor window, whose session lives in memory only and reaches the network through InDuckGo's own Tor. The
+//! target decides the GTK application id, and with it the process: a second launch with the same target is
+//! handed to the process that is already running instead of starting another one.
 
 use std::fmt;
 
@@ -19,7 +20,7 @@ pub enum LaunchRequestError {
     InvalidIdentifier(String),
     /// `app_*` profiles belong to installed web apps and only open through `--web-app`.
     ReservedProfile(String),
-    /// A web app opens only its own start address, in its own profile.
+    /// A web app opens only its own start address, in its own profile; a Tor window has no profile.
     ConflictingTargets,
 }
 
@@ -30,7 +31,8 @@ impl fmt::Display for LaunchRequestError {
             Self::MissingValue(switch) => write!(formatter, "option {switch} needs a value"),
             Self::InvalidIdentifier(text) => write!(formatter, "{text:?} is not a valid profile or web app identifier"),
             Self::ReservedProfile(text) => write!(formatter, "profile {text} belongs to a web app; use --web-app"),
-            Self::ConflictingTargets => formatter.write_str("--web-app cannot be combined with --profile or addresses"),
+            Self::ConflictingTargets => formatter
+                .write_str("--web-app takes no other option or address, and --tor cannot be combined with --profile"),
         }
     }
 }
@@ -41,6 +43,7 @@ impl std::error::Error for LaunchRequestError {}
 enum LaunchTarget {
     Browser(ProfileId),
     WebApp(WebAppId),
+    TorWindow,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -51,6 +54,7 @@ pub struct LaunchRequest {
 
 impl LaunchRequest {
     pub const PROFILE_SWITCH: &'static str = "--profile";
+    pub const TOR_SWITCH: &'static str = "--tor";
 
     /// Parses the arguments after the program name.
     ///
@@ -59,20 +63,25 @@ impl LaunchRequest {
     pub fn parse(arguments: &[String]) -> Result<Self, LaunchRequestError> {
         let mut profile = None;
         let mut web_app = None;
+        let mut tor_window = false;
         let mut addresses = Vec::new();
         let mut remaining = arguments.iter();
         while let Some(argument) = remaining.next() {
             match argument.as_str() {
                 Self::PROFILE_SWITCH => profile = Some(Self::value_of(argument, remaining.next())?),
                 DesktopEntry::WEB_APP_SWITCH => web_app = Some(Self::value_of(argument, remaining.next())?),
+                Self::TOR_SWITCH => tor_window = true,
                 switch if switch.starts_with('-') => return Err(LaunchRequestError::UnknownSwitch(switch.to_owned())),
                 address => addresses.push(address.to_owned()),
             }
         }
-        let target = match (web_app, profile) {
-            (Some(web_app), None) if addresses.is_empty() => LaunchTarget::WebApp(Self::parsed_web_app_id(web_app)?),
-            (Some(_), _) => return Err(LaunchRequestError::ConflictingTargets),
-            (None, profile) => LaunchTarget::Browser(Self::browser_profile_id(profile)?),
+        let target = match (web_app, profile, tor_window) {
+            (Some(web_app), None, false) if addresses.is_empty() => {
+                LaunchTarget::WebApp(Self::parsed_web_app_id(web_app)?)
+            }
+            (Some(_), _, _) | (None, Some(_), true) => return Err(LaunchRequestError::ConflictingTargets),
+            (None, None, true) => LaunchTarget::TorWindow,
+            (None, profile, false) => LaunchTarget::Browser(Self::browser_profile_id(profile)?),
         };
         Ok(Self { target, addresses })
     }
@@ -82,23 +91,31 @@ impl LaunchRequest {
         match &self.target {
             LaunchTarget::Browser(profile) => profile.application_id(),
             LaunchTarget::WebApp(web_app) => web_app.application_id(),
+            LaunchTarget::TorWindow => ApplicationId::tor_window(),
         }
     }
 
+    /// The profile whose data the process uses; `None` for the Tor window, which keeps nothing on disk.
     #[must_use]
-    pub fn profile_id(&self) -> ProfileId {
+    pub fn profile_id(&self) -> Option<ProfileId> {
         match &self.target {
-            LaunchTarget::Browser(profile) => profile.clone(),
-            LaunchTarget::WebApp(web_app) => web_app.profile_id(),
+            LaunchTarget::Browser(profile) => Some(profile.clone()),
+            LaunchTarget::WebApp(web_app) => Some(web_app.profile_id()),
+            LaunchTarget::TorWindow => None,
         }
     }
 
     #[must_use]
     pub fn web_app_id(&self) -> Option<&WebAppId> {
         match &self.target {
-            LaunchTarget::Browser(_) => None,
             LaunchTarget::WebApp(web_app) => Some(web_app),
+            LaunchTarget::Browser(_) | LaunchTarget::TorWindow => None,
         }
+    }
+
+    #[must_use]
+    pub fn is_tor_window(&self) -> bool {
+        self.target == LaunchTarget::TorWindow
     }
 
     /// Addresses as given; the browser window interprets each like text typed into the address bar.

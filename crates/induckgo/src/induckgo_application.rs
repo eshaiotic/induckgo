@@ -1,7 +1,7 @@
 //! The GTK application of one InDuckGo process.
 //!
-//! The command line decides the application id ([`LaunchRequest`]): the default profile, another profile or
-//! one web app. GTK makes the first process with an id the primary one; later launches with the same id
+//! The command line decides the application id ([`LaunchRequest`]): the default profile, another profile,
+//! one web app, or the Tor window, whose process runs its own Tor. GTK makes the first process with an id the primary one; later launches with the same id
 //! pass their command line to it over D-Bus and exit. So `induckgo https://example.com` opens a tab in the
 //! running browser, and clicking a web app's icon twice shows its existing window.
 
@@ -29,20 +29,24 @@ use crate::external_launcher::ExternalLauncher;
 use crate::http_client::HttpClient;
 use crate::installation_paths::InstallationPaths;
 use crate::profile_session::ProfileSession;
+use crate::tor_connection::TorConnection;
+use crate::tor_connection::TorState;
 use crate::web_app_window::WebAppWindow;
 
 pub struct InDuckGoApplication {
-    profile: ProfileId,
+    /// `None` for the Tor window's process.
+    profile: Option<ProfileId>,
     context: OnceCell<Rc<AppContext>>,
 }
 
 impl InDuckGoApplication {
     const USAGE_ERROR: u8 = 2;
     const NOT_FOUND: u8 = 1;
-    const ACCELERATORS: [(&'static str, &'static [&'static str]); 13] = [
+    const ACCELERATORS: [(&'static str, &'static [&'static str]); 14] = [
         ("win.new-tab", &["<Control>t"]),
         ("win.close-tab", &["<Control>w"]),
         ("app.new-window", &["<Control>n"]),
+        ("app.new-tor-window", &["<Alt><Shift>n"]),
         ("win.focus-address", &["<Control>l", "F6"]),
         ("win.reload", &["<Control>r", "F5"]),
         ("win.back", &["<Alt>Left"]),
@@ -73,6 +77,12 @@ impl InDuckGoApplication {
         let process = Rc::new(Self { profile: request.profile_id(), context: OnceCell::new() });
         let starting = Rc::clone(&process);
         application.connect_startup(move |application| starting.start(application));
+        let stopping = Rc::clone(&process);
+        application.connect_shutdown(move |_| {
+            if let Some(context) = stopping.context.get() {
+                context.session.close();
+            }
+        });
         application.connect_command_line(move |application, command_line| process.handle(application, command_line));
         application.run_with_args(&arguments)
     }
@@ -80,10 +90,17 @@ impl InDuckGoApplication {
     fn start(self: &Rc<Self>, application: &adw::Application) {
         Self::switch_off_animations();
         let paths = InstallationPaths::from_environment();
-        let http = Rc::new(HttpClient::new());
         let icons = AppIcons::new(&paths);
         icons.install();
-        let session = ProfileSession::start(self.profile.clone(), &paths, Rc::clone(&http));
+        let (http, session, tor) = if let Some(profile) = &self.profile {
+            let http = Rc::new(HttpClient::new());
+            let session = ProfileSession::start(profile.clone(), &paths, Rc::clone(&http));
+            (http, session, None)
+        } else {
+            let http = Rc::new(HttpClient::awaiting_tor());
+            let session = ProfileSession::start_tor(&paths, Rc::clone(&http));
+            (http, Rc::clone(&session), Some(Self::start_tor(&paths, &session)))
+        };
         let catalogs = CatalogFiles::new(&paths);
         let _ = self.context.set(Rc::new(AppContext {
             paths,
@@ -92,11 +109,27 @@ impl InDuckGoApplication {
             icons,
             session,
             browser_windows: BrowserWindows::default(),
+            tor,
         }));
         for (action, accelerators) in Self::ACCELERATORS {
             application.set_accels_for_action(action, accelerators);
         }
         self.install_actions(application);
+    }
+
+    /// Starts the Tor window's Tor; the session sends its traffic through Tor once it is connected.
+    fn start_tor(paths: &InstallationPaths, session: &Rc<ProfileSession>) -> Rc<TorConnection> {
+        let tor = TorConnection::new(paths);
+        let session = Rc::downgrade(session);
+        tor.observe(move |state| {
+            let Some(session) = session.upgrade() else { return glib::ControlFlow::Break };
+            if let TorState::Connected { proxy_uri } = state {
+                session.route_through_tor(proxy_uri);
+            }
+            glib::ControlFlow::Continue
+        });
+        tor.start();
+        tor
     }
 
     /// Tabs, dialogs, banners, toasts and the find bar appear at once instead of sliding and fading: the
@@ -135,8 +168,11 @@ impl InDuckGoApplication {
             WebAppWindow::open(application, context, installed);
             return glib::ExitCode::SUCCESS;
         }
-        if !self.profile.is_default() && context.catalogs.profiles().profile(&self.profile).is_none() {
-            command_line.printerr_literal(&format!("induckgo: there is no profile {}\n", self.profile));
+        if let Some(profile) = &self.profile
+            && !profile.is_default()
+            && context.catalogs.profiles().profile(profile).is_none()
+        {
+            command_line.printerr_literal(&format!("induckgo: there is no profile {profile}\n"));
             return glib::ExitCode::from(Self::NOT_FOUND);
         }
         match context.browser_windows.active(application).filter(|_| !request.addresses().is_empty()) {
@@ -170,10 +206,20 @@ impl InDuckGoApplication {
                     return;
                 };
                 match process.context.get() {
-                    Some(context) if profile == process.profile => {
+                    Some(context) if process.profile.as_ref() == Some(&profile) => {
                         Self::open_browser_window(application, context, &[]);
                     }
                     _ => ExternalLauncher::start_profile(&profile),
+                }
+            })
+            .build();
+        let process = Rc::downgrade(self);
+        let new_tor_window = gio::ActionEntry::builder("new-tor-window")
+            .activate(move |application: &adw::Application, _, _| {
+                let Some(process) = process.upgrade() else { return };
+                match process.context.get() {
+                    Some(context) if context.tor.is_some() => Self::open_browser_window(application, context, &[]),
+                    _ => ExternalLauncher::start_tor_window(),
                 }
             })
             .build();
@@ -198,7 +244,7 @@ impl InDuckGoApplication {
         let quit = gio::ActionEntry::builder("quit")
             .activate(|application: &adw::Application, _, _| application.quit())
             .build();
-        application.add_action_entries([new_window, open_profile, search_engine, about, quit]);
+        application.add_action_entries([new_window, new_tor_window, open_profile, search_engine, about, quit]);
     }
 
     fn open_browser_window(application: &adw::Application, context: &Rc<AppContext>, addresses: &[String]) {
@@ -244,6 +290,15 @@ impl InDuckGoApplication {
                 "Downloaded at run time from their publishers: EasyList, EasyPrivacy and EasyList Cookie List \
                  (GPL-3.0 or CC BY-SA 3.0, CC BY 3.0), uBlock Origin's lists (GPL-3.0), Peter Lowe's list \
                  (pgl.yoyo.org terms), Polish Filters (CC BY-NC-SA 4.0).",
+            ),
+        );
+        about.add_legal_section(
+            "Tor",
+            Some("© The Tor Project, Inc."),
+            gtk::License::Bsd3,
+            Some(
+                "The Tor window runs tor (bundled or your distribution's) and Tor Browser's built-in bridges. \
+                 Not affiliated with or endorsed by the Tor Project. Source: https://gitlab.torproject.org/tpo/core/tor",
             ),
         );
         about.present(application.active_window().as_ref());

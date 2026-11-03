@@ -48,6 +48,10 @@ Projekt kształtują jeszcze dwa cele:
 | Lista filtrów | Plik tekstowy z regułami blokowania i ukrywania w składni Adblock Plus (`\|\|ads.example^` blokuje domenę, `##.ad` ukrywa elementy, `@@` oznacza wyjątek), utrzymywany przez wolontariuszy. Te same listy czytają uBlock Origin, Brave i AdGuard. |
 | Fingerprinting | Rozpoznawanie przeglądarki bez cookies, po tym, co zdradza: jak rysuje canvas, jak jej stos audio zaokrągla liczby, jaki ma ekran i fonty. |
 | Ping kliknięcia linku | Żądanie, które `<a ping="…">` wysyła po kliknięciu linku; mówi analityce strony, który link kliknięto. |
+| Tor | Sieć anonimizująca złożona z przekaźników prowadzonych przez wolontariuszy. Połączenie przechodzi przez trzy z nich (*obwód*: strażnik, środkowy, wyjściowy), a każdy zna tylko sąsiadów, więc strona widzi adres przekaźnika wyjściowego i nikt po drodze nie widzi jednocześnie użytkownika i strony. |
+| Usługa onion | Strona dostępna tylko wewnątrz Tora (`….onion`, RFC 7686). Połączenie nigdy nie opuszcza Tora i jest szyfrowane od końca do końca, nawet przez zwykłe `http://`. |
+| Most, transport wtykowy | *Most* (bridge) to nieopublikowany przekaźnik Tora dla sieci, które blokują te opublikowane. *Transport wtykowy* (pluggable transport: `obfs4`, `snowflake`, `webtunnel`, `meek_lite`) to program, który dodatkowo maskuje połączenie z mostem. |
+| Port SOCKS, port kontrolny | Dwa lokalne porty działającego `tor`: aplikacje wysyłają przez *port SOCKS* swoje połączenia, a program, do którego Tor należy, konfiguruje go i obserwuje przez *port kontrolny*. |
 
 ## 3. Dwa crate'y
 
@@ -75,8 +79,9 @@ aplikacji**:
 | Przeglądarka, profil domyślny | `io.github.induckgo.InDuckGo` | `profiles/default` |
 | Przeglądarka, profil „work” | `io.github.induckgo.InDuckGo.Profile.work` | `profiles/work` |
 | Aplikacja webowa „mBank” | `io.github.induckgo.InDuckGo.WebApp.mbank_pl` | `profiles/app_mbank_pl` |
+| Okno Tor | `io.github.induckgo.InDuckGo.Tor` | brak: sesja żyje w pamięci (§4.1) |
 
-`LaunchRequest` (rdzeń) zamienia linię poleceń `induckgo [--profile NAZWA | --web-app ID] [URL …]` na jeden z
+`LaunchRequest` (rdzeń) zamienia linię poleceń `induckgo [--profile NAZWA | --web-app ID | --tor] [URL …]` na jeden z
 tych identyfikatorów. GTK pyta następnie D-Bus, czy ten identyfikator już działa. Jeśli tak, nowa linia
 poleceń trafia do działającego procesu (który otwiera URL w oknie), a nowy proces kończy pracę.
 
@@ -96,6 +101,86 @@ nigdy nie przeczyta pół pliku.
 
 Przed usunięciem profilu albo odinstalowaniem aplikacji InDuckGo pyta D-Bus, czy jej identyfikator nadal
 działa (`RunningInstances`), i odmawia usunięcia danych, których używa żywy proces.
+
+### 4.1 Okno Tor
+
+![Proces okna Tor ma okno przeglądarki ze stroną łączenia, sesję trzymaną w pamięci i klienta HTTP, które czekają na Tora; TorConnection zapisuje konfigurację, uruchamia własny tor InDuckGo i śledzi go przez port kontrolny; cały ruch idzie przez lokalny port SOCKS tor, opcjonalnie przez transport mostu, do sieci Tor; systemowa usługa Tor, systemowy resolver DNS i połączenia bezpośrednie nie są nigdy używane](../../assets/diagrams/architecture-tor-window.pl.svg)
+
+`induckgo --tor` (także **New Tor Window** w menu, `Alt+Shift+N` albo akcja w pliku desktop) otwiera **okno
+Tor**: okno przeglądarki, którego każde żądanie idzie przez Tora, więc odwiedzane strony widzą adres
+przekaźnika wyjściowego Tora zamiast adresu użytkownika. To osobny proces, `io.github.induckgo.InDuckGo.Tor`,
+tak jak profil, ale bez katalogu profilu: jego sesja żyje w pamięci i znika razem z procesem.
+
+**Własny Tor InDuckGo, nigdy systemowy.** Proces uruchamia własny program `tor`, z którego nie korzysta nic
+innego na komputerze; systemowa usługa Tor nie jest potrzebna ani ruszana. `TorPrograms` (rdzeń) szuka `tor`
+najpierw w `lib/induckgo/tor/` obok `bin/` InDuckGo (tam swoją kopię kładą paczka Debiana i AppImage), potem
+w `/usr/bin`, `/usr/sbin` i `/usr/local/bin`. Nigdy nie przeszukuje `PATH`: program podrzucony do katalogu
+zapisywalnego przez użytkownika, który jest w `PATH`, nie może zostać Torem okna Tor. `TorConfiguration`
+(rdzeń) zapisuje plik konfiguracji, a Tor startuje jako `tor -f <katalog danych>/torrc --defaults-torrc
+/dev/null`, więc ani `/etc/tor/torrc`, ani plik domyślnych ustawień nie mogą go zmienić. Tor działa wyłącznie
+jako klient, sam wybiera wolne porty pętli zwrotnej dla SOCKS i portu kontrolnego (`auto`), zapisuje port
+kontrolny do pliku, na który czeka InDuckGo, chroni port kontrolny plikiem cookie i kończy pracę razem z
+InDuckGo (`__OwningControllerProcess`, a połączenie kontrolne przejmuje go poleceniem `TAKEOWNERSHIP`). Jego
+katalog danych, `~/.local/share/induckgo/tor`, jest trwały: przechowuje strażników wejściowych Tora
+(wybieranie nowych przy każdym uruchomieniu zwiększałoby szansę trafienia na złośliwego) i zapisany katalog
+przekaźników, dzięki któremu kolejne połączenia trwają sekundy.
+
+**Śledzenie połączenia.** `TorConnection` (aplikacja) uruchamia Tora, czyta plik portu kontrolnego,
+udowadnia dostęp cookie (`AUTHENTICATE`), przejmuje Tora, subskrybuje zdarzenia stanu klienta i pyta, gdzie
+Tor nasłuchuje SOCKS. `ControlReplyReader` (rdzeń) składa linie odpowiedzi Tora, `BootstrapStatus` czyta
+raporty `BOOTSTRAP PROGRESS=… SUMMARY=…`, a `TorEndpoint` przyjmuje tylko adresy pętli zwrotnej. Każde okno
+procesu zasłania karty stroną łączenia (`TorConnectionPage`), która pokazuje postęp Tora i zgłaszane problemy,
+aż Tor dojdzie do 100 %. Wtedy sesja dostaje adres proxy i karty się pokazują. Gdy Tor nie wystartuje albo
+później się zatrzyma, strona wraca z powodem i przyciskiem **Try Again**.
+
+**Domyślnie zamknięte (fail closed).** Nic nie opuszcza okna, zanim Tor się połączy, i nic nigdy go nie
+omija. `ProfileSession::start_tor` buduje sesję, której wczytania czekają, aż ochrona będzie aktywna *i*
+trasa przez Tora ustawiona; `HttpClient`, który pobiera dane ochrony, też do tego czasu wstrzymuje żądania.
+Nie ma powrotu do połączenia bezpośredniego: gdy Tor się zatrzyma, proxy wskazuje zamknięty port i wczytania
+się nie udają. Nazwy hostów jadą wewnątrz żądania SOCKS (klient SOCKS5 GLib wysyła nazwy, nie adresy), więc
+rozwiązuje je Tor, a systemowy resolver DNS nie dowiaduje się, jakie strony okno odwiedza. Zmierzone na
+AppImage podczas otwierania usługi onion DuckDuckGo: przez 60 sekund, próbkując co 0,2 s, procesy interfejsu i
+sieci WebKit miały połączenia wyłącznie z portami SOCKS i kontrolnym Tora na 127.0.0.1 i żadnego z
+`systemd-resolved` (próbkowanie może przeoczyć bardzo krótko żyjące gniazdo, więc to dowód poszlakowy, nie
+ścisły).
+
+**Nic na dysku.** Sesja WebKit jest efemeryczna: cookies, magazyn, cache i wpisy HSTS żyją w pamięci. Powiększenie
+witryn, witryny z wyłączoną ochroną i wyszukiwarka też są trzymane w pamięci (`StoredFile::discarded`).
+Skompilowane listy reguł trafiają do `$XDG_RUNTIME_DIR/induckgo/tor-content-filters` (pamięć, którą system
+czyści przy wylogowaniu) i są usuwane przy starcie i przy wyjściu, bo zawierają nazwy odwiedzonych witryn
+(hosty, którym nie udało się HTTPS, witryny z wyłączoną ochroną). Zapisywane są tylko własny stan Tora i wybór
+mostów (`tor-connection.json`).
+
+**Wycieki i łączenie aktywności.** WebRTC i przechwytywanie multimediów są wyłączone: WebRTC wysyła własny
+ruch UDP z pominięciem każdego proxy i może zdradzić adresy lokalne. Okno prosi strony o angielski
+(`Accept-Language: en-US`), tak jak Tor Browser, bo język systemu wyróżniałby jego użytkowników. Usługi onion
+nigdy nie są podnoszone do HTTPS (`DomainName::is_onion`), a ich strony przez zwykłe `http://` dostają
+kłódkę, bo Tor szyfruje je od końca do końca. Pasek adresu wyszukuje w usłudze onion DuckDuckGo. Aplikacje
+webowe, profile i wybór wyszukiwarki nie są oferowane: wyprowadziłyby przeglądanie poza Tora. Z tego samego
+powodu odnośniki do innych aplikacji (`mailto:`, `zoommtg:` i podobne) nie otwierają się z okna Tor, a prośby
+o lokalizację są odrzucane bez pytania: położenie zdradziłoby to, co Tor ukrywa.
+
+**Nowa tożsamość.** W oknie Tor przycisk Ognia daje nową tożsamość: usuwa wszystkie dane sesji (razem z HSTS),
+zamyka karty, wysyła `SIGNAL NEWNYM` (nowe obwody dla nowych połączeń) i przenosi sesję na nowe dane
+logowania SOCKS (`identityN:tor`). Tor kieruje połączenia z różnymi danymi logowania SOCKS na różne obwody
+(`IsolateSOCKSAuth`, domyślnie włączone), więc nic, co nastąpi, nie dzieli obwodu z tym, co było wcześniej.
+
+**Mosty.** Tam, gdzie Tor jest blokowany, **Tor Connection…** (menu albo strona łączenia) oferuje Snowflake,
+obfs4 z mostami, które dostarcza Tor Browser (`BuiltInBridges`, skopiowane z `tor-browser-build`), albo mosty
+wklejone przez użytkownika. `BridgeLine` (rdzeń) przyjmuje wklejoną linię tylko w dokładnym kształcie linii
+mostu: linie trafiają do pliku konfiguracji Tora, gdzie znak nowej linii, `#` (komentarz) albo `\`
+(kontynuacja linii) mogłyby przemycić własne opcje. Zapisanie wyboru restartuje z nim Tora. `TorPrograms`
+znajduje programy transportów (`lyrebird` albo `obfs4proxy`, `snowflake-client`) w tych samych katalogach co
+`tor`, a okno ustawień podaje pakiet do zainstalowania, gdy któregoś brakuje.
+
+**Paczki.** Paczki dla Arch i Fedory zależą od `tor` z dystrybucji, który sam nie uruchamia usługi
+systemowej. Paczka `tor` Debiana uruchamiałaby przy każdym starcie systemu ogólnosystemową usługę Tor, więc
+paczka InDuckGo dla Debiana zamiast tego niesie własną kompilację `tor` Debiana w `/usr/lib/induckgo/tor`
+(jej biblioteki są zwykłymi zależnościami paczki) i poleca `obfs4proxy` oraz `snowflake-client`. AppImage
+niesie `tor`, potrzebne mu biblioteki poza biblioteką C, `obfs4proxy` i `snowflake-client`, z licencjami w
+`usr/share/doc/induckgo/third-party`. Zmierzone na AppImage: Tor połączył się bezpośrednio w około 5 s, przez
+wbudowane mosty obfs4 w około 30 s, a przez Snowflake w około 50 s, i za każdym razem `check.torproject.org`
+potwierdził, że okno korzysta z Tora.
 
 ## 5. Od danych DuckDuckGo do chronionych stron
 
@@ -458,6 +543,9 @@ nim polegać.
 | Interfejs jest tylko po angielsku. | Brak katalogu tłumaczeń. | Wejdzie gettext. |
 | Każdy profil jest w doku osobną aplikacją. | Jeden identyfikator aplikacji na proces profilu. | Użytkownicy będą woleli grupowanie. |
 | Logowanie, które w aplikacji webowej zaczyna się od *klikniętego linku* do innej witryny, otwiera się w przeglądarce. | Kliknięte linki poza witrynę celowo opuszczają aplikację (phishing). Większość logowań używa przekierowań lub okien i działa. | Realna aplikacja będzie tego potrzebować; wtedy allowlista per aplikacja. |
+| Okno Tor ukrywa adres użytkownika, ale nie to, że to InDuckGo: jego odcisk (WebKitGTK, rozmiar okna, fonty) różni się od Tor Browsera, którego użytkownicy są upodabniani do siebie. | WebKitGTK nie ma letterboxingu ani łatek ujednolicających Tor Browsera. | Gdy liczy się nieodróżnialność wśród użytkowników Tora, używaj Tor Browsera. |
+| Witryny odwiedzane w jednej tożsamości dzielą obwody Tora (Tor Browser rozdziela je per witryna). | WebKitGTK ustawia jedno proxy, a z nim jeden zestaw danych logowania SOCKS, na sesję. | WebKitGTK udostępni dane logowania proxy per żądanie. |
+| Paczka Debiana i AppImage niosą własny `tor`, aktualizowany z wydaniami InDuckGo, a nie z poprawkami bezpieczeństwa Debiana. | Paczka `tor` Debiana uruchamiałaby ogólnosystemową usługę Tor. | Debian dostarczy program bez włączania usługi. |
 
 ## 10. Granice zaufania
 
@@ -472,3 +560,7 @@ nim polegać.
   pliku `.part`, a potem dostają docelową nazwę, więc awaria nie zostawi w połowie zapisanego katalogu.
 - **Pliki desktop** generuje `DesktopEntry`, który escapuje nazwy pochodzące ze stron. Tytuł strony nie może
   więc wstrzyknąć do pliku linii takiej jak `Exec=`.
+- **Tor okna Tor** nasłuchuje tylko na pętli zwrotnej, a InDuckGo przyjmuje od niego tylko adresy pętli
+  zwrotnej. Jego port kontrolny wymaga cookie, które Tor zapisuje w swoim katalogu danych `0700`. Linie mostów
+  są sprawdzane słowo po słowie, zanim trafią do pliku konfiguracji Tora, a `tor` i jego transporty są
+  uruchamiane tylko ze stałych katalogów, nigdy wyszukiwane przez `PATH`.

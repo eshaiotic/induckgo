@@ -5,12 +5,16 @@
 # The flags of /etc/makepkg.conf apply, so the package may be tuned for this machine's processor.
 
 pkgname=induckgo
-pkgver=1.0.1
+pkgver=1.1.0
 pkgrel=1
 pkgdesc="Privacy-first WebKitGTK browser built on DuckDuckGo's open-source tracker protections"
 arch=('x86_64' 'aarch64')
 license=('GPL-3.0-or-later')
-depends=('gcc-libs' 'glib2' 'glibc' 'gtk4' 'hicolor-icon-theme' 'libadwaita' 'libsoup3' 'webkitgtk-6.0')
+# The Tor window starts its own tor; Arch's tor package starts no system service by itself.
+depends=('gcc-libs' 'glib2' 'glibc' 'gtk4' 'hicolor-icon-theme' 'libadwaita' 'libsoup3' 'tor' 'webkitgtk-6.0')
+optdepends=('obfs4proxy: obfs4 bridges for the Tor window (AUR)'
+            'lyrebird: obfs4 and webtunnel bridges for the Tor window (AUR)'
+            'snowflake-pt-client: Snowflake bridges for the Tor window (AUR)')
 makedepends=('cargo')
 # The release profile strips symbols, so a separate debug package would be empty.
 options=('!debug')

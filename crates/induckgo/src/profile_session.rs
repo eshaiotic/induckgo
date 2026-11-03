@@ -5,8 +5,13 @@
 //! and the state that feeds them (privacy configuration, Tracker Data Set, InDuckGo Guard's filter lists, sites
 //! the user unprotected); and the zoom the user gave each site and the search engine the user chose.
 //!
-//! Pages must not load before tracker blocking is active: [`ProfileSession::when_protected`] holds a load
-//! back until rule lists are active. Building the tracker list from the Tracker Data Set costs a few tenths of
+//! The Tor window's process serves a session that keeps nothing on disk ([`ProfileSession::start_tor`]): an
+//! ephemeral `NetworkSession`, settings held in memory, compiled rules in the runtime directory (deleted at
+//! start and on [`ProfileSession::close`]), WebRTC off (it would reach the network around the proxy), and
+//! every request sent through Tor's SOCKS port once Tor is connected.
+//!
+//! Pages must not load before tracker blocking is active, nor in the Tor window before Tor is connected:
+//! [`ProfileSession::when_protected`] holds a load back until rule lists are active and the route is set. Building the tracker list from the Tracker Data Set costs a few tenths of
 //! a second of processor time, so it runs on a worker thread, and a start does not wait for it: the list
 //! compiled last time is activated at once (as DuckDuckGo's macOS app does), then replaced if the new one
 //! differs. Only the very first start, with nothing compiled yet, waits for the full compilation.
@@ -19,6 +24,8 @@
 use std::cell::Cell;
 use std::cell::RefCell;
 use std::collections::HashMap;
+use std::io;
+use std::path::PathBuf;
 use std::rc::Rc;
 use std::rc::Weak;
 use std::sync::Arc;
@@ -41,8 +48,11 @@ use induckgo_core::protection::tracker_data_set::TrackerDataSet;
 use induckgo_core::protection::tracking_parameter_remover::TrackingParameterRemover;
 use webkit6::CookieAcceptPolicy;
 use webkit6::CookiePersistentStorage;
+use webkit6::NetworkProxyMode;
+use webkit6::NetworkProxySettings;
 use webkit6::NetworkSession;
 use webkit6::Settings;
+use webkit6::WebContext;
 use webkit6::WebView;
 use webkit6::WebsiteDataTypes;
 
@@ -58,9 +68,39 @@ use crate::protection_feed::ProtectionFeed;
 use crate::site_zoom::SiteZoom;
 use crate::stored_file::StoredFile;
 
-enum Readiness {
-    Waiting(Vec<Box<dyn FnOnce()>>),
-    Protected,
+/// Whether pages may load yet, and the loads waiting until they may.
+struct Readiness {
+    is_protected: bool,
+    /// Always set for a profile; set for the Tor window once Tor is connected.
+    is_routed: bool,
+    waiting: Vec<Box<dyn FnOnce()>>,
+}
+
+impl Readiness {
+    fn is_ready(&self) -> bool {
+        self.is_protected && self.is_routed
+    }
+
+    /// The waiting loads, once pages may load.
+    fn released(&mut self) -> Vec<Box<dyn FnOnce()>> {
+        if self.is_ready() { std::mem::take(&mut self.waiting) } else { Vec::new() }
+    }
+}
+
+/// What differs between a profile's session and the Tor window's.
+struct SessionStorage {
+    profile: Option<ProfileId>,
+    network_session: NetworkSession,
+    settings: Settings,
+    content_filters: PathBuf,
+    unprotected_sites: StoredFile,
+    search_engine: StoredFile,
+    site_zoom: StoredFile,
+    default_search_engine: SearchEngine,
+    burned: WebsiteDataTypes,
+    /// Deleted at start and on close.
+    scratch: Option<PathBuf>,
+    is_routed: bool,
 }
 
 /// What the rule lists and the content scope script are built from.
@@ -104,7 +144,7 @@ impl TrackerListInputs {
 }
 
 pub struct ProfileSession {
-    profile: ProfileId,
+    profile: Option<ProfileId>,
     network_session: NetworkSession,
     settings: Settings,
     protections: PageProtections,
@@ -115,6 +155,8 @@ pub struct ProfileSession {
     zoom: SiteZoom,
     search_engine_file: StoredFile,
     search_engine: Cell<SearchEngine>,
+    burned: WebsiteDataTypes,
+    scratch: Option<PathBuf>,
     inputs: RefCell<ProtectionInputs>,
     readiness: RefCell<Readiness>,
     /// Bumped by every rebuild; a slower, older rebuild never overwrites a newer one.
@@ -130,30 +172,80 @@ impl ProfileSession {
     const HTTPS_FEATURE: &'static str = "https";
     const REFRESH_SECONDS: u32 = 12 * 60 * 60;
     const RETRY_SECONDS: u32 = 30;
+    const TOR_LANGUAGE: &'static str = "en-US";
 
+    /// The session of `profile`, kept in the profile's directories.
     pub fn start(profile: ProfileId, paths: &InstallationPaths, http: Rc<HttpClient>) -> Rc<Self> {
         let location = paths.profile(&profile);
-        let network_session = Self::isolated_network_session(&location);
-        let unprotected_sites_file = StoredFile::new(location.data.join("unprotected-sites.json"));
-        let search_engine_file = StoredFile::new(location.data.join("search-engine.json"));
-        let search_engine = search_engine_file.read_json().map(|document| SearchEngine::from_json(&document));
-        let unprotected_sites = unprotected_sites_file
+        let storage = SessionStorage {
+            profile: Some(profile),
+            network_session: Self::isolated_network_session(&location),
+            settings: Self::private_settings(),
+            content_filters: location.cache.join("content-filters"),
+            unprotected_sites: StoredFile::new(location.data.join("unprotected-sites.json")),
+            search_engine: StoredFile::new(location.data.join("search-engine.json")),
+            site_zoom: StoredFile::new(location.data.join("site-zoom-levels.json")),
+            default_search_engine: SearchEngine::default(),
+            // The HSTS list is kept: forgetting it would let a network attacker downgrade sites to plain HTTP.
+            burned: WebsiteDataTypes::all() - WebsiteDataTypes::HSTS_CACHE,
+            scratch: None,
+            is_routed: true,
+        };
+        Self::assemble(storage, paths, http)
+    }
+
+    /// The Tor window's session: nothing on disk, no page before [`Self::route_through_tor`]; `http` must be
+    /// a client awaiting Tor as well.
+    pub fn start_tor(paths: &InstallationPaths, http: Rc<HttpClient>) -> Rc<Self> {
+        let content_filters = paths.tor_content_filters();
+        Self::delete_scratch(&content_filters);
+        // Pages learn the preferred languages (`Accept-Language`, `navigator.languages`); the system's would set
+        // Tor window users apart, so it asks for English, as Tor Browser does. This process serves only the
+        // Tor window, so the default context is its own.
+        if let Some(context) = WebContext::default() {
+            context.set_preferred_languages(&[Self::TOR_LANGUAGE]);
+        }
+        let settings = Self::private_settings();
+        settings.set_enable_webrtc(false);
+        settings.set_enable_media_stream(false);
+        let storage = SessionStorage {
+            profile: None,
+            network_session: Self::protected_network_session(NetworkSession::new_ephemeral()),
+            settings,
+            content_filters: content_filters.clone(),
+            unprotected_sites: StoredFile::discarded(),
+            search_engine: StoredFile::discarded(),
+            site_zoom: StoredFile::discarded(),
+            default_search_engine: SearchEngine::DUCKDUCKGO_ONION,
+            burned: WebsiteDataTypes::all(),
+            scratch: Some(content_filters),
+            is_routed: false,
+        };
+        Self::assemble(storage, paths, http)
+    }
+
+    fn assemble(storage: SessionStorage, paths: &InstallationPaths, http: Rc<HttpClient>) -> Rc<Self> {
+        let search_engine = storage.search_engine.read_json().map(|document| SearchEngine::from_json(&document));
+        let unprotected_sites = storage
+            .unprotected_sites
             .read_json()
             .map(|document| UnprotectedSites::from_json(&document))
             .unwrap_or_default();
         let filter_list_feed = FilterListFeed::new(&paths.protection_feed());
         let session = Rc::new(Self {
-            profile,
-            _downloads: DownloadTracker::watch(&network_session, paths.downloads()),
-            network_session,
-            settings: Self::private_settings(),
-            protections: PageProtections::new(&location.cache.join("content-filters")),
+            profile: storage.profile,
+            _downloads: DownloadTracker::watch(&storage.network_session, paths.downloads()),
+            network_session: storage.network_session,
+            settings: storage.settings,
+            protections: PageProtections::new(&storage.content_filters),
             feed: ProtectionFeed::new(&paths.protection_feed()),
             http,
-            unprotected_sites_file,
-            zoom: SiteZoom::load(StoredFile::new(location.data.join("site-zoom-levels.json"))),
-            search_engine_file,
-            search_engine: Cell::new(search_engine.unwrap_or_default()),
+            unprotected_sites_file: storage.unprotected_sites,
+            zoom: SiteZoom::load(storage.site_zoom),
+            search_engine_file: storage.search_engine,
+            search_engine: Cell::new(search_engine.unwrap_or(storage.default_search_engine)),
+            burned: storage.burned,
+            scratch: storage.scratch,
             inputs: RefCell::new(ProtectionInputs {
                 tracker_data: None,
                 configuration: None,
@@ -162,7 +254,11 @@ impl ProfileSession {
                 filter_lists: Arc::new(filter_list_feed.cached()),
             }),
             filter_list_feed,
-            readiness: RefCell::new(Readiness::Waiting(Vec::new())),
+            readiness: RefCell::new(Readiness {
+                is_protected: false,
+                is_routed: storage.is_routed,
+                waiting: Vec::new(),
+            }),
             generation: Cell::new(0),
             pending: RefCell::new(PendingRuleChanges::default()),
             started: Instant::now(),
@@ -174,8 +270,37 @@ impl ProfileSession {
         session
     }
 
-    pub fn profile_id(&self) -> &ProfileId {
-        &self.profile
+    /// `None` for the Tor window's session, which belongs to no profile.
+    pub fn profile_id(&self) -> Option<&ProfileId> {
+        self.profile.as_ref()
+    }
+
+    /// Whether this is the Tor window's session, whose traffic must never leave Tor.
+    pub fn is_tor_window(&self) -> bool {
+        self.profile.is_none()
+    }
+
+    /// Sends every request of this session through `proxy_uri` (Tor's SOCKS port with the identity's
+    /// credentials) and lets pages load. Called again for a new identity or after Tor restarted.
+    pub fn route_through_tor(&self, proxy_uri: &str) {
+        let proxy = NetworkProxySettings::new(Some(proxy_uri), &[]);
+        self.network_session.set_proxy_settings(NetworkProxyMode::Custom, Some(&proxy));
+        self.http.route_through_tor(proxy_uri);
+        let released = {
+            let mut readiness = self.readiness.borrow_mut();
+            readiness.is_routed = true;
+            readiness.released()
+        };
+        for action in released {
+            action();
+        }
+    }
+
+    /// Deletes what the session kept only while it ran (the Tor window's compiled rules).
+    pub fn close(&self) {
+        if let Some(scratch) = &self.scratch {
+            Self::delete_scratch(scratch);
+        }
     }
 
     pub fn zoom(&self) -> &SiteZoom {
@@ -204,12 +329,16 @@ impl ProfileSession {
             .build()
     }
 
-    /// Runs `action` once tracker blocking is active (immediately when it already is).
+    /// Runs `action` once tracker blocking is active and the network route is set (immediately when both are).
     pub fn when_protected(&self, action: impl FnOnce() + 'static) {
-        match &mut *self.readiness.borrow_mut() {
-            Readiness::Waiting(pending) => pending.push(Box::new(action)),
-            Readiness::Protected => action(),
+        {
+            let mut readiness = self.readiness.borrow_mut();
+            if !readiness.is_ready() {
+                readiness.waiting.push(Box::new(action));
+                return;
+            }
         }
+        action();
     }
 
     /// The address without tracking parameters, when it differs from `address`.
@@ -252,37 +381,53 @@ impl ProfileSession {
         self.rebuild(if protected { RuleChange::SiteProtected } else { RuleChange::SiteUnprotected }, then);
     }
 
-    /// The Fire button: deletes every cookie, storage, cache, favicon and site zoom of this profile. The HSTS
-    /// list is kept, because forgetting it would let a network attacker downgrade sites to plain HTTP again.
+    /// The Fire button (New Identity in the Tor window): deletes every cookie, storage, cache, favicon and site
+    /// zoom of this session; a profile keeps its HSTS list.
     pub async fn burn_website_data(&self) -> Result<(), glib::Error> {
         self.zoom.forget_all();
         let Some(data_manager) = self.network_session.website_data_manager() else { return Ok(()) };
         if let Some(favicons) = data_manager.favicon_database() {
             favicons.clear();
         }
-        let everything_but_hsts = WebsiteDataTypes::all() - WebsiteDataTypes::HSTS_CACHE;
         let (finished, cleared) = futures_channel::oneshot::channel();
-        data_manager.clear(everything_but_hsts, glib::TimeSpan::from_seconds(0), None::<&gio::Cancellable>, |result| {
+        data_manager.clear(self.burned, glib::TimeSpan::from_seconds(0), None::<&gio::Cancellable>, |result| {
             let _ = finished.send(result);
         });
         cleared.await.unwrap_or(Ok(()))
     }
 
-    /// Third-party cookies blocked and Intelligent Tracking Prevention on, as in Safari; cookies persist in
-    /// the profile's own directory.
+    /// A profile's session, with cookies kept in the profile's own directory.
     fn isolated_network_session(location: &ProfileLocation) -> NetworkSession {
-        let session =
-            NetworkSession::new(Some(&location.data.to_string_lossy()), Some(&location.cache.to_string_lossy()));
+        let session = Self::protected_network_session(NetworkSession::new(
+            Some(&location.data.to_string_lossy()),
+            Some(&location.cache.to_string_lossy()),
+        ));
+        if let Some(cookies) = session.cookie_manager() {
+            let cookie_file = location.data.join("cookies.sqlite");
+            cookies.set_persistent_storage(&cookie_file.to_string_lossy(), CookiePersistentStorage::Sqlite);
+        }
+        session
+    }
+
+    /// Third-party cookies blocked and Intelligent Tracking Prevention on, as in Safari.
+    fn protected_network_session(session: NetworkSession) -> NetworkSession {
         session.set_itp_enabled(true);
         if let Some(cookies) = session.cookie_manager() {
             cookies.set_accept_policy(CookieAcceptPolicy::NoThirdParty);
-            let cookie_file = location.data.join("cookies.sqlite");
-            cookies.set_persistent_storage(&cookie_file.to_string_lossy(), CookiePersistentStorage::Sqlite);
         }
         if let Some(data_manager) = session.website_data_manager() {
             data_manager.set_favicons_enabled(true);
         }
         session
+    }
+
+    fn delete_scratch(directory: &std::path::Path) {
+        match std::fs::remove_dir_all(directory) {
+            Err(error) if error.kind() != io::ErrorKind::NotFound => {
+                glib::g_warning!(Self::LOG_DOMAIN, "cannot delete {}: {error}", directory.display());
+            }
+            _ => {}
+        }
     }
 
     /// Developer tools on, pop-ups only on a click, and the WebKit feature InDuckGo Guard switches on: the
@@ -318,7 +463,7 @@ impl ProfileSession {
                     }
                     Err(error) => glib::g_warning!(Self::LOG_DOMAIN, "protection data refresh failed: {error}"),
                 }
-                let is_protected = matches!(*live.readiness.borrow(), Readiness::Protected);
+                let is_protected = live.readiness.borrow().is_protected;
                 drop(live);
                 glib::timeout_future_seconds(if is_protected { Self::REFRESH_SECONDS } else { Self::RETRY_SECONDS })
                     .await;
@@ -418,7 +563,7 @@ impl ProfileSession {
     }
 
     fn is_waiting(&self) -> bool {
-        matches!(*self.readiness.borrow(), Readiness::Waiting(_))
+        !self.readiness.borrow().is_protected
     }
 
     fn install_content_scope_script(&self) {
@@ -470,16 +615,21 @@ impl ProfileSession {
     }
 
     fn mark_protected(&self) {
-        let previous = self.readiness.replace(Readiness::Protected);
-        if let Readiness::Waiting(pending) = previous {
-            glib::g_debug!(
-                Self::LOG_DOMAIN,
-                "pages protected {} ms after the session started",
-                self.started.elapsed().as_millis()
-            );
-            for action in pending {
-                action();
+        let released = {
+            let mut readiness = self.readiness.borrow_mut();
+            if readiness.is_protected {
+                return;
             }
+            readiness.is_protected = true;
+            readiness.released()
+        };
+        glib::g_debug!(
+            Self::LOG_DOMAIN,
+            "pages protected {} ms after the session started",
+            self.started.elapsed().as_millis()
+        );
+        for action in released {
+            action();
         }
     }
 }

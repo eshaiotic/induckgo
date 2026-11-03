@@ -14,4 +14,5 @@ pub mod navigation;
 pub mod page_zoom;
 pub mod profile;
 pub mod protection;
+pub mod tor;
 pub mod web_app;

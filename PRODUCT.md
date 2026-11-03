@@ -68,7 +68,7 @@ banking or Gmail.
 ## Brand Commitments
 
 - **Name:** InDuckGo.
-- **Colours:** indigo (the logo's gradient runs from `#1E1060` to `#8E7FE8`, with an amber `#FFB300` accent).
+- **Colours:** indigo (the logo's rim runs from `#24115E` to `#8270DF`) with an amber accent (the beak, `#FFB900` to `#FFC900`; `#FFB300` in the reports).
 - **Affiliation:** InDuckGo is not affiliated with DuckDuckGo, and says so wherever DuckDuckGo is named.
 - **Voice:** plain and factual. It states weaknesses openly.
 

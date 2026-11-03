@@ -8,10 +8,8 @@ colors:
   field-track: "rgb(255 255 255 / 9%)"
   field-lead: "#dcd7ff"
   field-muted: "#bdb5f2"
-  violet: "#6a5acd"
   lilac: "#8e7fe8"
   amber: "#ffb300"
-  amber-shade: "#f08c00"
   chrome: "#b9b5c9"
   brave: "#ff7a45"
   paper: "#ffffff"
@@ -235,16 +233,14 @@ What ties the two together is the shield. Both surfaces draw the same shield geo
 A deep indigo field with one warm amber voice for InDuckGo, competitors in their own colours, cool lilac-tinted neutrals on paper, and a separate libadwaita-neutral palette for the operate surface.
 
 ### Primary
-- **Deep Indigo Ink** (#1e1060): the dominant colour of the hero field, the colour of every section headline on paper, and the text colour of InDuckGo's highlighted table column. It is the darkest stop of the logo's rim gradient.
+- **Deep Indigo Ink** (#1e1060): the dominant colour of the hero field, the colour of every section headline on paper, and the text colour of InDuckGo's highlighted table column. The logo's rim darkens to its near neighbour, #24115e.
 - **Logo Indigo** (#2e1a87): the origin of the hero field's radial gradient and the colour of links. On paper it is InDuckGo's text colour in charts and table headers (11.7:1 on mist), standing in for amber where amber would be illegible.
 - **Field Floor** (#120a3d): the outermost stop of the hero field gradient, so the field darkens away from the top-left corner where the headline sits.
 - **Field Track** (rgb(255 255 255 / 9%)): the empty lane behind each hero bar; a faint white glaze so the track reads as a slot in the field rather than a box on top of it.
 
 ### Secondary
-- **InDuckGo Amber** (#ffb300): InDuckGo's own mark. It fills InDuckGo's bars, colours InDuckGo's name and count on the field (9.0:1 on ink), and is the keyboard focus ring for links. It is the logo's beak colour.
-- **Amber Shade** (#f08c00): the lower half of the logo's beak; a logo-only colour, never a UI role.
-- **Logo Lilac** (#8e7fe8): the top stop of the logo's rim gradient; in the report it is the text-selection background.
-- **Logo Violet** (#6a5acd): the top stop of the logo's shield gradient; it appears only inside the logo mark.
+- **InDuckGo Amber** (#ffb300): InDuckGo's own mark. It fills InDuckGo's bars, colours InDuckGo's name and count on the field (9.0:1 on ink), and is the keyboard focus ring for links. The logo's beak is the same amber, a touch lighter (#ffb900 to #ffc900).
+- **Logo Lilac** (#8e7fe8): a lighter neighbour of the top of the logo's rim (#8270df); in the report it is the text-selection background.
 
 ### Tertiary
 - **Brave Ember** (#ff7a45): Brave's bars, close to Brave's own orange so a reader recognises it without a legend.

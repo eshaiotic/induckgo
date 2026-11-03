@@ -13,7 +13,7 @@ manage, and every profile and installed web app kept apart from the others.
 
 [![tests](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml/badge.svg)](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml)
 [![release](https://img.shields.io/github/v/release/eshaiotic/induckgo?color=6A5ACD)](https://github.com/eshaiotic/induckgo/releases/latest)
-![cargo test](https://img.shields.io/badge/cargo%20test-304%20tests-success)
+![cargo nextest](https://img.shields.io/badge/cargo%20nextest-365%20tests-success)
 ![stack](https://img.shields.io/badge/stack-Rust%20%E2%80%A2%20GTK%204%20%E2%80%A2%20WebKitGTK%206.0-8E7FE8)
 ![telemetry](https://img.shields.io/badge/telemetry-none-FFB300)
 [![licence](https://img.shields.io/badge/licence-GPL--3.0--or--later-2E1A87)](LICENSE)
@@ -143,15 +143,21 @@ Installed web apps start from the desktop's application menu (`induckgo --web-ap
 
 ## Testing
 
-Stack: **`cargo test`** — 304 object-oriented Given/When/Then scenarios in `crates/induckgo-core/tests/`
-(33 files, one per domain type).
+Stack: **cargo-nextest** — 365 object-oriented Given/When/Then scenarios: 304 for the domain in
+`crates/induckgo-core/tests/` (33 files, one per domain type) and 61 for the report tool in
+`crates/induckgo-test-report/tests/`.
 
 ```sh
-cargo test -p induckgo-core     # domain tests (fast, no GTK or WebKit needed)
+./run-tests                     # all tests + HTML report in tests/reports/ (opens in the browser)
+cargo test -p induckgo-core     # domain tests only (fast, no GTK or WebKit needed)
 cargo clippy --all-targets      # lints (pedantic, unsafe code forbidden)
 cargo fmt --check               # formatting
 cargo audit                     # dependency vulnerabilities (zero-vulnerability policy)
 ```
+
+**Test report:** `./run-tests` always writes `tests/reports/test-report-YYYYMMDD-HHmm.html` — a run-history
+dashboard with the latest run, the last 20 runs, failure rankings, features and the slowest tests, plus
+`induckgo-core`'s coverage when `cargo-llvm-cov` is installed. See [HTML test report](docs/en/tests/test-report.md).
 
 **Test architecture:**
 - The domain (`induckgo-core`) has no GTK or WebKit dependency, so every protection decision — rule
@@ -160,8 +166,9 @@ cargo audit                     # dependency vulnerabilities (zero-vulnerability
 - Each scenario is an object: `given_…` builds it, `when_…` acts and returns an outcome, `then_…` asserts
   one thing, following [Object Oriented Programming First](docs/en/engineering-rules.md):
   `LinkCleaningScenario::given_tracking_parameters_protection().when_link_is_opened(url).then_opens_unchanged()`.
-- The [tests workflow](.github/workflows/tests.yml) runs all four commands on every push to `main` and on
-  every pull request.
+- A failing test is retried once: one that then passes is reported as FLAKY, a defect to fix, never ignored.
+- The [tests workflow](.github/workflows/tests.yml) runs fmt, clippy, `cargo audit` and `./run-tests` on
+  every push to `main` and on every pull request, and keeps each run's report as an artifact.
 
 ---
 
@@ -174,6 +181,8 @@ crates/induckgo-core/tests/
                          one OO scenario file per domain type
 crates/induckgo/         GTK 4 + libadwaita app: adapters that carry out core decisions in
                          WebKitGTK, libsoup and GIO
+crates/induckgo-test-report/
+                         developer tool behind ./run-tests: the HTML test report (never packaged)
 assets/                  vendored Content Scope Scripts (Apache-2.0), Guard's page script, icons,
                          error page template; never the Tracker Data Set or filter lists
 packaging/               PKGBUILD, rpm spec, deb/AppImage assembly, desktop entry, AppStream metadata

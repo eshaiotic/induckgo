@@ -13,7 +13,7 @@ bez rozszerzeń do pilnowania, a każdy profil i każda zainstalowana aplikacja 
 
 [![tests](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml/badge.svg)](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml)
 [![release](https://img.shields.io/github/v/release/eshaiotic/induckgo?color=6A5ACD)](https://github.com/eshaiotic/induckgo/releases/latest)
-![cargo test](https://img.shields.io/badge/cargo%20test-304%20testy-success)
+![cargo nextest](https://img.shields.io/badge/cargo%20nextest-365%20test%C3%B3w-success)
 ![stack](https://img.shields.io/badge/stack-Rust%20%E2%80%A2%20GTK%204%20%E2%80%A2%20WebKitGTK%206.0-8E7FE8)
 ![telemetria](https://img.shields.io/badge/telemetria-brak-FFB300)
 [![licencja](https://img.shields.io/badge/licencja-GPL--3.0--or--later-2E1A87)](LICENSE)
@@ -143,15 +143,22 @@ Zainstalowane aplikacje webowe uruchamia się z menu aplikacji pulpitu (`induckg
 
 ## Testy
 
-Stos: **`cargo test`** — 304 obiektowe scenariusze Given/When/Then w `crates/induckgo-core/tests/`
-(33 pliki, jeden na typ domenowy).
+Stos: **cargo-nextest** — 365 obiektowych scenariuszy Given/When/Then: 304 dla domeny w
+`crates/induckgo-core/tests/` (33 pliki, jeden na typ domenowy) i 61 dla narzędzia raportu w
+`crates/induckgo-test-report/tests/`.
 
 ```sh
-cargo test -p induckgo-core     # testy domeny (szybkie, bez GTK i WebKita)
+./run-tests                     # wszystkie testy + raport HTML w tests/reports/ (otwiera się w przeglądarce)
+cargo test -p induckgo-core     # tylko testy domeny (szybkie, bez GTK i WebKita)
 cargo clippy --all-targets      # linty (pedantic, unsafe zabroniony)
 cargo fmt --check               # formatowanie
 cargo audit                     # podatności zależności (polityka zero podatności)
 ```
+
+**Raport testów:** `./run-tests` zawsze zapisuje `tests/reports/test-report-YYYYMMDD-HHmm.html` — dashboard
+historii przebiegów z ostatnim przebiegiem, ostatnimi 20 przebiegami, rankingami błędów, funkcjonalnościami i
+najwolniejszymi testami, a gdy zainstalowany jest `cargo-llvm-cov`, także z pokryciem `induckgo-core`. Zobacz
+[Raport testów HTML](docs/pl/tests/test-report.md).
 
 **Architektura testów:**
 - Domena (`induckgo-core`) nie zależy od GTK ani WebKita, więc każda decyzja ochrony — budowanie reguł,
@@ -160,8 +167,10 @@ cargo audit                     # podatności zależności (polityka zero podatn
 - Każdy scenariusz to obiekt: `given_…` go buduje, `when_…` wykonuje akcję i zwraca wynik, `then_…` sprawdza
   jedną rzecz, zgodnie z [Object Oriented Programming First](docs/pl/engineering-rules.md):
   `LinkCleaningScenario::given_tracking_parameters_protection().when_link_is_opened(url).then_opens_unchanged()`.
-- [Workflow testów](.github/workflows/tests.yml) uruchamia wszystkie cztery polecenia przy każdym pushu do
-  `main` i przy każdym pull requeście.
+- Nieudany test jest powtarzany raz: jeśli wtedy przejdzie, raport oznacza go jako FLAKY — to błąd do
+  naprawy, nigdy do zignorowania.
+- [Workflow testów](.github/workflows/tests.yml) uruchamia fmt, clippy, `cargo audit` i `./run-tests` przy
+  każdym pushu do `main` i przy każdym pull requeście, i zachowuje raport każdego przebiegu jako artefakt.
 
 ---
 
@@ -174,6 +183,8 @@ crates/induckgo-core/tests/
                          jeden plik scenariuszy OO na typ domenowy
 crates/induckgo/         aplikacja GTK 4 + libadwaita: adaptery wykonujące decyzje domeny w
                          WebKitGTK, libsoup i GIO
+crates/induckgo-test-report/
+                         narzędzie deweloperskie za ./run-tests: raport testów HTML (nie trafia do paczek)
 assets/                  dołączone Content Scope Scripts (Apache-2.0), skrypt strony Guarda, ikony,
                          szablon strony błędu; nigdy Tracker Data Set ani listy filtrów
 packaging/               PKGBUILD, spec rpm, składanie deb/AppImage, plik .desktop, metadane AppStream

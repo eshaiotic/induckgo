@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1340" height="790" viewBox="0 0 1340 790" font-family="DejaVu Sans, Noto Sans, sans-serif">
+<title>Raport testów InDuckGo — skąd bierze dane</title>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#37474f"/></marker></defs>
+<rect width="1340" height="790" fill="#ffffff"/>
+<text x="670.0" y="34" font-size="18" font-weight="bold" text-anchor="middle" fill="#263238">Raport testów InDuckGo — skąd bierze dane</text>
+<rect x="470" y="56" width="400" height="84" rx="9" fill="#e1f5fe" stroke="#0277bd" stroke-width="1.6"/>
+<text x="482" y="79" font-size="14" font-weight="bold" font-family="DejaVu Sans Mono, monospace" fill="#263238" xml:space="preserve">./run-tests</text>
+<text x="482" y="99" font-size="12.5" fill="#263238" xml:space="preserve">skrypt startowy: uruchamia testy, potem</text>
+<text x="482" y="118" font-size="12.5" fill="#263238" xml:space="preserve">zawsze zapisuje raport; kończy się kodem testów</text>
+<rect x="110" y="206" width="400" height="84" rx="9" fill="#e1f5fe" stroke="#0277bd" stroke-width="1.6"/>
+<text x="122" y="229" font-size="14" font-weight="bold" font-family="DejaVu Sans Mono, monospace" fill="#263238" xml:space="preserve">cargo nextest run</text>
+<text x="122" y="249" font-size="12.5" fill="#263238" xml:space="preserve">profil report: retries = 1, JUnit włączony</text>
+<text x="122" y="268" font-size="12.5" fill="#263238" xml:space="preserve">(.config/nextest.toml)</text>
+<rect x="830" y="206" width="400" height="84" rx="9" fill="#e1f5fe" stroke="#0277bd" stroke-width="1.6" stroke-dasharray="7 4"/>
+<text x="842" y="229" font-size="14" font-weight="bold" font-family="DejaVu Sans Mono, monospace" fill="#263238" xml:space="preserve">cargo llvm-cov nextest</text>
+<text x="842" y="249" font-size="12.5" fill="#263238" xml:space="preserve">te same testy z instrumentacją; mierzy</text>
+<text x="842" y="268" font-size="12.5" fill="#263238" xml:space="preserve">tylko induckgo-core (narzędzie opcjonalne)</text>
+<rect x="30" y="370" width="400" height="103" rx="9" fill="#e0f2f1" stroke="#b71c1c" stroke-width="2.6"/>
+<text x="42" y="393" font-size="14" font-weight="bold" font-family="DejaVu Sans Mono, monospace" fill="#263238" xml:space="preserve">junit.xml</text>
+<text x="42" y="413" font-size="12.5" fill="#263238" xml:space="preserve">każdy test: status, czas, powtórki,</text>
+<text x="42" y="432" font-size="12.5" fill="#263238" xml:space="preserve">komunikat paniki — katalog zależy</text>
+<text x="42" y="451" font-size="12.5" fill="#263238" xml:space="preserve">od gałęzi (największe ryzyko)</text>
+<rect x="470" y="370" width="400" height="84" rx="9" fill="#e0f2f1" stroke="#00897b" stroke-width="1.6"/>
+<text x="482" y="393" font-size="14" font-weight="bold" font-family="DejaVu Sans Mono, monospace" fill="#263238" xml:space="preserve">coverage-summary.json</text>
+<text x="482" y="413" font-size="12.5" fill="#263238" xml:space="preserve">test-results/ · linie, funkcje,</text>
+<text x="482" y="432" font-size="12.5" fill="#263238" xml:space="preserve">regiony induckgo-core</text>
+<rect x="910" y="370" width="400" height="84" rx="9" fill="#e0f2f1" stroke="#00897b" stroke-width="1.6"/>
+<text x="922" y="393" font-size="14" font-weight="bold" font-family="DejaVu Sans Mono, monospace" fill="#263238" xml:space="preserve">test-run-history.json</text>
+<text x="922" y="413" font-size="12.5" fill="#263238" xml:space="preserve">test-results/ · do 200 przebiegów,</text>
+<text x="922" y="432" font-size="12.5" fill="#263238" xml:space="preserve">jeden wpis na przebieg</text>
+<rect x="470" y="540" width="400" height="84" rx="9" fill="#ede7f6" stroke="#5e35b1" stroke-width="1.6"/>
+<text x="482" y="563" font-size="14" font-weight="bold" font-family="DejaVu Sans Mono, monospace" fill="#263238" xml:space="preserve">induckgo-test-report</text>
+<text x="482" y="583" font-size="12.5" fill="#263238" xml:space="preserve">JunitResults · CoverageSummary · RunHistory</text>
+<text x="482" y="602" font-size="12.5" fill="#263238" xml:space="preserve">→ TestRunReport → ReportPage</text>
+<rect x="470" y="680" width="400" height="84" rx="9" fill="#e0f2f1" stroke="#00897b" stroke-width="1.6"/>
+<text x="482" y="703" font-size="14" font-weight="bold" font-family="DejaVu Sans Mono, monospace" fill="#263238" xml:space="preserve">test-report-YYYYMMDD-HHmm.html</text>
+<text x="482" y="723" font-size="12.5" fill="#263238" xml:space="preserve">tests/reports/ · jedna samodzielna strona;</text>
+<text x="482" y="742" font-size="12.5" fill="#263238" xml:space="preserve">CI zachowuje ją jako artefakt</text>
+<line x1="560" y1="140" x2="380" y2="204" stroke="#37474f" stroke-width="1.6" marker-end="url(#arrow)"/>
+<text x="300" y="176" font-size="12" font-style="italic" fill="#37474f">bez cargo-llvm-cov</text>
+<line x1="780" y1="140" x2="960" y2="204" stroke="#37474f" stroke-width="1.6" marker-end="url(#arrow)"/>
+<text x="910" y="166" font-size="12" font-style="italic" fill="#37474f">z cargo-llvm-cov</text>
+<line x1="260" y1="290" x2="230" y2="368" stroke="#37474f" stroke-width="1.6" marker-end="url(#arrow)"/>
+<line x1="900" y1="290" x2="400" y2="368" stroke="#37474f" stroke-width="1.6" marker-end="url(#arrow)"/>
+<line x1="1000" y1="290" x2="760" y2="368" stroke="#37474f" stroke-width="1.6" marker-end="url(#arrow)"/>
+<line x1="230" y1="473" x2="560" y2="538" stroke="#37474f" stroke-width="1.6" marker-end="url(#arrow)"/>
+<text x="300" y="516" font-size="12" font-style="italic" fill="#37474f">czyta</text>
+<line x1="670" y1="454" x2="670" y2="538" stroke="#37474f" stroke-width="1.6" marker-end="url(#arrow)"/>
+<text x="680" y="500" font-size="12" font-style="italic" fill="#37474f">jeśli zmierzono</text>
+<line x1="1110" y1="454" x2="820" y2="538" stroke="#37474f" stroke-width="1.6" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+<text x="985" y="516" font-size="12" font-style="italic" fill="#37474f">czyta, zapisuje przebieg</text>
+<line x1="670" y1="624" x2="670" y2="678" stroke="#37474f" stroke-width="1.6" marker-end="url(#arrow)"/>
+<text x="680" y="656" font-size="12" font-style="italic" fill="#37474f">zapisuje</text>
+<rect x="960" y="690" width="26" height="16" rx="3" fill="#e1f5fe" stroke="#0277bd" stroke-width="1.6"/>
+<text x="996" y="703" font-size="12.5" fill="#263238">Narzędzie</text>
+<rect x="960" y="712" width="26" height="16" rx="3" fill="#ede7f6" stroke="#5e35b1" stroke-width="1.6"/>
+<text x="996" y="725" font-size="12.5" fill="#263238">Kod InDuckGo</text>
+<rect x="960" y="734" width="26" height="16" rx="3" fill="#e0f2f1" stroke="#00897b" stroke-width="1.6"/>
+<text x="996" y="747" font-size="12.5" fill="#263238">Plik</text>
+<rect x="960" y="756" width="26" height="16" rx="3" fill="#ffffff" stroke="#b71c1c" stroke-width="2.6"/>
+<text x="996" y="769" font-size="12.5" fill="#263238">Największe ryzyko</text>
+</svg>

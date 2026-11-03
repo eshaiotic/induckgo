@@ -1,0 +1,8 @@
+# Profile used by ./run-tests and CI: one retry marks a test that fails and then passes as FLAKY in the test
+# report (it still has to be fixed), and the JUnit file feeds crates/induckgo-test-report.
+[profile.report]
+retries = 1
+fail-fast = false
+
+[profile.report.junit]
+path = "junit.xml"

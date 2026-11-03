@@ -1,6 +1,7 @@
-# Formatting, lints, tests and the dependency audit on every push to main and every pull request.
+# Formatting, lints, tests and the dependency audit on every push to main and every pull request; the HTML
+# test report (./run-tests, with coverage) is kept as an artifact of every run, also when tests fail.
 # Runs in an Arch Linux container: it has current WebKitGTK 6.0, GTK 4 and libadwaita, the libraries the app
-# crate needs to compile, and ships rustfmt, clippy and cargo-audit as packages.
+# crate needs to compile, and ships rustfmt, clippy, cargo-audit, cargo-nextest and cargo-llvm-cov as packages.
 name: Tests
 
 on:
@@ -26,7 +27,7 @@ jobs:
     steps:
       - name: Install Rust and InDuckGo's libraries
         run: >-
-          pacman -Syu --noconfirm --needed base-devel git rust cargo-audit
+          pacman -Syu --noconfirm --needed base-devel git rust cargo-audit cargo-nextest cargo-llvm-cov llvm
           gtk4 libadwaita libsoup3 webkitgtk-6.0
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -35,7 +36,14 @@ jobs:
         run: cargo fmt --all --check
       - name: Lints
         run: cargo clippy --all-targets --locked -- --deny warnings
-      - name: Tests
-        run: cargo test --workspace --locked
       - name: Known vulnerabilities in dependencies
         run: cargo audit
+      - name: Tests and the HTML test report
+        run: ./run-tests
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          path: tests/reports/test-report-*.html
+          archive: false
+          if-no-files-found: error
+          retention-days: 90

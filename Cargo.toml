@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/induckgo-core", "crates/induckgo"]
+members = ["crates/induckgo-core", "crates/induckgo", "crates/induckgo-test-report"]
 
 [workspace.package]
 version = "1.0.0"

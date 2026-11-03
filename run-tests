@@ -1,0 +1,40 @@
+#!/bin/sh
+# Runs every InDuckGo test with cargo-nextest and always writes the HTML test report to
+# tests/reports/test-report-YYYYMMDD-HHmm.html (run history in test-results/; both ignored by git).
+# With cargo-llvm-cov installed (pacman -S cargo-llvm-cov) the report also shows induckgo-core's coverage.
+# Exits with the tests' status once the report is written. Outside CI the report opens in the browser.
+#
+# Usage: ./run-tests
+set -eu
+cd "$(dirname "$0")"
+
+coverage=test-results/coverage-summary.json
+nextest_junit=target/nextest/report/junit.xml
+coverage_junit=target/llvm-cov-target/nextest/report/junit.xml
+mkdir -p test-results
+rm -f "$coverage" "$nextest_junit" "$coverage_junit"
+
+status=0
+if cargo llvm-cov --version >/dev/null 2>&1; then
+  # A distribution's Rust (not rustup) is built on the system LLVM, so cargo-llvm-cov uses its tools.
+  if ! command -v rustup >/dev/null 2>&1; then
+    LLVM_COV=${LLVM_COV:-$(command -v llvm-cov || true)}
+    LLVM_PROFDATA=${LLVM_PROFDATA:-$(command -v llvm-profdata || true)}
+    export LLVM_COV LLVM_PROFDATA
+  fi
+  cargo llvm-cov nextest --profile report --workspace \
+    --exclude-from-report induckgo --exclude-from-report induckgo-test-report \
+    --json --summary-only --output-path "$coverage" || status=$?
+else
+  echo "run-tests: cargo-llvm-cov is not installed, the report shows no coverage (pacman -S cargo-llvm-cov)" >&2
+  cargo nextest run --profile report --workspace || status=$?
+fi
+
+junit=$coverage_junit
+[ -f "$junit" ] || junit=$nextest_junit
+report=$(cargo run --quiet --locked -p induckgo-test-report -- --junit "$junit" --coverage "$coverage")
+echo "$report"
+if [ -z "${CI:-}" ] && command -v xdg-open >/dev/null 2>&1; then
+  xdg-open "${report#Raport HTML: }" >/dev/null 2>&1 &
+fi
+exit "$status"

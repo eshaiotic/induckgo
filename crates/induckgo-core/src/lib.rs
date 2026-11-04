@@ -9,6 +9,7 @@ pub mod document;
 pub mod download;
 pub mod guard;
 pub mod identity;
+pub mod language;
 pub mod launch;
 pub mod navigation;
 pub mod page_zoom;

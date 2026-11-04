@@ -1,5 +1,7 @@
 //! InDuckGo: a privacy-first WebKitGTK browser for Linux built on DuckDuckGo's open-source protections.
 
+#[macro_use]
+mod interface_messages;
 mod app_context;
 mod app_icons;
 mod browser_window;

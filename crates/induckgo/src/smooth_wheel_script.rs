@@ -4,6 +4,7 @@
 //! script and wraps it as a user script for WebKit. It runs in a script world of its own, so a page cannot see
 //! it, and in every frame, so a scrollable frame is smoothed as well.
 
+use induckgo_core::engine::smooth_wheel_page_script::SmoothWheelPageScript;
 use induckgo_core::scrolling::smooth_wheel_scroll::SmoothWheelScroll;
 use webkit6::UserContentInjectedFrames;
 use webkit6::UserScript;
@@ -14,12 +15,10 @@ pub struct SmoothWheelScript {
 }
 
 impl SmoothWheelScript {
-    const TEMPLATE: &'static str = include_str!("../../../assets/smooth-wheel/smooth-wheel.js");
     const WORLD: &'static str = "induckgo-smooth-wheel";
 
     pub fn new(scroll: &SmoothWheelScroll) -> Self {
-        let configuration = scroll.script_configuration().to_string();
-        Self { source: Self::TEMPLATE.replace("/*SMOOTH_WHEEL_CONFIGURATION*/{}", &configuration) }
+        Self { source: SmoothWheelPageScript::source_for(scroll) }
     }
 
     pub fn user_script(&self) -> UserScript {

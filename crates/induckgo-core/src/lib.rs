@@ -7,6 +7,7 @@
 
 pub mod document;
 pub mod download;
+pub mod engine;
 pub mod guard;
 pub mod identity;
 pub mod language;
@@ -18,5 +19,6 @@ pub mod profile;
 pub mod protection;
 pub mod rendering;
 pub mod scrolling;
+pub mod storage;
 pub mod tor;
 pub mod web_app;

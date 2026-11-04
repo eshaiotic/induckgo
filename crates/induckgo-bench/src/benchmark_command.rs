@@ -50,7 +50,9 @@ impl BenchmarkCommand {
         let origin = format!("http://127.0.0.1:{}", server.port()?);
         let page = BenchmarkPage::injected_into(&self.fetch_page()?, &self.page_url, &scenario, &origin);
         eprintln!("Open {origin}/ in the browser under test (fullscreen, nothing else running).");
-        eprintln!("The page is third-party content served from loopback: use a throwaway browser profile, never a signed-in one.");
+        eprintln!(
+            "The page is third-party content served from loopback: use a throwaway browser profile, never a signed-in one."
+        );
         let wait = Duration::from_millis(u64::from(scenario.duration_ms())) + Duration::from_secs(90);
         let statistics = server.serve_until_result(&page, wait)?;
         Ok(Self::result_line(&self.label, &statistics))

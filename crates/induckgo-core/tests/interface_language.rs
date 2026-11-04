@@ -145,6 +145,22 @@ fn should_name_the_language_for_gettext_with_its_region_fallback() {
 }
 
 #[test]
+fn should_write_arabic_persian_hebrew_and_urdu_from_right_to_left() {
+    let right_to_left: Vec<&str> = InterfaceLanguage::ALL
+        .iter()
+        .filter(|language| language.is_right_to_left())
+        .map(|language| language.tag())
+        .collect();
+    assert_eq!(right_to_left, ["ar", "fa", "he", "ur"]);
+}
+
+#[test]
+fn should_write_polish_from_left_to_right() {
+    let polish = InterfaceLanguage::from_tag("pl").map(InterfaceLanguage::is_right_to_left);
+    assert_eq!(polish, Some(false));
+}
+
+#[test]
 fn should_name_serbian_in_latin_script_with_the_latin_modifier_for_gettext() {
     let serbian = InterfaceLanguage::from_tag("sr-Latn").map(InterfaceLanguage::gettext_languages);
     assert_eq!(serbian.as_deref(), Some("sr@latin"));

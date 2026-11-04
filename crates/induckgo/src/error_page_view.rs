@@ -5,6 +5,7 @@
 //! renders the matching page in the browser's current light or dark style and accent colour, and loads it as
 //! "alternate HTML" for the failed address, so the address bar, Reload and Back behave as for the failed page.
 
+use crate::interface_messages::InterfaceMessages;
 use gio::prelude::NetworkMonitorExt;
 use gio::prelude::TlsCertificateExt;
 use induckgo_core::navigation::error_page::ErrorPage;
@@ -23,10 +24,20 @@ pub struct ErrorPageView;
 impl ErrorPageView {
     const TEMPLATE: &'static str = include_str!("../../../assets/error-page/error-page.html");
 
+    // the lead wires the process language here
+    const LANGUAGE_TAG: &'static str = "en";
+    // the lead wires the process language here
+    const IS_RIGHT_TO_LEFT: bool = false;
+
     /// Shows the page explaining `failure` under the failed address; a mistyped name is searched with
     /// `search_engine`.
     pub fn show(web_view: &WebView, failure: &LoadFailure, search_engine: SearchEngine) {
-        let html = ErrorPage::new(Self::TEMPLATE).render(failure, &Self::appearance(), search_engine);
+        let html = ErrorPage::new(Self::TEMPLATE).render(
+            failure,
+            &Self::appearance(),
+            search_engine,
+            InterfaceMessages::catalogue(),
+        );
         web_view.load_alternate_html(&html, &failure.address, None);
     }
 
@@ -78,15 +89,15 @@ impl ErrorPageView {
     pub fn certificate_detail(certificate: &gio::TlsCertificate) -> String {
         let mut parts = Vec::new();
         if let Some(subject) = certificate.subject_name() {
-            parts.push(format!("Certificate for {}", Self::common_name(&subject)));
+            parts.push(tr!("Certificate for {name}", name = Self::common_name(&subject)));
         }
         if let Some(issuer) = certificate.issuer_name() {
-            parts.push(format!("issued by {}", Self::common_name(&issuer)));
+            parts.push(tr!("Issued by {name}", name = Self::common_name(&issuer)));
         }
         if let Some(until) = certificate.not_valid_after().and_then(|date| date.format("%Y-%m-%d").ok()) {
-            parts.push(format!("valid until {until}"));
+            parts.push(tr!("Valid until {date}", date = until));
         }
-        parts.join(", ")
+        parts.join(" · ")
     }
 
     /// `*.badssl.com` of `OU=Domain Control Validated,CN=*.badssl.com`; the whole name when it has no `CN`.
@@ -106,6 +117,8 @@ impl ErrorPageView {
         PageAppearance {
             is_dark: style.is_dark(),
             accent: [Self::channel(accent.red()), Self::channel(accent.green()), Self::channel(accent.blue())],
+            language_tag: Self::LANGUAGE_TAG,
+            is_right_to_left: Self::IS_RIGHT_TO_LEFT,
         }
     }
 

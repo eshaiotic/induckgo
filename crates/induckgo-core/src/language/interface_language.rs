@@ -141,6 +141,13 @@ impl InterfaceLanguage {
         self.endonym
     }
 
+    /// Whether the language is written from right to left (Arabic, Persian, Hebrew, Urdu), so pages and layouts
+    /// must be mirrored.
+    #[must_use]
+    pub fn is_right_to_left(self) -> bool {
+        matches!(self.tag, "ar" | "fa" | "he" | "ur")
+    }
+
     /// The value of the `LANGUAGE` variable that makes GTK, libadwaita and WebKit speak this language: gettext's
     /// own spelling (`pt_BR`), followed by the plain language it falls back to (`pt`).
     #[must_use]

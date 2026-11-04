@@ -2,23 +2,28 @@
 //!
 //! Every page names the problem in one heading, says which site it concerns, lists what the user can check,
 //! and offers the actions that can actually help (try again, search for a mistyped name, go to the site's
-//! home page). The vendored HTML template carries the look; this module fills it.
+//! home page). The vendored HTML template carries the look; this module fills it, in the interface language.
 //!
 //! The page is shown under the failed address, so it runs in that site's origin: everything taken from the
 //! failure (address, host, the `GLib` message) is escaped, the template forbids scripts and every remote load with
 //! a Content Security Policy, and retry links are only emitted for `http`, `https` and `file` addresses.
 
+use crate::language::message_catalogue::MessageCatalogue;
 use crate::navigation::load_failure::CertificateProblem;
 use crate::navigation::load_failure::FailureCause;
 use crate::navigation::load_failure::LoadFailure;
 use crate::navigation::search_engine::SearchEngine;
 
-/// How the browser around the page looks, so the page matches it.
+/// How the browser around the page looks and speaks, so the page matches it.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct PageAppearance {
     pub is_dark: bool,
     /// The desktop's accent colour (button background), as red, green, blue.
     pub accent: [u8; 3],
+    /// The BCP 47 tag of the interface language, written to the page's `lang` attribute.
+    pub language_tag: &'static str,
+    /// Whether the language is written from right to left, which mirrors the page (`dir="rtl"`).
+    pub is_right_to_left: bool,
 }
 
 pub struct ErrorPage {
@@ -31,14 +36,23 @@ impl ErrorPage {
         Self { template: template.to_owned() }
     }
 
-    /// The complete HTML document explaining `failure`; a mistyped name is searched with `search_engine`.
+    /// The complete HTML document explaining `failure`, worded by `catalogue`; a mistyped name is searched with
+    /// `search_engine`.
     #[must_use]
-    pub fn render(&self, failure: &LoadFailure, appearance: &PageAppearance, search_engine: SearchEngine) -> String {
-        let explanation = Explanation::of(failure, search_engine);
+    pub fn render(
+        &self,
+        failure: &LoadFailure,
+        appearance: &PageAppearance,
+        search_engine: SearchEngine,
+        catalogue: &MessageCatalogue,
+    ) -> String {
+        let explanation = Explanation::of(failure, search_engine, catalogue);
         let [red, green, blue] = appearance.accent;
         Template::fill(&self.template, |placeholder| match placeholder {
             "scheme" => Some(if appearance.is_dark { "dark" } else { "light" }.to_owned()),
             "accent" => Some(format!("#{red:02x}{green:02x}{blue:02x}")),
+            "language" => Some(Markup::escaped(appearance.language_tag)),
+            "direction" => Some(if appearance.is_right_to_left { "rtl" } else { "ltr" }.to_owned()),
             "tone" => Some(explanation.tone.to_owned()),
             "glyph" => Some(explanation.glyph.to_owned()),
             "tab_title" => Some(Markup::escaped(&explanation.tab_title)),
@@ -53,17 +67,22 @@ impl ErrorPage {
 }
 
 /// What the page says and offers for one failure.
-struct Explanation<'failure> {
-    failure: &'failure LoadFailure,
+///
+/// Every sentence is looked up whole in the catalogue (`catalogue.text("...")`), with named placeholders for
+/// the parts that vary, so a translator can reorder them. The values put into placeholders are escaped before
+/// they are substituted; the catalogue's own text is compiled into the program and trusted.
+struct Explanation<'a> {
+    failure: &'a LoadFailure,
     search_engine: SearchEngine,
+    catalogue: &'a MessageCatalogue,
     /// The host as markup, ready to be placed into the lead.
     host: String,
     tab_title: String,
-    title: &'static str,
+    title: &'a str,
     /// Markup: its variable parts are already escaped.
     lead: String,
-    points: Vec<&'static str>,
-    note: Option<&'static str>,
+    points: Vec<&'a str>,
+    note: Option<&'a str>,
     actions: Vec<PageAction>,
     detail: String,
     /// Which symbol the illustration's badge shows (a class in the template).
@@ -78,22 +97,15 @@ struct PageAction {
     is_primary: bool,
 }
 
-impl<'failure> Explanation<'failure> {
-    const TRY_AGAIN: &'static str = "Try Again";
-    const RELOAD: &'static str = "Reload Page";
-    const CHECK_CONNECTION: &'static str = "Check your internet connection.";
-    const CHECK_TYPO: &'static str = "Check the address for a typo.";
-    const CHECK_NETWORK_TOOLS: &'static str =
-        "If you use a VPN, firewall or proxy, check that it isn’t blocking the site.";
-    const TRY_LATER: &'static str = "Try again in a few minutes.";
-
-    fn of(failure: &'failure LoadFailure, search_engine: SearchEngine) -> Self {
+impl<'a> Explanation<'a> {
+    fn of(failure: &'a LoadFailure, search_engine: SearchEngine, catalogue: &'a MessageCatalogue) -> Self {
         let mut explanation = Self {
             failure,
             search_engine,
+            catalogue,
             host: Markup::strong(&failure.host()),
             tab_title: failure.host(),
-            title: "This site can’t be reached",
+            title: catalogue.text("This site can’t be reached"),
             lead: String::new(),
             points: Vec::new(),
             note: None,
@@ -118,174 +130,220 @@ impl<'failure> Explanation<'failure> {
         explanation
     }
 
+    fn try_again(&self) -> &'a str {
+        self.catalogue.text("Try Again")
+    }
+
+    fn reload(&self) -> &'a str {
+        self.catalogue.text("Reload Page")
+    }
+
+    fn check_connection(&self) -> &'a str {
+        self.catalogue.text("Check your internet connection.")
+    }
+
+    fn check_typo(&self) -> &'a str {
+        self.catalogue.text("Check the address for a typo.")
+    }
+
+    fn check_network_tools(&self) -> &'a str {
+        self.catalogue.text("If you use a VPN, firewall or proxy, check that it isn’t blocking the site.")
+    }
+
+    fn try_later(&self) -> &'a str {
+        self.catalogue.text("Try again in a few minutes.")
+    }
+
     fn explain_connection(&mut self) {
+        let catalogue = self.catalogue;
         let host = self.host.clone();
+        let values = [("host", host.as_str())];
         match self.failure.cause {
             FailureCause::Offline => {
-                self.title = "You’re offline";
-                self.lead = format!("InDuckGo can’t open {host} because this computer isn’t connected to a network.");
+                self.title = catalogue.text("You’re offline");
+                self.lead = catalogue.text_with(
+                    "InDuckGo can’t open {host} because this computer isn’t connected to a network.",
+                    &values,
+                );
                 self.points = vec![
-                    "Check the network cable or the Wi-Fi connection.",
-                    "Turn off airplane mode, if it is on.",
-                    "Reconnect your VPN, if you use one.",
+                    catalogue.text("Check the network cable or the Wi-Fi connection."),
+                    catalogue.text("Turn off airplane mode, if it is on."),
+                    catalogue.text("Reconnect your VPN, if you use one."),
                 ];
                 self.glyph = "offline";
             }
             FailureCause::HostNotFound => {
-                self.title = "This site can’t be found";
-                self.lead = format!("InDuckGo couldn’t find a server at {host}.");
+                self.title = catalogue.text("This site can’t be found");
+                self.lead = catalogue.text_with("InDuckGo couldn’t find a server at {host}.", &values);
                 self.points = vec![
-                    Self::CHECK_TYPO,
-                    "If the address is right, the site may no longer exist.",
-                    "If you use a VPN or your own DNS server, check that it works.",
+                    self.check_typo(),
+                    catalogue.text("If the address is right, the site may no longer exist."),
+                    catalogue.text("If you use a VPN or your own DNS server, check that it works."),
                 ];
                 self.glyph = "search";
             }
             FailureCause::ConnectionRefused => {
-                self.lead = format!("{host} refused the connection.");
+                self.lead = catalogue.text_with("{host} refused the connection.", &values);
                 self.points = vec![
-                    "The site may be down for maintenance. Try again in a few minutes.",
-                    "Check the address, including the port number after the colon, if there is one.",
-                    Self::CHECK_NETWORK_TOOLS,
+                    catalogue.text("The site may be down for maintenance. Try again in a few minutes."),
+                    catalogue.text("Check the address, including the port number after the colon, if there is one."),
+                    self.check_network_tools(),
                 ];
             }
             FailureCause::TimedOut => {
-                self.lead = format!("{host} took too long to respond.");
+                self.lead = catalogue.text_with("{host} took too long to respond.", &values);
                 self.points = vec![
-                    Self::CHECK_CONNECTION,
-                    "The site may be overloaded. Try again in a few minutes.",
-                    Self::CHECK_NETWORK_TOOLS,
+                    self.check_connection(),
+                    catalogue.text("The site may be overloaded. Try again in a few minutes."),
+                    self.check_network_tools(),
                 ];
                 self.glyph = "clock";
             }
             FailureCause::ConnectionInterrupted => {
-                self.lead = format!("The connection to {host} was interrupted.");
-                self.points = vec![Self::CHECK_CONNECTION, Self::TRY_LATER, Self::CHECK_NETWORK_TOOLS];
+                self.lead = catalogue.text_with("The connection to {host} was interrupted.", &values);
+                self.points = vec![self.check_connection(), self.try_later(), self.check_network_tools()];
             }
             _ => {
-                self.title = "This page can’t be loaded";
-                self.lead = format!("Something went wrong while loading {host}.");
-                self.points = vec![Self::CHECK_CONNECTION, Self::TRY_LATER];
+                self.title = catalogue.text("This page can’t be loaded");
+                self.lead = catalogue.text_with("Something went wrong while loading {host}.", &values);
+                self.points = vec![self.check_connection(), self.try_later()];
             }
         }
-        self.offer_retry(Self::TRY_AGAIN);
+        self.offer_retry(self.try_again());
         if self.failure.cause == FailureCause::HostNotFound {
             self.offer_search();
         }
     }
 
     fn explain_certificate(&mut self, problems: &[CertificateProblem]) {
-        self.title = "This connection isn’t private";
-        self.lead = format!(
-            "InDuckGo stopped loading {} because its security certificate can’t be trusted. Someone may be trying \
-             to read or change what you send to this site, such as passwords, messages or card numbers.",
-            self.host
+        let catalogue = self.catalogue;
+        self.title = catalogue.text("This connection isn’t private");
+        self.lead = catalogue.text_with(
+            "InDuckGo stopped loading {host} because its security certificate can’t be trusted. Someone may be \
+             trying to read or change what you send to this site, such as passwords, messages or card numbers.",
+            &[("host", self.host.as_str())],
         );
         let problems = if problems.is_empty() { &[CertificateProblem::Unverifiable][..] } else { problems };
-        self.points = problems.iter().map(|problem| Self::certificate_problem(*problem)).collect();
-        self.note = Some(
+        self.points = problems.iter().map(|problem| Self::certificate_problem(catalogue, *problem)).collect();
+        self.note = Some(catalogue.text(
             "InDuckGo never opens a site over a connection it can’t verify, so this warning can’t be skipped by \
              mistake.",
-        );
+        ));
         self.glyph = "lock";
         self.tone = "danger";
-        self.offer_retry(Self::TRY_AGAIN);
+        self.offer_retry(self.try_again());
     }
 
-    fn certificate_problem(problem: CertificateProblem) -> &'static str {
+    fn certificate_problem(catalogue: &'a MessageCatalogue, problem: CertificateProblem) -> &'a str {
         match problem {
-            CertificateProblem::Expired => {
-                "The certificate has expired. If this computer’s date is wrong, correct it and try again."
-            }
+            CertificateProblem::Expired => catalogue
+                .text("The certificate has expired. If this computer’s date is wrong, correct it and try again."),
             CertificateProblem::NotYetValid => {
-                "The certificate isn’t valid yet. Check that this computer’s date and time are right."
+                catalogue.text("The certificate isn’t valid yet. Check that this computer’s date and time are right.")
             }
-            CertificateProblem::UnknownIssuer => "The certificate wasn’t issued by an authority this computer trusts.",
-            CertificateProblem::WrongSite => "The certificate was issued for a different site.",
-            CertificateProblem::Revoked => "The authority that issued the certificate has revoked it.",
-            CertificateProblem::Insecure => "The certificate is signed with an algorithm that is no longer safe.",
-            CertificateProblem::Unverifiable => "The certificate could not be verified.",
+            CertificateProblem::UnknownIssuer => {
+                catalogue.text("The certificate wasn’t issued by an authority this computer trusts.")
+            }
+            CertificateProblem::WrongSite => catalogue.text("The certificate was issued for a different site."),
+            CertificateProblem::Revoked => catalogue.text("The authority that issued the certificate has revoked it."),
+            CertificateProblem::Insecure => {
+                catalogue.text("The certificate is signed with an algorithm that is no longer safe.")
+            }
+            CertificateProblem::Unverifiable => catalogue.text("The certificate could not be verified."),
         }
     }
 
     fn explain_crash(&mut self) {
+        let catalogue = self.catalogue;
         let host = self.host.clone();
+        let values = [("host", host.as_str())];
         if self.failure.cause == FailureCause::OutOfMemory {
-            self.title = "This page ran out of memory";
-            self.lead = format!("{host} used more memory than a page may use, so InDuckGo stopped it.");
-            self.points = vec!["Close tabs or apps you don’t need, then reload the page."];
+            self.title = catalogue.text("This page ran out of memory");
+            self.lead =
+                catalogue.text_with("{host} used more memory than a page may use, so InDuckGo stopped it.", &values);
+            self.points = vec![catalogue.text("Close tabs or apps you don’t need, then reload the page.")];
         } else {
-            self.title = "This page crashed";
-            self.lead = format!("Something went wrong while showing {host}. The rest of InDuckGo keeps working.");
-            self.points = vec!["If it crashes again after reloading, the page itself may be broken."];
+            self.title = catalogue.text("This page crashed");
+            self.lead = catalogue
+                .text_with("Something went wrong while showing {host}. The rest of InDuckGo keeps working.", &values);
+            self.points = vec![catalogue.text("If it crashes again after reloading, the page itself may be broken.")];
         }
         self.glyph = "crash";
         self.tone = "warning";
-        self.offer_retry(Self::RELOAD);
+        self.offer_retry(self.reload());
     }
 
     fn explain_http_status(&mut self, status: u16) {
+        let catalogue = self.catalogue;
         let host = self.host.clone();
+        let values = [("host", host.as_str())];
         match status {
             404 | 410 => {
-                self.title = "This page can’t be found";
-                self.lead = format!("{host} has no page at this address.");
-                self.points = vec![Self::CHECK_TYPO, "Go to the site’s home page and look for the page from there."];
+                self.title = catalogue.text("This page can’t be found");
+                self.lead = catalogue.text_with("{host} has no page at this address.", &values);
+                self.points = vec![
+                    self.check_typo(),
+                    catalogue.text("Go to the site’s home page and look for the page from there."),
+                ];
                 self.glyph = "search";
             }
             401 | 403 => {
-                self.title = "Access denied";
-                self.lead = format!("{host} doesn’t allow you to see this page.");
-                self.points = vec!["If you have an account on this site, sign in and try again."];
+                self.title = catalogue.text("Access denied");
+                self.lead = catalogue.text_with("{host} doesn’t allow you to see this page.", &values);
+                self.points = vec![catalogue.text("If you have an account on this site, sign in and try again.")];
                 self.glyph = "blocked";
             }
             500..=599 => {
-                self.title = "This page isn’t working";
-                self.lead = format!("{host} can’t handle the request right now.");
-                self.points = vec!["The problem is on the site’s side. Try again in a few minutes."];
+                self.title = catalogue.text("This page isn’t working");
+                self.lead = catalogue.text_with("{host} can’t handle the request right now.", &values);
+                self.points = vec![catalogue.text("The problem is on the site’s side. Try again in a few minutes.")];
             }
             _ => {
-                self.title = "This page isn’t working";
-                self.lead = format!("{host} couldn’t answer this request.");
+                self.title = catalogue.text("This page isn’t working");
+                self.lead = catalogue.text_with("{host} couldn’t answer this request.", &values);
             }
         }
         self.detail = format!("HTTP {status}");
-        self.offer_retry(Self::RELOAD);
+        self.offer_retry(self.reload());
         if let Some(address) = self.failure.site_home() {
-            self.actions.push(PageAction { label: "Go to Home Page".to_owned(), address, is_primary: false });
+            let label = catalogue.text("Go to Home Page").to_owned();
+            self.actions.push(PageAction { label, address, is_primary: false });
         }
     }
 
     fn explain_missing_file(&mut self) {
+        let catalogue = self.catalogue;
         let path =
             self.failure.file_path().map_or_else(|| self.failure.address.clone(), |path| path.display().to_string());
         path.rsplit('/').find(|part| !part.is_empty()).unwrap_or(&path).clone_into(&mut self.tab_title);
-        self.title = "File not found";
-        self.lead = format!("There is no file at {}.", Markup::strong(&path));
-        self.points = vec!["It may have been moved, renamed or deleted."];
+        self.title = catalogue.text("File not found");
+        self.lead = catalogue.text_with("There is no file at {path}.", &[("path", Markup::strong(&path).as_str())]);
+        self.points = vec![catalogue.text("It may have been moved, renamed or deleted.")];
         self.glyph = "file";
-        self.offer_retry(Self::TRY_AGAIN);
+        self.offer_retry(self.try_again());
     }
 
     /// Retrying cannot help: the port is refused before any connection is made.
     fn explain_restricted_port(&mut self) {
+        let catalogue = self.catalogue;
         let host = self.host.clone();
-        self.title = "This address is blocked";
+        self.title = catalogue.text("This address is blocked");
         self.lead = match self.failure.port() {
-            Some(port) => format!(
+            Some(port) => catalogue.text_with(
                 "InDuckGo doesn’t connect to {host} on port {port}, because that port belongs to services other \
-                 than websites."
+                 than websites.",
+                &[("host", host.as_str()), ("port", port.to_string().as_str())],
             ),
-            None => format!("InDuckGo doesn’t connect to {host} on this port."),
+            None => catalogue.text_with("InDuckGo doesn’t connect to {host} on this port.", &[("host", host.as_str())]),
         };
-        self.note = Some(
+        self.note = Some(catalogue.text(
             "Ports like this one serve mail, file sharing and other services. Browsers refuse them so that a web \
              page can’t talk to those services on your behalf.",
-        );
+        ));
         self.glyph = "blocked";
     }
 
-    fn offer_retry(&mut self, label: &'static str) {
+    fn offer_retry(&mut self, label: &str) {
         if self.failure.can_be_retried() {
             let address = self.failure.address.clone();
             self.actions.push(PageAction { label: label.to_owned(), address, is_primary: true });
@@ -295,7 +353,7 @@ impl<'failure> Explanation<'failure> {
     /// A mistyped name is most often found by searching for it.
     fn offer_search(&mut self) {
         let address = self.search_engine.search_url(&self.failure.host());
-        let label = format!("Search {}", self.search_engine.name());
+        let label = self.catalogue.text_with("Search {engine}", &[("engine", self.search_engine.name())]);
         self.actions.push(PageAction { label, address, is_primary: false });
     }
 
@@ -323,7 +381,7 @@ impl<'failure> Explanation<'failure> {
             let opening =
                 if action.is_primary { "<a class=\"button primary\" href=\"" } else { "<a class=\"button\" href=\"" };
             Markup::push_element(&mut markup, opening, &action.address, "\">");
-            markup.push_str(&action.label);
+            markup.push_str(&Markup::escaped(&action.label));
             markup.push_str("</a>");
         }
         markup.push_str("</div>");

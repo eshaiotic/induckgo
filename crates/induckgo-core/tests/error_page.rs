@@ -3,6 +3,7 @@
 
 use std::path::Path;
 
+use induckgo_core::language::message_catalogue::MessageCatalogue;
 use induckgo_core::navigation::error_page::ErrorPage;
 use induckgo_core::navigation::error_page::PageAppearance;
 use induckgo_core::navigation::load_failure::CertificateProblem;
@@ -14,6 +15,7 @@ struct ErrorPageScenario {
     failure: LoadFailure,
     appearance: PageAppearance,
     search_engine: SearchEngine,
+    catalogue: MessageCatalogue,
 }
 
 impl ErrorPageScenario {
@@ -24,13 +26,29 @@ impl ErrorPageScenario {
     fn given_failure_reported_as(address: &str, cause: FailureCause, detail: &str) -> Self {
         Self {
             failure: LoadFailure::new(address, cause, detail),
-            appearance: PageAppearance { is_dark: false, accent: [0x35, 0x84, 0xe4] },
+            appearance: PageAppearance {
+                is_dark: false,
+                accent: [0x35, 0x84, 0xe4],
+                language_tag: "en",
+                is_right_to_left: false,
+            },
             search_engine: SearchEngine::DUCKDUCKGO,
+            catalogue: MessageCatalogue::untranslated(),
         }
     }
 
     fn given_dark_browser_with_accent(mut self, accent: [u8; 3]) -> Self {
-        self.appearance = PageAppearance { is_dark: true, accent };
+        self.appearance = PageAppearance { is_dark: true, accent, ..self.appearance };
+        self
+    }
+
+    fn given_interface_language(mut self, tag: &'static str, is_right_to_left: bool) -> Self {
+        self.appearance = PageAppearance { language_tag: tag, is_right_to_left, ..self.appearance };
+        self
+    }
+
+    fn given_translations(mut self, po_source: &str) -> Self {
+        self.catalogue = MessageCatalogue::parse(po_source);
         self
     }
 
@@ -43,7 +61,12 @@ impl ErrorPageScenario {
         let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../assets/error-page/error-page.html");
         let template = std::fs::read_to_string(path).expect("the vendored error page template");
         RenderedErrorPage {
-            html: ErrorPage::new(&template).render(&self.failure, &self.appearance, self.search_engine),
+            html: ErrorPage::new(&template).render(
+                &self.failure,
+                &self.appearance,
+                self.search_engine,
+                &self.catalogue,
+            ),
         }
     }
 }
@@ -228,9 +251,68 @@ fn should_match_the_dark_browser_and_its_accent_colour() {
     ErrorPageScenario::given_failure("https://mbank.pl/", FailureCause::ConnectionRefused)
         .given_dark_browser_with_accent([0x9a, 0x6a, 0xff])
         .when_rendered()
-        .then_says("<html lang=\"en\" class=\"dark tone-accent glyph-alert\">")
+        .then_says("<html lang=\"en\" dir=\"ltr\" class=\"dark tone-accent glyph-alert\">")
         .then_says("<meta name=\"color-scheme\" content=\"dark\">")
         .then_says("--accent: #9a6aff;");
+}
+
+const POLISH_TRANSLATIONS: &str = r#"
+msgid "This page can’t be loaded"
+msgstr "Nie można wczytać tej strony"
+
+msgid "Something went wrong while loading {host}."
+msgstr "Podczas wczytywania {host} coś poszło nie tak."
+
+msgid "Try Again"
+msgstr "Spróbuj ponownie"
+
+msgid "Search {engine}"
+msgstr "Szukaj w {engine}"
+"#;
+
+#[test]
+fn should_word_the_page_in_the_language_of_the_catalogue() {
+    ErrorPageScenario::given_failure("https://site.test/", FailureCause::Unknown)
+        .given_translations(POLISH_TRANSLATIONS)
+        .when_rendered()
+        .then_heading_is("Nie można wczytać tej strony")
+        .then_primary_action_opens("Spróbuj ponownie", "https://site.test/")
+        .then_says("Podczas wczytywania <strong>site.test</strong> coś poszło nie tak.");
+}
+
+#[test]
+fn should_keep_the_english_sentence_the_catalogue_does_not_translate() {
+    ErrorPageScenario::given_failure("https://site.test/", FailureCause::Unknown)
+        .given_translations(POLISH_TRANSLATIONS)
+        .when_rendered()
+        .then_says("<li>Check your internet connection.</li>");
+}
+
+#[test]
+fn should_escape_markup_in_the_address_even_when_a_translation_places_it() {
+    ErrorPageScenario::given_failure("https://<script>alert(1)</script>.test/", FailureCause::Unknown)
+        .given_translations(POLISH_TRANSLATIONS)
+        .when_rendered()
+        .then_never_says("<script>")
+        .then_says("<strong>https://&lt;script&gt;alert(1)&lt;/script&gt;.test/</strong> coś poszło nie tak.");
+}
+
+#[test]
+fn should_name_the_search_engine_in_a_translated_button() {
+    ErrorPageScenario::given_failure("https://exmaple.com/", FailureCause::HostNotFound)
+        .with_search_engine(SearchEngine::GOOGLE)
+        .given_translations(POLISH_TRANSLATIONS)
+        .when_rendered()
+        .then_secondary_action_opens("Szukaj w Google", "https://www.google.com/search?q=exmaple.com");
+}
+
+#[test]
+fn should_mirror_the_page_for_a_right_to_left_language() {
+    ErrorPageScenario::given_failure("https://site.test/", FailureCause::Unknown)
+        .given_interface_language("he", true)
+        .when_rendered()
+        .then_says("<html lang=\"he\" dir=\"rtl\" class=")
+        .then_every_placeholder_is_filled();
 }
 
 #[test]

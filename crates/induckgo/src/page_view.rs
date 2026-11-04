@@ -77,7 +77,7 @@ impl PageView {
     const PIXELS_PER_ZOOM_STEP: f64 = 40.0;
 
     pub fn new(session: &Rc<ProfileSession>, web_view: WebView) -> Rc<Self> {
-        let insecure_banner = adw::Banner::builder().button_label("Load Insecure Page").revealed(false).build();
+        let insecure_banner = adw::Banner::builder().button_label(tr!("Load Insecure Page")).revealed(false).build();
         let root = gtk::Box::new(gtk::Orientation::Vertical, 0);
         web_view.set_vexpand(true);
         root.append(&insecure_banner);
@@ -237,7 +237,7 @@ impl PageView {
             return true;
         }
         if self.session.is_tor_window() {
-            self.announce("Other applications do not open from the Tor window: they would connect outside Tor.");
+            self.announce(tr!("Other applications do not open from the Tor window: they would connect outside Tor."));
         } else {
             ExternalLauncher::open_outside(&address, self.window().as_ref());
         }
@@ -346,7 +346,7 @@ impl PageView {
         if let Some(plain_http) = upgraded_from {
             let host =
                 Url::parse(&plain_http).ok().and_then(|url| url.host_str().map(str::to_owned)).unwrap_or_default();
-            self.insecure_banner.set_title(&format!("{host} does not offer a secure connection"));
+            self.insecure_banner.set_title(&tr!("{host} does not offer a secure connection", host = host));
             self.insecure_banner.set_revealed(true);
             self.insecure_fallback.replace(Some((failing_address.to_owned(), plain_http)));
         }

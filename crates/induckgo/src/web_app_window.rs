@@ -90,17 +90,17 @@ impl WebAppWindow {
             &gtk::Button::builder()
                 .icon_name("go-previous-symbolic")
                 .action_name("win.back")
-                .tooltip_text("Back")
+                .tooltip_text(tr!("Back"))
                 .build(),
         );
         header.pack_start(
             &gtk::Button::builder()
                 .icon_name("view-refresh-symbolic")
                 .action_name("win.reload")
-                .tooltip_text("Reload")
+                .tooltip_text(tr!("Reload"))
                 .build(),
         );
-        let menu = gtk::MenuButton::builder().icon_name("open-menu-symbolic").tooltip_text("Main Menu").build();
+        let menu = gtk::MenuButton::builder().icon_name("open-menu-symbolic").tooltip_text(tr!("Main Menu")).build();
         let web_app = Rc::downgrade(self);
         menu.set_create_popup_func(move |button| {
             if let Some(web_app) = web_app.upgrade() {
@@ -134,12 +134,12 @@ impl WebAppWindow {
         let menu = gio::Menu::new();
         menu.append_item(&ZoomControls::menu_row(zoom));
         let site = gio::Menu::new();
-        site.append(Some("Protect This Site"), Some("win.protect-site"));
+        site.append(Some(tr!("Protect This Site")), Some("win.protect-site"));
         menu.append_section(None, &site);
         let app = gio::Menu::new();
-        app.append(Some("Open Page in Browser"), Some("win.open-in-browser"));
-        app.append(Some("Clear App Data…"), Some("win.fire"));
-        app.append(Some("About InDuckGo"), Some("app.about"));
+        app.append(Some(tr!("Open Page in Browser")), Some("win.open-in-browser"));
+        app.append(Some(tr!("Clear App Data…")), Some("win.fire"));
+        app.append(Some(tr!("About InDuckGo")), Some("app.about"));
         menu.append_section(None, &app);
         menu
     }
@@ -157,7 +157,7 @@ impl WebAppWindow {
                 title.set_tooltip_text(None);
             } else {
                 title.add_css_class("warning");
-                title.set_tooltip_text(Some(&format!("This page is on another site, not part of {name}")));
+                title.set_tooltip_text(Some(&tr!("This page is on another site, not part of {name}", name = name)));
             }
         });
     }
@@ -307,10 +307,10 @@ impl WebAppWindow {
 
     fn confirm_clear(self: &Rc<Self>) {
         let dialog = adw::AlertDialog::new(
-            Some(&format!("Clear Data of {}?", self.app.name)),
-            Some("Signs you out and deletes this app's cookies, site data and cache. Nothing else is affected."),
+            Some(&tr!("Clear Data of {name}?", name = self.app.name)),
+            Some(tr!("Signs you out and deletes this app's cookies, site data and cache. Nothing else is affected.")),
         );
-        dialog.add_responses(&[("cancel", "_Cancel"), ("clear", "C_lear")]);
+        dialog.add_responses(&[("cancel", tr!("_Cancel")), ("clear", tr!("C_lear"))]);
         dialog.set_response_appearance("clear", adw::ResponseAppearance::Destructive);
         dialog.set_close_response("cancel");
         let web_app = Rc::downgrade(self);
@@ -318,8 +318,8 @@ impl WebAppWindow {
             let Some(web_app) = web_app.upgrade() else { return };
             glib::spawn_future_local(async move {
                 let message = match web_app.context.session.burn_website_data().await {
-                    Ok(()) => "App data cleared".to_owned(),
-                    Err(error) => format!("Some data could not be deleted: {error}"),
+                    Ok(()) => tr!("App data cleared").to_owned(),
+                    Err(error) => tr!("Some data could not be deleted: {error}", error = error),
                 };
                 web_app.page.web_view().load_uri(&web_app.app.start_url);
                 web_app.toasts.add_toast(adw::Toast::new(&message));

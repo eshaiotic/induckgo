@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="{{scheme}} tone-{{tone}} glyph-{{glyph}}">
+<html lang="{{language}}" dir="{{direction}}" class="{{scheme}} tone-{{tone}} glyph-{{glyph}}">
 <head>
 <meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; form-action 'none'; base-uri 'none'">
@@ -61,7 +61,8 @@
     display: block;
     width: 104px;
     height: 104px;
-    margin: 0 0 28px -6px;
+    margin-block: 0 28px;
+    margin-inline: -6px 0;
   }
 
   .shield { fill: var(--ghost); }
@@ -104,7 +105,7 @@
     text-wrap: pretty;
   }
 
-  .lead strong { font-weight: 700; overflow-wrap: anywhere; }
+  .lead strong { font-weight: 700; overflow-wrap: anywhere; unicode-bidi: isolate; }
 
   .points {
     margin: 22px 0 0;
@@ -116,7 +117,7 @@
   .points li {
     position: relative;
     margin: 0 0 8px;
-    padding-left: 22px;
+    padding-inline-start: 22px;
     color: var(--muted);
     text-wrap: pretty;
   }
@@ -124,7 +125,7 @@
   .points li::before {
     content: "";
     position: absolute;
-    left: 4px;
+    inset-inline-start: 4px;
     top: 0.62em;
     width: 6px;
     height: 6px;
@@ -181,11 +182,12 @@
     color: var(--muted);
     font: 12.5px/1.5 ui-monospace, "Source Code Pro", "Noto Sans Mono", monospace;
     overflow-wrap: anywhere;
+    unicode-bidi: plaintext;
   }
 
   @media (max-width: 520px) {
     main { padding: 40px 24px 48px; }
-    .illustration { width: 88px; height: 88px; margin-bottom: 22px; }
+    .illustration { width: 88px; height: 88px; margin-block-end: 22px; }
     h1 { font-size: 1.5rem; }
   }
 </style>

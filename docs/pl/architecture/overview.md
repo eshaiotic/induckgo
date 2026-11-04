@@ -555,7 +555,7 @@ nim polegać.
 | Odpowiedzi na prośby o uprawnienia nie są zapamiętywane. | Pytanie za każdym razem to bezpieczna wartość domyślna. | Powstanie projekt przechowywania uprawnień per profil. |
 | Brak przywracania sesji, zakładek i okna historii. Guard ukrywa banery cookies, ale na nie nie odpowiada (autoconsent DuckDuckGo klika „odrzuć”), więc strona blokująca przewijanie do czasu odpowiedzi zostaje zablokowana. | Jeszcze niezbudowane. | Następny etap. |
 | Guard nie uruchamia scriptletów uBlock Origin i nie ukrywa listy zainstalowanych fontów (§5.6). | Content blockery WebKit nie wyrażają scriptletów; WebKitGTK nie oferuje ograniczenia fontów. | WebKitGTK zyska któreś z nich. |
-| Interfejs jest tylko po angielsku. | Brak katalogu tłumaczeń. | Wejdzie gettext. |
+| Wszystkie tłumaczenia są maszynowe, także polskie (patrz [Język interfejsu](interface-language.md)). | Brak native speakerów dla 66 języków. | Współtwórcy poprawią pliki `.po`. |
 | Każdy profil jest w doku osobną aplikacją. | Jeden identyfikator aplikacji na proces profilu. | Użytkownicy będą woleli grupowanie. |
 | Logowanie, które w aplikacji webowej zaczyna się od *klikniętego linku* do innej witryny, otwiera się w przeglądarce. | Kliknięte linki poza witrynę celowo opuszczają aplikację (phishing). Większość logowań używa przekierowań lub okien i działa. | Realna aplikacja będzie tego potrzebować; wtedy allowlista per aplikacja. |
 | Okno Tor ukrywa adres użytkownika, ale nie to, że to InDuckGo: jego odcisk (WebKitGTK, rozmiar okna, fonty) różni się od Tor Browsera, którego użytkownicy są upodabniani do siebie. | WebKitGTK nie ma letterboxingu ani łatek ujednolicających Tor Browsera. | Gdy liczy się nieodróżnialność wśród użytkowników Tora, używaj Tor Browsera. |

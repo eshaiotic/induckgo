@@ -544,7 +544,7 @@ code depended on it.
 | Permission answers are not remembered. | Asking every time is the safe default. | Per-profile permission storage is designed. |
 | No session restore, bookmarks or history window yet. Guard hides cookie notices but does not answer them (DuckDuckGo's autoconsent clicks "reject"), so a site that locks scrolling until answered stays locked. | Not yet built. | The next milestone. |
 | Guard does not run uBlock Origin's scriptlets, nor hide which fonts are installed (§5.6). | WebKit content blockers cannot express scriptlets; WebKitGTK offers no font restriction. | WebKitGTK gains either. |
-| The user interface is English only. | No translation catalogue yet. | gettext is introduced. |
+| Every translation is machine-made, Polish included (see [Interface language](interface-language.md)). | No native reviewer for 66 languages. | Contributors correct the `.po` files. |
 | Every profile appears as a separate application in the dock. | One application ID per profile process. | Users prefer grouping. |
 | A sign-in that starts with a *clicked link* to another site inside a web app opens in the browser. | Clicked off-site links leave the app on purpose (phishing). Most sign-ins redirect or use a pop-up and keep working. | A real app needs it; then an allowlist per app. |
 | The Tor window hides the user's address, not the fact that it is InDuckGo: its fingerprint (WebKitGTK, window size, fonts) differs from Tor Browser's, whose users are made to look alike. | WebKitGTK has no letterboxing and none of Tor Browser's uniformity patches. | Use Tor Browser when being indistinguishable among Tor users matters. |

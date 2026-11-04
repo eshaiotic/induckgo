@@ -37,6 +37,10 @@ fn should_not_open_programs_scripts_and_launchers_with_one_click() {
         "application/vnd.appimage",
         "application/x-java-archive",
         "application/zip",
+        "image/svg+xml-compressed",
+        "image/x-eps",
+        "audio/x-mpegurl",
+        "video/x-matroska",
     ] {
         assert!(!OpeningScenario::given_file_of_type(content_type).then_opens_with_one_click(), "{content_type}");
     }

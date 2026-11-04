@@ -6,6 +6,7 @@
 //! part has exactly that shape: a line break, `#` (a comment in Tor's file) or a backslash (a line
 //! continuation) could otherwise smuggle options of its own into Tor's configuration.
 
+use crate::language::message_catalogue::MessageCatalogue;
 use std::fmt;
 use std::net::SocketAddr;
 
@@ -25,14 +26,30 @@ pub struct InvalidBridgeLine {
     pub problem: BridgeLineProblem,
 }
 
+impl InvalidBridgeLine {
+    /// What is wrong with the line, in the interface's language.
+    #[must_use]
+    pub fn describe(&self, catalogue: &MessageCatalogue) -> String {
+        match &self.problem {
+            BridgeLineProblem::UnknownTransport(name) => {
+                catalogue.text_with("Unknown bridge transport: {name}", &[("name", name)])
+            }
+            BridgeLineProblem::MissingAddress => {
+                catalogue.text_with("The bridge line has no address: {line}", &[("line", &self.line)])
+            }
+            BridgeLineProblem::InvalidAddress(text) => {
+                catalogue.text_with("{text} is not an IP address and port", &[("text", text)])
+            }
+            BridgeLineProblem::InvalidArgument(text) => {
+                catalogue.text_with("{text} is not a bridge argument", &[("text", text)])
+            }
+        }
+    }
+}
+
 impl fmt::Display for InvalidBridgeLine {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match &self.problem {
-            BridgeLineProblem::UnknownTransport(name) => write!(formatter, "unknown bridge transport {name:?}"),
-            BridgeLineProblem::MissingAddress => write!(formatter, "the bridge line has no address: {:?}", self.line),
-            BridgeLineProblem::InvalidAddress(text) => write!(formatter, "{text:?} is not an IP address and port"),
-            BridgeLineProblem::InvalidArgument(text) => write!(formatter, "{text:?} is not a bridge argument"),
-        }
+        formatter.write_str(&self.describe(&MessageCatalogue::untranslated()))
     }
 }
 

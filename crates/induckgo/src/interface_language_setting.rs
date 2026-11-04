@@ -45,14 +45,14 @@ impl InterfaceLanguageSetting {
     /// the process starts itself again with the right one, once, before it has created anything.
     pub fn activate(&self) {
         if let LanguageChoice::Fixed(chosen) = self.choice.get() {
-            self.restart_speaking(&chosen.gettext_languages());
+            Self::restart_speaking(&chosen.gettext_languages());
         }
         InterfaceMessages::install(self.choice.get().resolve(&Self::system_locales()));
     }
 
     /// Replaces this process by a copy of itself whose `LANGUAGE` is `languages`; returns when it already is, or
     /// when the copy cannot start (then GTK's own texts stay in the system's language, which is logged).
-    fn restart_speaking(&self, languages: &str) {
+    fn restart_speaking(languages: &str) {
         if std::env::var_os(Self::GETTEXT_VARIABLE).is_some_and(|current| current == languages) {
             return;
         }
@@ -71,6 +71,6 @@ impl InterfaceLanguageSetting {
     }
 
     fn system_locales() -> Vec<String> {
-        glib::language_names().iter().map(|name| name.to_string()).collect()
+        glib::language_names().iter().map(ToString::to_string).collect()
     }
 }

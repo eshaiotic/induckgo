@@ -67,7 +67,8 @@ fn should_ignore_a_translation_marked_fuzzy() {
 
 #[test]
 fn should_join_a_message_split_over_several_lines() {
-    CatalogueScenario::given_po(POLISH).then_translates("Closes all tabs and windows.", "Zamyka wszystkie karty i okna.");
+    CatalogueScenario::given_po(POLISH)
+        .then_translates("Closes all tabs and windows.", "Zamyka wszystkie karty i okna.");
 }
 
 #[test]
@@ -108,8 +109,5 @@ fn should_list_every_message_the_catalogue_translates() {
     let scenario = CatalogueScenario::given_po(POLISH);
     let mut messages = scenario.catalogue.messages();
     messages.sort_unstable();
-    assert_eq!(
-        messages,
-        vec!["Back", "Cannot save download: {error}", "Closes all tabs and windows.", "Say \"hi\"\n"]
-    );
+    assert_eq!(messages, vec!["Back", "Cannot save download: {error}", "Closes all tabs and windows.", "Say \"hi\"\n"]);
 }

@@ -18,6 +18,7 @@ use std::fmt::Write;
 use std::path::Path;
 use std::path::PathBuf;
 
+use crate::language::message_catalogue::MessageCatalogue;
 use crate::tor::bridge_choice::BridgeChoice;
 use crate::tor::bridge_line::BridgeLine;
 use crate::tor::pluggable_transport::PluggableTransport;
@@ -31,17 +32,25 @@ pub enum TorConfigurationProblem {
     UnusablePath(PathBuf),
 }
 
+impl TorConfigurationProblem {
+    /// What is wrong, in the interface's language.
+    #[must_use]
+    pub fn describe(&self, catalogue: &MessageCatalogue) -> String {
+        match self {
+            Self::MissingTransport(transport) => catalogue.text_with(
+                "The {transport} bridges need a program that is not installed; install {package}",
+                &[("transport", transport.name()), ("package", transport.package_hint(catalogue))],
+            ),
+            Self::UnusablePath(path) => {
+                catalogue.text_with("Tor cannot use the path {path}", &[("path", &path.display().to_string())])
+            }
+        }
+    }
+}
+
 impl fmt::Display for TorConfigurationProblem {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::MissingTransport(transport) => write!(
-                formatter,
-                "the {} bridges need a program that is not installed; install {}",
-                transport.name(),
-                transport.package_hint()
-            ),
-            Self::UnusablePath(path) => write!(formatter, "Tor cannot use the path {}", path.display()),
-        }
+        formatter.write_str(&self.describe(&MessageCatalogue::untranslated()))
     }
 }
 

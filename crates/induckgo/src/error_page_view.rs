@@ -24,11 +24,6 @@ pub struct ErrorPageView;
 impl ErrorPageView {
     const TEMPLATE: &'static str = include_str!("../../../assets/error-page/error-page.html");
 
-    // the lead wires the process language here
-    const LANGUAGE_TAG: &'static str = "en";
-    // the lead wires the process language here
-    const IS_RIGHT_TO_LEFT: bool = false;
-
     /// Shows the page explaining `failure` under the failed address; a mistyped name is searched with
     /// `search_engine`.
     pub fn show(web_view: &WebView, failure: &LoadFailure, search_engine: SearchEngine) {
@@ -117,8 +112,8 @@ impl ErrorPageView {
         PageAppearance {
             is_dark: style.is_dark(),
             accent: [Self::channel(accent.red()), Self::channel(accent.green()), Self::channel(accent.blue())],
-            language_tag: Self::LANGUAGE_TAG,
-            is_right_to_left: Self::IS_RIGHT_TO_LEFT,
+            language_tag: InterfaceMessages::language().tag(),
+            is_right_to_left: InterfaceMessages::language().is_right_to_left(),
         }
     }
 

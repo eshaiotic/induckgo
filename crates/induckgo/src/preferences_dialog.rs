@@ -32,7 +32,8 @@ impl PreferencesDialog {
 
     /// The Interface page: one row choosing the language, with the system's language first.
     fn interface_page(context: &Rc<AppContext>, dialog: &adw::PreferencesDialog) -> adw::PreferencesPage {
-        let system_entry = tr!("System default ({language})", language = InterfaceLanguageSetting::system_language().endonym());
+        let system_entry =
+            tr!("System default ({language})", language = InterfaceLanguageSetting::system_language().endonym());
         let names = gtk::StringList::new(&[system_entry.as_str()]);
         for language in InterfaceLanguage::ALL {
             names.append(language.endonym());

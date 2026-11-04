@@ -28,6 +28,7 @@ use induckgo_core::tor::tor_endpoint::TorEndpoint;
 use induckgo_core::tor::tor_programs::TorPrograms;
 
 use crate::installation_paths::InstallationPaths;
+use crate::interface_messages::InterfaceMessages;
 use crate::stored_file::StoredFile;
 use crate::tor_control_port::TorControlPort;
 
@@ -154,7 +155,7 @@ impl TorConnection {
         let programs = Self::programs().ok_or_else(Self::not_installed)?;
         let bridges = self.bridges();
         let configuration = TorConfiguration::new(self.data_directory.clone(), std::process::id(), &bridges, &programs)
-            .map_err(|problem| problem.to_string())?;
+            .map_err(|problem| problem.describe(InterfaceMessages::catalogue()))?;
         let torrc = configuration.to_torrc().map_err(|problem| problem.to_string())?;
         StoredFile::new(configuration.torrc_file())
             .write(torrc.as_bytes())

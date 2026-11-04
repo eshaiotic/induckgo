@@ -18,6 +18,7 @@ use induckgo_core::tor::bridge_choice::BridgeChoice;
 use induckgo_core::tor::bridge_line::BridgeLine;
 use induckgo_core::tor::pluggable_transport::PluggableTransport;
 
+use crate::interface_messages::InterfaceMessages;
 use crate::tor_connection::TorConnection;
 
 pub struct TorSettingsDialog {
@@ -76,7 +77,7 @@ impl TorSettingsDialog {
                 if is_missing(PluggableTransport::Snowflake) {
                     tr!(
                         "Through volunteers' browsers; works on most censored networks. Needs {package}.",
-                        package = PluggableTransport::Snowflake.package_hint()
+                        package = PluggableTransport::Snowflake.package_hint(InterfaceMessages::catalogue())
                     )
                 } else {
                     tr!("Through volunteers' browsers; works on most censored networks.").to_owned()
@@ -88,7 +89,7 @@ impl TorSettingsDialog {
                 if is_missing(PluggableTransport::Obfs4) {
                     tr!(
                         "Disguised connections to Tor Browser's built-in bridges. Needs {package}.",
-                        package = PluggableTransport::Obfs4.package_hint()
+                        package = PluggableTransport::Obfs4.package_hint(InterfaceMessages::catalogue())
                     )
                 } else {
                     tr!("Disguised connections to Tor Browser's built-in bridges.").to_owned()
@@ -163,7 +164,7 @@ impl TorSettingsDialog {
             match BridgeLine::parse_all(&buffer.text(&buffer.start_iter(), &buffer.end_iter(), false)) {
                 Ok(bridges) if !bridges.is_empty() => BridgeChoice::Custom(bridges),
                 Ok(_) => return self.show_problem(tr!("Paste at least one bridge.")),
-                Err(invalid) => return self.show_problem(&invalid.to_string()),
+                Err(invalid) => return self.show_problem(&invalid.describe(InterfaceMessages::catalogue())),
             }
         } else {
             BridgeChoice::Direct

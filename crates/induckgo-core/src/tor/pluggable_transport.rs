@@ -5,6 +5,8 @@
 //! `snowflake` sends it through volunteers' browsers over WebRTC, `meek_lite` hides it behind a large
 //! content delivery network. Tor starts the transport program and talks to it locally.
 
+use crate::language::message_catalogue::MessageCatalogue;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum PluggableTransport {
     Obfs4,
@@ -46,13 +48,15 @@ impl PluggableTransport {
 
     /// The package to install for this transport, as shown when the program is missing.
     #[must_use]
-    pub fn package_hint(self) -> &'static str {
+    pub fn package_hint(self, catalogue: &MessageCatalogue) -> &str {
         match self {
             Self::Obfs4 | Self::MeekLite => {
-                "obfs4proxy (Debian, Ubuntu), obfs4 (Fedora) or obfs4proxy from the AUR (Arch)"
+                catalogue.text("obfs4proxy (Debian, Ubuntu), obfs4 (Fedora) or obfs4proxy from the AUR (Arch)")
             }
             Self::WebTunnel => "lyrebird",
-            Self::Snowflake => "snowflake-client (Debian, Ubuntu) or snowflake-pt-client from the AUR (Arch)",
+            Self::Snowflake => {
+                catalogue.text("snowflake-client (Debian, Ubuntu) or snowflake-pt-client from the AUR (Arch)")
+            }
         }
     }
 }

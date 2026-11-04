@@ -14,9 +14,9 @@ impl LocaleName {
     #[must_use]
     pub fn parse(locale: &str) -> Option<Self> {
         let without_encoding = locale.split('.').next().unwrap_or_default();
-        let (name, modifier) = without_encoding.split_once('@').map_or((without_encoding, None), |(name, modifier)| {
-            (name, Some(modifier))
-        });
+        let (name, modifier) = without_encoding
+            .split_once('@')
+            .map_or((without_encoding, None), |(name, modifier)| (name, Some(modifier)));
         let mut parts = name.split(['_', '-']);
         let language = parts.next().unwrap_or_default().to_ascii_lowercase();
         if language.is_empty() || language == "c" || language == "posix" {

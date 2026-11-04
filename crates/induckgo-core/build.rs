@@ -8,8 +8,8 @@ struct CatalogueEmbedding;
 
 impl CatalogueEmbedding {
     fn write() {
-        let directory = PathBuf::from(env::var("CARGO_MANIFEST_DIR").expect("cargo sets the manifest directory"))
-            .join("locales");
+        let directory =
+            PathBuf::from(env::var("CARGO_MANIFEST_DIR").expect("cargo sets the manifest directory")).join("locales");
         println!("cargo:rerun-if-changed={}", directory.display());
         let mut tags: Vec<String> = fs::read_dir(&directory)
             .expect("the locales directory exists")
@@ -26,9 +26,10 @@ impl CatalogueEmbedding {
             .iter()
             .map(|tag| {
                 let file = directory.join(format!("{tag}.po"));
-                format!("    (\"{tag}\", include_str!(r\"{}\")),\n", file.display())
+                [format!("    (\"{tag}\", include_str!(r\"{}\")),\n", file.display())].concat()
             })
-            .collect();
+            .collect::<Vec<_>>()
+            .concat();
         let table = format!("pub const CATALOGUES: [(&str, &str); {}] = [\n{entries}];\n", tags.len());
         let out = PathBuf::from(env::var("OUT_DIR").expect("cargo sets the output directory")).join("catalogues.rs");
         fs::write(out, table).expect("the output directory is writable");

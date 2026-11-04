@@ -268,10 +268,8 @@ impl InDuckGoApplication {
             .application_icon(AppIcons::APPLICATION)
             .version(env!("CARGO_PKG_VERSION"))
             .license_type(gtk::License::Gpl30)
-            .comments(tr!(
-                "A privacy-first browser for Linux built on DuckDuckGo's open-source protections. \
-                 Not affiliated with or endorsed by DuckDuckGo."
-            ))
+            .comments(tr!("A privacy-first browser for Linux built on DuckDuckGo's open-source protections. \
+                 Not affiliated with or endorsed by DuckDuckGo."))
             .build();
         about.add_legal_section(
             tr!("DuckDuckGo protections"),
@@ -297,11 +295,9 @@ impl InDuckGoApplication {
             tr!("InDuckGo Guard filter lists"),
             Some(tr!("© their maintainers")),
             gtk::License::Custom,
-            Some(tr!(
-                "Downloaded at run time from their publishers: EasyList, EasyPrivacy and EasyList Cookie List \
+            Some(tr!("Downloaded at run time from their publishers: EasyList, EasyPrivacy and EasyList Cookie List \
                  (GPL-3.0 or CC BY-SA 3.0, CC BY 3.0), uBlock Origin's lists (GPL-3.0), Peter Lowe's list \
-                 (pgl.yoyo.org terms), Polish Filters (CC BY-NC-SA 4.0)."
-            )),
+                 (pgl.yoyo.org terms), Polish Filters (CC BY-NC-SA 4.0).")),
         );
         about.add_legal_section(
             "Tor",

@@ -6,6 +6,7 @@
 //! message to rewrite it.
 
 use std::collections::BTreeSet;
+use std::fmt::Write;
 use std::fs;
 use std::path::Path;
 use std::path::PathBuf;
@@ -30,11 +31,14 @@ impl CatalogueScenario {
     }
 
     fn used_messages(&self) -> BTreeSet<String> {
-        let pattern = Regex::new(r#"(?:tr!|catalogue\.text(?:_with)?)\(\s*"((?:[^"\\]|\\.)*)""#).expect("a valid pattern");
+        let pattern =
+            Regex::new(r#"(?:\btr!|catalogue\.text(?:_with)?)\(\s*"((?:[^"\\]|\\.)*)""#).expect("a valid pattern");
         let mut messages = BTreeSet::new();
         for crate_name in ["induckgo/src", "induckgo-core/src"] {
             Self::rust_files(&self.root.join(crate_name), &mut |source| {
-                for capture in pattern.captures_iter(source) {
+                let code: String =
+                    source.lines().filter(|line| !line.trim_start().starts_with("//")).collect::<Vec<_>>().join("\n");
+                for capture in pattern.captures_iter(&code) {
                     messages.insert(Self::unescape_rust(&capture[1]));
                 }
             });
@@ -86,7 +90,7 @@ impl CatalogueScenario {
         );
         for message in messages {
             let escaped = message.replace('\\', "\\\\").replace('"', "\\\"").replace('\n', "\\n").replace('\t', "\\t");
-            text.push_str(&format!("\nmsgid \"{escaped}\"\nmsgstr \"\"\n"));
+            write!(text, "\nmsgid \"{escaped}\"\nmsgstr \"\"\n").expect("writing to a string");
         }
         text
     }
@@ -96,12 +100,12 @@ impl CatalogueScenario {
         MessageCatalogue::parse(source).messages().into_iter().map(str::to_owned).collect()
     }
 
-    fn untranslated_in(&self, tag: &str, used: &BTreeSet<String>) -> Vec<String> {
+    fn untranslated_in(tag: &str, used: &BTreeSet<String>) -> Vec<String> {
         let translated = Self::catalogue_messages(tag);
         used.difference(&translated).cloned().collect()
     }
 
-    fn obsolete_in(&self, tag: &str, used: &BTreeSet<String>) -> Vec<String> {
+    fn obsolete_in(tag: &str, used: &BTreeSet<String>) -> Vec<String> {
         let translated = Self::catalogue_messages(tag);
         translated.difference(used).cloned().collect()
     }
@@ -156,7 +160,7 @@ fn should_translate_every_message_in_every_catalogue() {
     let incomplete: Vec<String> = TranslationSources::tags()
         .into_iter()
         .filter_map(|tag| {
-            let missing = scenario.untranslated_in(tag, &used);
+            let missing = CatalogueScenario::untranslated_in(tag, &used);
             (!missing.is_empty()).then(|| format!("{tag}: {} missing, e.g. {:?}", missing.len(), missing.first()))
         })
         .collect();
@@ -170,7 +174,7 @@ fn should_keep_no_message_in_a_catalogue_that_the_code_no_longer_uses() {
     let stale: Vec<String> = TranslationSources::tags()
         .into_iter()
         .filter_map(|tag| {
-            let obsolete = scenario.obsolete_in(tag, &used);
+            let obsolete = CatalogueScenario::obsolete_in(tag, &used);
             (!obsolete.is_empty()).then(|| format!("{tag}: {} obsolete, e.g. {:?}", obsolete.len(), obsolete.first()))
         })
         .collect();

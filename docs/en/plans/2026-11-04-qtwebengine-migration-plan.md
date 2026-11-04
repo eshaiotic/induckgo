@@ -119,7 +119,7 @@
 
 - [ ] **Step 1: Failing integration test** `should_block_tracker_and_report_decision_counts` using the Task 2 page: engine loads it headless (`QT_QPA_PLATFORM=offscreen`), interceptor blocks the tracker URL and the test reads counters.
 - [ ] **Step 2:** `cargo test -p induckgo-engine-qt` — Expected FAIL.
-- [ ] **Step 3: Implement** the shim (interceptor and cookie filter subclasses, one redirect per request id via `RedirectBudget`) and Rust adapters. Decision path allocation-free after warm-up.
+- [ ] **Step 3: Implement** the shim (interceptor and cookie filter subclasses) and Rust adapters. Decision path allocation-free after warm-up.
 - [ ] **Step 4:** run — Expected PASS; run Task 1 benchmark again with the interceptor active (must still pass the gate).
 - [ ] **Step 5: Commit.**
 

@@ -114,7 +114,7 @@
 
 - [ ] **Krok 1:** test integracyjny `should_block_tracker_and_report_decision_counts` na stronie z Zadania 2: silnik ładuje ją headless (`QT_QPA_PLATFORM=offscreen`), interceptor blokuje URL trackera, test odczytuje liczniki.
 - [ ] **Krok 2:** `cargo test -p induckgo-engine-qt` — oczekiwane FAIL.
-- [ ] **Krok 3:** implementacja shimu (podklasy interceptora i filtra cookies, jedno przekierowanie na id przez `RedirectBudget`) i adapterów Rusta. Ścieżka decyzji bez alokacji po rozgrzaniu.
+- [ ] **Krok 3:** implementacja shimu (podklasy interceptora i filtra cookies) i adapterów Rusta. Ścieżka decyzji bez alokacji po rozgrzaniu.
 - [ ] **Krok 4:** uruchom — oczekiwane PASS; ponownie benchmark z Zadania 1 z aktywnym interceptorem (nadal musi przejść bramkę).
 - [ ] **Krok 5:** commit.
 

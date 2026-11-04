@@ -1,0 +1,169 @@
+# InDuckGo 1.2.0 na QtWebEngine — Plan implementacji
+
+> **Dla agentów wykonawczych:** WYMAGANY PODSKILL: superpowers:subagent-driven-development (zalecany) lub superpowers:executing-plans do realizacji planu zadanie po zadaniu. Kroki używają składni checkboxów (`- [ ]`).
+
+**Cel:** Zastąpić front-end WebKitGTK front-endem na QtWebEngine (Chromium), który dorównuje szybkości przewijania Brave oraz zachowuje i rozszerza ochrony InDuckGo.
+
+**Architektura:** `induckgo-core` dostaje niezależne od silnika *porty* (decyzje o żądaniach, cookies, skryptach, pamięci, wypalaniu). Nowy crate-adapter `induckgo-engine-qt` (Rust + mały shim C++) implementuje je na QtWebEngine; nowy crate `induckgo-qt` to aplikacja QML powiązana przez `cxx-qt`. Crate GTK buduje się do czasu przejścia bramki benchmarkowej, potem jest usuwany.
+
+**Stos:** Rust 2024 (reguły workspace: clippy pedantic, `unsafe_code` zabronione w *naszych* crate’ach), Qt 6.12 / QtWebEngine (Chromium 140), QML, `cxx-qt` 0.10, crate `adblock` (już używany), cargo-nextest.
+
+**Specyfikacja:** `docs/en/specs/2026-11-04-qtwebengine-migration-design.md` (lustro PL w `docs/pl/specs/`). Przed każdym zadaniem przeczytaj §5–§8, §11a i §12.
+
+## Ograniczenia globalne
+
+- Gałąź `feature/1.2.0`; `main` i v1.1.2 nietknięte do przejścia bramki z §8.
+- Rust plus najmniejszy możliwy shim C++ (≈ 300–500 linii) dla klas Qt bez wiązań Rusta.
+- `docs/en/engineering-rules.md`: Rust obiektowy (każda funkcja należy do typu), testy scenariuszowe Given/When/Then, jeden symbol na linię importu, importy z modułu definiującego, bez re-eksportów w `mod.rs`, pliki ≤ 1000 linii, bez nazw `Helper/Util/Manager/…`.
+- `induckgo-core` nie zawiera typów Qt, GTK ani silnika. Nowe porty żyją w nim.
+- Sandbox QtWebEngine, izolacja witryn i proces GPU zostają WŁĄCZONE; `--no-sandbox` tylko w testach.
+- Dane DuckDuckGo (Tracker Radar, listy, konfiguracja prywatności, testy referencyjne) są na CC BY-NC-SA 4.0: pobierane w czasie działania/CI, nigdy nie commitowane ani pakowane.
+- Interfejs: te same funkcje, słowa i układ co w 1.1.2; może przejąć motyw systemu (KDE/Qt). Cały tekst UI pochodzi z istniejących 66 katalogów `tr!` przez obiekt `cxx-qt`, nigdy z Qt `.ts/.qm`.
+- Każdy dodatek z §6 jest wymagany w 1.2.0: profil Ścisły, izolacja Tor per witryna, ECH/DoH per profil, jednolity odcisk, ograniczenia WebRTC, testy wycieków, testy referencyjne.
+- Bramka wydajności (§8): przewijanie skryptem na bpxglobal.com w 2560×1440 i 3840×2160 ≥ 58 fps, p95 odstępu klatek ≤ 17 ms, nie gorzej niż Brave − 2 fps; pamięć w granicach 20 % Brave.
+- Okno Tor: własny proces, `--proxy-server=socks5://…`, `--host-resolver-rules="MAP * ~NOTFOUND, EXCLUDE <host proxy>"`, WebRTC wyłączone; nigdy nie ładuje przed połączeniem z Tor i nigdy nie wraca do połączenia bezpośredniego.
+- Minimalna wersja silnika: stała w rdzeniu; ostrzeżenie w zwykłych oknach, odmowa startu okna Tor.
+- Zero znanych podatności (`cargo audit`); commity i dokumenty po angielsku; lustra PL dla każdego dokumentu.
+
+## Fokus przeglądu
+
+- Żądanie bez hosta, ze schematem `ws://`/`wss://`, `data:`, `blob:` lub z hostem IDN: polityka decyduje bez paniki (przepuszcza schematy nie-sieciowe).
+- Pętla przekierowań (podniesienie do HTTPS odpowiedziane przekierowaniem na `http://`, czyszczenie parametrów dodające je z powrotem): najwyżej jedno przekierowanie na identyfikator żądania, potem przepuszczenie.
+- Filtr cookies wywołany dla żądania z pustym adresem pierwszej strony (nawigacja z paska adresu, popupy): traktowany jako pierwsza strona.
+- Interceptor jest wołany w wątku IO pod obciążeniem: ścieżka decyzji nie alokuje nic na żądanie po rozgrzaniu i nigdy nie czeka na blokadę trzymaną przez wątek UI.
+- Katalog profilu usunięty podczas działania przeglądarki (wypalanie): następne ładowanie odtwarza pamięć zamiast się wywrócić.
+- Okno Tor uruchomione, gdy Tor nie jest połączony: pokazuje stronę połączenia i niczego nie ładuje.
+
+## Struktura plików
+
+- `crates/induckgo-core/src/network/` (nowy): `request_policy.rs`, `request_decision.rs`, `network_request.rs`, `redirect_budget.rs`, `third_party_policy.rs`.
+- `crates/induckgo-core/src/storage/` (nowy): `cookie_policy.rs`, `cookie_decision.rs`, `data_burner.rs`.
+- `crates/induckgo-core/src/engine/` (nowy): `engine_version.rs` (reguła minimalnej wersji), `page_script.rs`, `page_script_catalog.rs`.
+- `crates/induckgo-core/src/privacy/` (nowy): `fingerprint_profile.rs`, `strict_profile.rs`, `resolver_settings.rs`, `tor_circuit_isolation.rs`.
+- `crates/induckgo-core/tests/*.rs`: jeden plik scenariuszy na nowy typ.
+- `crates/induckgo-engine-qt/` (nowy): `build.rs`, `src/*.rs` (adaptery), `cpp/*.cpp|*.h` (shim: interceptor, filtr cookies, obsługa schematów).
+- `crates/induckgo-qt/` (nowy): `build.rs`, `src/*.rs` (obiekty cxx-qt), `qml/*.qml` (UI).
+- `crates/induckgo-bench/` (nowy): narzędzie benchmarkowe, zastępuje `/tmp/spike`.
+- `packaging/` (zmieniony): zależności Qt, pakowanie AppImage.
+
+---
+
+### Zadanie 1: Benchmark w repozytorium
+
+**Pliki:** utwórz `crates/induckgo-bench/{Cargo.toml,src/main.rs,src/scroll_scenario.rs,src/frame_statistics.rs,src/benchmark_server.rs}`, `crates/induckgo-bench/pages/scroll.html`; zmodyfikuj `Cargo.toml` (członkowie workspace).
+
+**Interfejsy:** produkuje `FrameStatistics::from_gaps_ms(&[f64])` z `frames_per_second()`, `percentile_gap_ms(f64)`, `frames_longer_than_ms(f64)`; `ScrollScenario::new(url, viewport, duration_s)`; CLI `induckgo-bench --engine <chromium|qt|webkit> --url … --size 2560x1440`.
+
+- [ ] **Krok 1:** testy, które padają: `should_report_60_fps_for_16_7_ms_gaps`, `should_count_frames_longer_than_33_ms`, `should_return_p95_of_sorted_gaps` (dane z §1 specyfikacji).
+- [ ] **Krok 2:** `cargo test -p induckgo-bench` — oczekiwane: FAIL.
+- [ ] **Krok 3:** zaimplementuj `FrameStatistics` (posortowane odstępy, percentyl metodą najbliższej rangi).
+- [ ] **Krok 4:** `cargo test -p induckgo-bench` — oczekiwane: PASS.
+- [ ] **Krok 5:** strona `scroll.html` (pętla rAF zapisująca odstępy klatek podczas przewijania `scrollBy` przez `duration_s`, wysyła tablicę do lokalnego serwera) i `BenchmarkServer` (std `TcpListener`). Przenieś metodę z jednorazowego harnessu `/tmp/spike` (8 s przewijania skryptem).
+- [ ] **Krok 6:** commit „Add the in-repository scroll benchmark harness”.
+
+### Zadanie 2: Spike — QML WebEngineView z hakami z Rusta (jednorazowy, bramka wydajności)
+
+**Pliki:** utwórz `spike/qt-webengine/` (poza workspace, usunięty na końcu Zadania 3).
+
+**Interfejsy:** produkuje *decyzję* zapisaną w specyfikacji §5.3/§11a: QML+`cxx-qt`, Widgets albo CEF.
+
+- [ ] **Krok 1:** minimalny projekt `cxx-qt`: obiekt Rusta widoczny w QML; podklasa C++ `QWebEngineUrlRequestInterceptor` wołająca funkcję Rusta przez `cxx`; `QWebEngineCookieStore::setCookieFilter`; jeden `QWebEngineScript` z Rusta; `WebEngineView` w QML.
+- [ ] **Krok 2: weryfikacja haków** — lokalna strona ładuje trzy podzasoby (własny, z listy trackerów, strony trzeciej); logi potwierdzają, że interceptor widział wszystkie trzy, zablokował tracker, filtr cookies widział cookie strony trzeciej, a skrypt zadziałał w podramce.
+- [ ] **Krok 3: bramka wydajności** — benchmark z Zadania 1 na spike’u w 2560×1440. Oczekiwane: ≥ 58 fps, p95 ≤ 17 ms.
+- [ ] **Krok 4: zapisz decyzję** w specyfikacji §5.3/§11a (oba języki). Jeśli bramka nie przejdzie, stop i eskalacja do właściciela (zapas CEF wg §11a); jeśli zawiodą tylko haki `cxx-qt`→QML, przejdź na Widgets w Zadaniu 6.
+- [ ] **Krok 5:** commit tylko notatki z decyzją (katalog spike’u nie jest commitowany).
+
+### Zadanie 3: Porty rdzenia — polityka żądań sieciowych
+
+**Pliki:** utwórz `network/{network_request,request_decision,request_policy,redirect_budget,third_party_policy}.rs`; testy `network_request.rs`, `request_policy.rs`, `redirect_budget.rs`, `third_party_policy.rs`; zmodyfikuj `lib.rs` (`pub mod network;`).
+
+**Interfejsy:**
+- Konsumuje: `TrackerDataSet`, `PrivacyConfiguration`, `TrackingParameterRemover`, `UnprotectedSites`, `RegistrableDomainLookup`, listy reguł Guard przez silnik `adblock`.
+- Produkuje:
+  - `NetworkRequest::new(url: &str, first_party: Option<&str>, resource_type: ResourceType, request_id: u64) -> NetworkRequest`
+  - `enum RequestDecision { Pass, Block, Redirect(String) }`
+  - `trait RequestPolicy: Send + Sync { fn decide(&self, request: &NetworkRequest) -> RequestDecision; }`
+  - `DuckDuckGoRequestPolicy` implementujący go (blokowanie trackerów, reguły sieciowe Guard, podniesienie do HTTPS, czyszczenie parametrów, nagłówki GPC przez `fn extra_headers(&self, &NetworkRequest) -> &[(&'static str, &'static str)]`)
+  - `RedirectBudget::allow(request_id) -> bool` (jedno przekierowanie na id)
+  - `ThirdPartyPolicy::new(strict: bool, allow_list: &SiteAllowList)`, `decide(&NetworkRequest) -> RequestDecision` (domyślna odmowa w trybie ścisłym).
+
+- [ ] **Krok 1:** testy scenariuszowe: `should_block_known_tracker_request`, `should_redirect_http_to_https_when_upgrade_list_matches`, `should_pass_when_site_is_unprotected`, `should_redirect_once_then_pass_on_redirect_loop`, `should_pass_non_network_schemes`, `should_block_third_party_in_strict_mode`, `should_pass_third_party_on_site_allow_list`, `should_treat_missing_first_party_as_first_party`.
+- [ ] **Krok 2:** `cargo test -p induckgo-core --test request_policy` — oczekiwane: FAIL.
+- [ ] **Krok 3:** implementacja; kolejność decyzji: strona bez ochrony → pass; schemat nie-sieciowy → pass; strona trzecia w trybie ścisłym; blokada trackera/Guard; podniesienie do HTTPS; czyszczenie parametrów. Szybka ścieżka bez alokacji (pożyczone `&str`, tablice wyszukiwania zbudowane wcześniej).
+- [ ] **Krok 4:** to samo polecenie — oczekiwane: PASS; oraz `cargo clippy -p induckgo-core --all-targets`.
+- [ ] **Krok 5:** commit.
+
+### Zadanie 4: Porty rdzenia — cookies, wypalanie, skrypty strony, wersja silnika
+
+**Pliki:** utwórz `storage/{cookie_policy,cookie_decision,data_burner}.rs`, `engine/{engine_version,page_script,page_script_catalog}.rs`; testy o tych samych nazwach.
+
+**Interfejsy:** `CookieAccess::new(cookie_domain, first_party: Option<&str>, is_third_party: bool)`; `trait CookiePolicy { fn allows(&self, &CookieAccess) -> bool }` (`StrictCookiePolicy`, `DuckDuckGoCookiePolicy`); `trait DataBurner { fn burn(&self, scope: BurnScope) -> BurnPlan }`, gdzie `BurnPlan` wylicza domeny cookies, cache i katalogi pamięci do usunięcia; `PageScript { name, source, injection_point, all_frames, world }` i `PageScriptCatalog::for_profile(&ProfileSettings) -> Vec<PageScript>` (Content Scope Scripts, ukrywanie Guard, płynne kółko, nakładki DDG, profil odcisku); `EngineVersion::parse(&str)`, `MinimumEngineVersion::verdict(&EngineVersion, WindowKind) -> EngineVerdict { Run, Warn, Refuse }`.
+
+- [ ] **Krok 1:** testy: `should_deny_third_party_cookie_in_strict_mode`, `should_allow_first_party_cookie`, `should_plan_deletion_of_storage_directories_on_burn`, `should_warn_below_minimum_engine_version_in_normal_window`, `should_refuse_below_minimum_engine_version_in_tor_window`, `should_list_smooth_wheel_script_only_when_enabled`, `should_inject_fingerprint_script_into_all_frames`.
+- [ ] **Kroki 2–4:** uruchom (FAIL) → zaimplementuj → uruchom (PASS).
+- [ ] **Krok 5:** commit.
+
+### Zadanie 5: `induckgo-engine-qt` — adapter i shim C++
+
+**Pliki:** utwórz `crates/induckgo-engine-qt/{Cargo.toml,build.rs,src/lib.rs,src/request_interceptor.rs,src/cookie_filter.rs,src/script_installer.rs,src/profile_factory.rs,src/engine_version_probe.rs,cpp/shim.h,cpp/shim.cpp}`; testy w `tests/`.
+
+**Interfejsy:**
+- Konsumuje: porty z Zadań 3–4.
+- Produkuje: `ProfileFactory::persistent(&ProfileDirectories) -> QtProfile`, `QtProfile::install(policy: Arc<dyn RequestPolicy>, cookies: Arc<dyn CookiePolicy>, scripts: &[PageScript])`; `EngineVersionProbe::current() -> EngineVersion`. Shim udostępnia zgodną z C tablicę callbacków (`decide_request`, `allow_cookie`) — to jedyna granica; strona Rusta nie zawiera `unsafe` w naszych crate’ach (kod generuje `cxx`; jeśli `cxx-qt` wymaga wyjątku od `forbid`, jest on udokumentowany w specyfikacji i ograniczony do kodu generowanego).
+
+- [ ] **Krok 1:** test integracyjny `should_block_tracker_and_report_decision_counts` na stronie z Zadania 2: silnik ładuje ją headless (`QT_QPA_PLATFORM=offscreen`), interceptor blokuje URL trackera, test odczytuje liczniki.
+- [ ] **Krok 2:** `cargo test -p induckgo-engine-qt` — oczekiwane FAIL.
+- [ ] **Krok 3:** implementacja shimu (podklasy interceptora i filtra cookies, jedno przekierowanie na id przez `RedirectBudget`) i adapterów Rusta. Ścieżka decyzji bez alokacji po rozgrzaniu.
+- [ ] **Krok 4:** uruchom — oczekiwane PASS; ponownie benchmark z Zadania 1 z aktywnym interceptorem (nadal musi przejść bramkę).
+- [ ] **Krok 5:** commit.
+
+### Zadanie 6: `induckgo-qt` — powłoka aplikacji
+
+**Pliki:** utwórz `crates/induckgo-qt/{Cargo.toml,build.rs,src/main.rs,src/browser_model.rs,src/tab_model.rs,src/address_bar_model.rs,src/interface_messages.rs}`, `qml/{BrowserWindow,TabStrip,Toolbar,AddressBar,MainMenu}.qml`.
+
+**Interfejsy:** konsumuje istniejące typy `induckgo_core::navigation`, `profile`, `language` i katalogi `tr!`. Produkuje widoczny w QML `BrowserModel` (otwórz/zamknij kartę, nawiguj, wstecz/naprzód, odśwież), `InterfaceMessages.text(key: QString) -> QString`.
+
+- [ ] **Krok 1:** testy, które padają: `should_resolve_polish_message_through_the_bridge` (na poziomie modelu, bez okna) i `should_open_and_close_tabs` (`TabModel`).
+- [ ] **Kroki 2–4:** uruchom (FAIL) → zaimplementuj → uruchom (PASS).
+- [ ] **Krok 5: kontrola ręczna:** test dymny `QT_QPA_PLATFORM=offscreen` — okno ładuje `https://example.com` i rysuje (zrzut przez `grabToImage` zapisany przez test).
+- [ ] **Krok 6:** commit.
+
+### Zadanie 7: Funkcje codzienne
+
+Pobieranie (lista, menedżer, czyszczenie — ponowne użycie `download_history`/`download_settings`), prośba o uprawnienia, zoom (`page_zoom`, `site_zoom`), szukanie na stronie, preferencje (strona języka interfejsu, płynne kółko, przełączniki ochrony), „ochrona wyłączona” per witryna, strona błędu. Jeden podkomit na funkcję, każdy z najpierw padającym testem rdzenia/modelu (`should_clear_finished_downloads`, `should_remember_site_zoom`, `should_ask_permission_once_per_origin`). Interfejsy: niezależne od silnika modele w `induckgo-qt/src/*_model.rs` nad istniejącymi typami rdzenia.
+
+### Zadanie 8: Ochrony end-to-end
+
+Podłącz porty z Zadań 3–4 do profili (domyślny i *Ścisły*), zainstaluj Content Scope Scripts, ukrywanie Guard, płynne kółko i nakładki DDG (Duck Player, Click to Load, autoconsent) jako `QWebEngineScript` we własnym świecie; interfejs profilu Ścisłego z przyciskiem *Zezwól tutaj* i `SiteAllowList` zapisywaną trwale w rdzeniu. Testy: `should_keep_overlay_script_in_isolated_world`, runner testów referencyjnych (`crates/induckgo-core/tests/privacy_reference.rs`, pobiera zestawy w CI, pomijany z czytelnym komunikatem offline), `should_persist_site_allow_list`.
+
+### Zadanie 9: Profil odcisku, ograniczenia WebRTC, ustawienia resolvera
+
+`FingerprintProfile` (stałe przedziały ekranu/okna, język, rdzenie, bateria, wtyczki) wstrzykiwany przez konfigurację Content Scope Scripts; polityka WebRTC `disable_non_proxied_udp` przez flagę Chromium/ustawienie profilu; `ResolverSettings` (szablon DoH, ECH włączone/wyłączone) per profil przez przełączniki `--enable-features`/DoH i stronę preferencji. Testy: `should_report_uniform_screen_size_for_every_window_size`, `should_serialize_resolver_settings_per_profile`, test wycieku `should_not_expose_local_ip_via_webrtc` (uruchomiony silnik, strona prosi `RTCPeerConnection` o kandydatów).
+
+### Zadanie 10: Okno Tor i izolacja per witryna
+
+Osobny proces `induckgo-qt --tor` uruchamiający Chromium z flagami z ograniczeń globalnych; ponowne użycie typów `tor_connection`, `tor_control_port`, `tor_settings` przeniesionych do rdzenia (czyste przeniesienie). `TorCircuitIsolation::credentials_for(site) -> (String, String)` daje każdej domenie rejestrowalnej własną nazwę użytkownika/hasło SOCKS (izolacja strumieni). Testy: `should_give_each_site_its_own_socks_credentials`, `should_not_load_page_before_tor_is_connected`, test wycieku `should_not_resolve_names_outside_proxy` (zablokowany DNS w przestrzeni nazw sieci lub asercja `--host-resolver-rules` z nazwą-kanarkiem).
+
+### Zadanie 11: Aplikacje webowe, profile, wypalanie danych
+
+Przenieś `web_app_*` i uruchamianie profili; `DataBurner` wykonuje `BurnPlan` (usunięcie cookies, czyszczenie cache, usunięcie katalogów pamięci przy zamkniętym profilu lub przez restart na świeżym profilu). Testy: `should_recreate_storage_after_burn`, `should_open_web_app_without_toolbar`.
+
+### Zadanie 12: Kontrola wersji silnika
+
+Przy starcie `EngineVersionProbe::current()` jest porównywane z `MinimumEngineVersion`; zwykłe okno pokazuje komunikat, okno Tor odmawia startu. Test: `should_refuse_tor_window_start_on_old_engine`.
+
+### Zadanie 13: Pakowanie
+
+PKGBUILD dla Arch, spec rpm, deb: zależność od `qt6-webengine` dystrybucji; AppImage dołącza Qt + QtWebEngine (rozmiar zapisany w notatkach wydania). Zaktualizuj `packaging/release.sh`, plik desktop i metadane AppStream; CI `tests.yml` instaluje pakiety deweloperskie Qt. Weryfikacja: `packaging/release.sh arch deb appimage rpm` buduje; AppImage uruchamia się w czystym kontenerze.
+
+### Zadanie 14: Benchmarki, odbiór, usunięcie GTK, wydanie
+
+Uruchom harness z Zadania 1 na Brave, QtWebEngine i InDuckGo-Qt w 2560×1440 i 3840×2160; opisz w `docs/{en,pl}/reports/performance-analysis.md` §5; sprawdź każdy wiersz §8 specyfikacji. Gdy wszystko przejdzie: usuń `crates/induckgo`, przenieś wspólne elementy, zaktualizuj indeks `CLAUDE.md` i dokumenty architektury (EN + PL, nowe diagramy), podnieś wersję do 1.2.0, scal do `main`, otaguj `v1.2.0`. Jeśli jakikolwiek wiersz §8 nie przejdzie, stop i raport do właściciela — nie usuwaj crate GTK.
+
+---
+
+## Samokontrola
+
+- **Pokrycie specyfikacji:** porty §5.1 → Zadania 3–4; adapter/shim → 5; UI → 6–7; tabela §6 i dodatki → 8–10 (Ścisły, Tor per witryna, ECH/DoH, odcisk, WebRTC, wycieki, testy referencyjne); wersja §7 → 4, 12; §8 → 1, 14; kroki §10 odpowiadają Zadaniom 2, 6, 8, 7, 6/7 (i18n), 10–11, 13, 14; decyzje §11a zawarte w Zadaniach 2, 6, 10, 12.
+- **Świadome uproszczenie:** Zadania 7–14 są wypisane na poziomie funkcji z testami i interfejsami; dokładne kroki rozwijam, gdy zadanie startuje, bo decyzja Zadania 2 (QML vs Widgets vs CEF) może zmienić Zadania 5–7. Jest to powiedziane wprost.
+- **Spójność typów:** `NetworkRequest`, `RequestDecision`, `RequestPolicy`, `CookiePolicy`, `PageScript`, `EngineVerdict` nazwane raz w Zadaniach 3–4 i używane bez zmian.

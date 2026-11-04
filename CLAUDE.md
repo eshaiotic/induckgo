@@ -24,7 +24,7 @@ This file is an index; the content lives in the linked documents.
 - [Porównanie śledzenia (PL)](docs/pl/reports/tracking-comparison.md) — polish mirror of the tracking comparison.
 - [Tracking summary (HTML)](docs/en/reports/tracking-summary.html) — one-page tracker and ad blocking summary for non-technical readers.
 - [Podsumowanie dla PO (HTML, PL)](docs/pl/reports/tracking-summary.html) — polish mirror of the tracking summary.
-- [Performance analysis](docs/en/reports/performance-analysis.md) — measured start-up, renderer, engine and memory costs; ranked optimisation proposals (not yet applied).
+- [Performance analysis](docs/en/reports/performance-analysis.md) — measured start-up, renderer, engine and memory costs; the Vulkan-renderer frame-copy cause of slow scrolling (fixed); remaining proposals.
 - [Analiza wydajności (PL)](docs/pl/reports/performance-analysis.md) — polish mirror of the performance analysis.
 - [Product context](PRODUCT.md) — users, positioning and evidence used by design work.
 - [Design system](DESIGN.md) — report and error-page visual worlds: colours, type, rules (sidecar `.impeccable/design.json`).

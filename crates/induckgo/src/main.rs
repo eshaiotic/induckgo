@@ -16,6 +16,7 @@ mod external_launcher;
 mod feed_document;
 mod filter_list_feed;
 mod find_bar;
+mod graphics_renderer;
 mod http_client;
 mod induckgo_application;
 mod installation_paths;
@@ -41,8 +42,10 @@ mod web_app_installer;
 mod web_app_window;
 mod zoom_controls;
 
+use crate::graphics_renderer::GraphicsRenderer;
 use crate::induckgo_application::InDuckGoApplication;
 
 fn main() -> glib::ExitCode {
+    GraphicsRenderer::prefer_opengl();
     InDuckGoApplication::run()
 }

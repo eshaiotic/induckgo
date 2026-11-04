@@ -132,9 +132,9 @@ rozmiar pamięci czy przepustowość magistrali.
 
 `ngl` jest ok. dziesięć razy tańszy od domyślnego, nie gubi klatek i do tego pokazuje okno ok. 100 ms
 wcześniej. `cairo` startuje najszybciej i oszczędza ok. 95 MB pamięci (sterownik graficzny nie jest ładowany do
-procesu interfejsu), ale na animację zużywa cały rdzeń, więc odpada. Podejrzewana przyczyna dla domyślnego,
-niedowiedziona: przy rendererze Vulkan tekstura DMABuf strony jest importowana ścieżką, która każe procesorowi
-dotykać każdej klatki. Pomiar obowiązuje bez tego wyjaśnienia.
+procesu interfejsu), ale na animację zużywa cały rdzeń, więc odpada. Przyczynę kosztu domyślnego
+renderera udowodniono później (§4.6): przy Vulkanie GTK nie potrafi zaimportować klatek strony od WebKit i
+kopiuje każdą przez pamięć główną.
 
 ### 4.4 Sam silnik
 
@@ -161,6 +161,47 @@ Nowa karta ładuje prawdziwą stronę wyszukiwarki, dlatego jej proces strony je
 lokalnej. Pamięć nie jest tym, przez co InDuckGo sprawia wrażenie wolnego: 125 GB RAM leży bezczynnie, a wynik
 mieści się w granicach 25 % wyniku Brave na tej samej stronie.
 
+### 4.6 Ciężka prawdziwa strona: https://www.bpxglobal.com/ (znaleziona przyczyna)
+
+Właściciel zgłosił drastyczne przycinanie i wolne przewijanie tej strony, wyraźnie gorsze niż w Brave. To witryna
+WordPress: dokument 1,6 MB, pełnoekranowe, automatycznie odtwarzane wideo 1080p H.264 (13,9 Mb/s, 38 MB, w pętli),
+19 animacji GSAP przy przewijaniu, 36 reguł `will-change` i 87 wstawionych SVG. Skrypt przewija stronę z prędkością
+1400 px/s przez osiem sekund w oknie 1600×900 i zapisuje odstępy między wywołaniami `requestAnimationFrame` (klatki
+strony); czas procesora jest czytany per wątek z `/proc`. Ten sam skrypt uruchomiono w Brave (CDP) w tym samym
+prywatnym kompozytorze.
+
+| Konfiguracja | Klatki na sekundę | 95. percentyl odstępu klatek | Procesor (jednego rdzenia) |
+|---|---|---|---|
+| Brave 1.98 | 59,5 | 16,7 ms | 58–67 % |
+| WebKitGTK, domyślny renderer GTK (Vulkan) | 38–48 | 35–50 ms | **181–219 %** |
+| WebKitGTK, renderer OpenGL (`gl`/`ngl`) | 49–60 | 19–35 ms | 56–66 % |
+| InDuckGo w spoczynku na stronie (wideo gra) | | | 30–40 % (goły WebKitGTK: 50–61 %) |
+
+**Przyczyna.** `GDK_DEBUG=dmabuf` pokazuje dla każdej klatki (828–955 wierszy w osiem sekund): `Vulkan driver does not
+support format XR24:0x0300000000e08014`, a po nim `Used GskGLRenderer for downloading 1600x900 dmabuf`.
+`0x0300000000e08014` to modyfikator NVIDIA (układ blokowy). WebKit rysuje stronę na karcie i oddaje GTK bufor w tym
+układzie; renderer Vulkan nie umie go zaimportować, więc GTK importuje go do OpenGL, **odczytuje klatkę do pamięci
+głównej** i wysyła ją z powrotem. Widok per wątek się zgadza: główny wątek procesu interfejsu zużywał 65–69 %
+rdzenia, a około szesnastu wątków `pool-*` po 5 %, podczas gdy proces strony 30 %, a wątek kompozytora 12 %. Z
+rendererem OpenGL ten sam log pokazuje tylko `Imported … dmabuf as GL_TEXTURE_2D` (bez kopiowania), a proces
+interfejsu prawie znika z profilu. W głównym wątku procesu interfejsu lądują też zdarzenia przewijania, więc jego
+zapchanie opóźnia również wejście (wniosek, niezmierzony: w prywatnym kompozytorze nie było syntetycznego kółka
+myszy).
+
+**Nie jest przyczyną.** Wideo w tle (przebiegi z nim i bez niego wahają się tak samo, a maszyna dekoduje H.264 na
+karcie: `nvh264dec` i `vah264dec` mają wyższy priorytet niż `avdec_h264`); dekodowanie programowe (wyłączenie
+dekoderów sprzętowych niczego wymiernie nie zmieniło); ochrony InDuckGo (w spoczynku na tej stronie zużywa mniej niż
+goły WebKitGTK, bo blokuje trackery); liczba wątków malowania Skia i `WEBKIT_DISABLE_COMPOSITING_MODE` (bez zysku).
+
+**Co zostaje.** Z rendererem OpenGL przebieg ląduje w jednym z dwóch trybów: ok. 59 fps (p95 19 ms) albo ok. 49 fps
+(p95 34 ms, co ósma klatka trwa dwa odświeżenia), z wideo i bez, podczas gdy Brave trzyma 59,5 w każdym przebiegu.
+Prywatny kompozytor to wirtualne wyjście 60 Hz napędzane zegarem, więc część może być artefaktem pomiaru; trzeba to
+potwierdzić na prawdziwej sesji, zanim zrobimy coś więcej.
+
+**Zastosowano.** Propozycja 1 (§6): InDuckGo uruchamia się teraz raz ponownie z rendererem OpenGL GTK (`gl` od GTK
+4.16, wcześniej `ngl`), chyba że `GSK_RENDERER` jest już ustawione. W prawdziwej aplikacji log pokazuje `Using
+renderer 'GskGLRenderer'` i zero wierszy `downloading`; po wymuszeniu `GSK_RENDERER=vulkan` wracają 919.
+
 ## 5. Co mówią pomiary
 
 1. **Największy pojedynczy koszt to wybór konfiguracji, a nie kod.** Domyślny renderer GTK pali ok. 75 % rdzenia
@@ -178,7 +219,7 @@ mieści się w granicach 25 % wyniku Brave na tej samej stronie.
 
 | # | Propozycja | Spodziewany zysk | Koszt i ryzyko | Jak sprawdzić |
 |---|---|---|---|---|
-| 1 | Używać renderera GSK `ngl`, chyba że użytkownik sam ustawił `GSK_RENDERER`. | Ok. 10× mniejsze użycie procesora w oknie, stabilne 60 fps, ok. 100 ms szybsze pierwsze okno. | Mały. Przy `unsafe_code = forbid` program nie może wywołać `set_var`, więc uruchamia się sam raz jeszcze z ustawioną zmienną (bezpieczne `CommandExt::exec`); pliki `.desktop` i `AppRun` w AppImage też ją ustawiają. Tam, gdzie OpenGL nie działa, GTK wraca sam do innego renderera. | Powtórzyć §4.3 na prawdziwej sesji KDE (prawdziwy monitor, może 144 Hz, obie karty: NVIDIA i Intel), także z przewijaną prawdziwą stroną. |
+| 1 | **Zastosowano (§4.6).** Używać renderera OpenGL GSK (`gl`, przed GTK 4.16 `ngl`), chyba że użytkownik sam ustawił `GSK_RENDERER`. | Ok. 10× mniejsze użycie procesora w oknie, stabilne 60 fps, ok. 100 ms szybsze pierwsze okno. | Mały. Przy `unsafe_code = forbid` program nie może wywołać `set_var`, więc uruchamia się sam raz jeszcze z ustawioną zmienną (bezpieczne `CommandExt::exec`); pliki `.desktop` i `AppRun` w AppImage też ją ustawiają. Tam, gdzie OpenGL nie działa, GTK wraca sam do innego renderera. | Powtórzyć §4.3 na prawdziwej sesji KDE (prawdziwy monitor, może 144 Hz, obie karty: NVIDIA i Intel), także z przewijaną prawdziwą stroną. |
 | 2 | Tworzyć widok WWW i zaczynać ładowanie pierwszej strony przed zbudowaniem reszty okna, żeby `WebKitWebProcess` startował równolegle z układem GTK. | Do 200 ms do strony. | Mały do średniego: zmienia się kolejność startu w `BrowserWindow`; okno Tor nadal nie może niczego ładować, zanim Tor się połączy. | Czas do strony (§3) przed i po, po 10 uruchomień. |
 | 3 | Znaleźć te 90 MB i 100–200 ms, które InDuckGo dokłada ponad gołe okno WebKit, profilując buildem z symbolami (profiler próbkujący, np. `perf` lub `samply`, plus profiler sterty). | Nieznany do czasu profilowania; kandydaci to dane o trackerach i listy reguł trzymane w procesie interfejsu oraz skrypty wstrzykiwane do każdej ramki. | Wymaga zainstalowania `perf` lub `samply` i profilera sterty (niedostępne na maszynie pomiarowej). | Te same pomiary pamięci i czasu do strony. |
 | 4 | Nie wprowadzać renderera `cairo` do produktu. | Unika pułapki: startuje najszybciej i zajmuje najmniej pamięci, ale pali cały rdzeń na animację. | Brak. | Już zmierzone. |

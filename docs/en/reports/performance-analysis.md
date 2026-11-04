@@ -130,9 +130,9 @@ full 1600×900 window:
 
 `ngl` is about ten times cheaper than the default and loses no frames, and it also starts the window about
 100 ms sooner. `cairo` starts fastest and saves about 95 MB of memory (the graphics driver is not loaded into the
-interface process), but it spends a full core on the animation, so it is rejected. The suspected cause for the
-default, not proven: with the Vulkan renderer the page's DMABuf texture is imported through a path that makes
-the processor touch every frame. The measurement stands without the explanation.
+interface process), but it spends a full core on the animation, so it is rejected. The cause
+of the default's cost was proven later (§4.6): with the Vulkan renderer, GTK cannot import WebKit's page frames
+and copies each one through main memory.
 
 ### 4.4 The engine itself
 
@@ -159,6 +159,46 @@ The new-tab page loads a real search-engine page, which is why its web process i
 local page. Memory is not what makes InDuckGo feel slow: 125 GB of RAM is idle, and the figure is within 25 %
 of Brave's on the same page.
 
+### 4.6 A heavy real page: https://www.bpxglobal.com/ (the cause found)
+
+The owner reported drastic stutter and slow scrolling on this page, much worse than in Brave. The page is a
+WordPress site of a 1.6 MB document with a full-screen autoplaying 1080p H.264 video (13.9 Mbit/s, 38 MB, loop),
+19 GSAP scroll animations, 36 `will-change` rules and 87 inline SVGs. A script scrolls it at 1400 px/s for eight
+seconds in a 1600×900 window and records the gaps between `requestAnimationFrame` callbacks (the page's frames);
+processor time is read per thread from `/proc`. The same script ran in Brave (CDP) in the same private compositor.
+
+| Setup | Frames per second | 95th-percentile frame gap | Processor (of one core) |
+|---|---|---|---|
+| Brave 1.98 | 59.5 | 16.7 ms | 58–67 % |
+| WebKitGTK, GTK default renderer (Vulkan) | 38–48 | 35–50 ms | **181–219 %** |
+| WebKitGTK, OpenGL renderer (`gl`/`ngl`) | 49–60 | 19–35 ms | 56–66 % |
+| InDuckGo idle on the page (video playing) | | | 30–40 % (bare WebKitGTK: 50–61 %) |
+
+**Cause.** `GDK_DEBUG=dmabuf` shows, for every frame (828–955 lines in eight seconds):
+`Vulkan driver does not support format XR24:0x0300000000e08014` followed by `Used GskGLRenderer for downloading
+1600x900 dmabuf`. `0x0300000000e08014` is an NVIDIA block-linear modifier. WebKit renders the page on the card
+and hands GTK a buffer in that layout; the Vulkan renderer cannot import it, so GTK imports it into OpenGL,
+**reads the frame back into main memory** and uploads it again. The per-thread view agrees: the interface
+process's main thread used 65–69 % of a core and about sixteen `pool-*` threads 5 % each, where the web process
+used 30 % and the compositor thread 12 %. With the OpenGL renderer the same log shows only
+`Imported … dmabuf as GL_TEXTURE_2D` (no copy) and the interface process nearly disappears from the profile. The
+interface process's main thread is also where scroll input arrives, so a saturated thread there also delays input
+(inferred, not measured: no synthetic wheel input was available in the private compositor).
+
+**Not the cause.** The background video (runs with and without it vary the same way, and the machine decodes H.264
+on the card: `nvh264dec` and `vah264dec` outrank `avdec_h264`); software decoding (disabling the hardware decoders
+changed nothing measurable); InDuckGo's own protections (idle on this page it uses less than a bare WebKitGTK window
+because it blocks trackers); the Skia painting thread counts and `WEBKIT_DISABLE_COMPOSITING_MODE` (no gain).
+
+**Left over.** With the OpenGL renderer a run lands in one of two modes, about 59 fps (p95 19 ms) or about 49 fps
+(p95 34 ms, one frame in eight takes two refreshes), with or without the video, while Brave stays at 59.5 in every
+run. The private compositor is a virtual 60 Hz output driven by a timer, so part of this may be an artefact of the
+measurement; it has to be confirmed on the real session before any further work.
+
+**Applied.** Proposal 1 (§6): InDuckGo now restarts itself once with GTK's OpenGL renderer (`gl` from GTK 4.16,
+`ngl` before) unless `GSK_RENDERER` is already set. In the real application the log shows `Using renderer
+'GskGLRenderer'` and zero `downloading` lines; with `GSK_RENDERER=vulkan` forced, 919 of them return.
+
 ## 5. What the measurements say
 
 1. **The biggest single cost is a configuration choice, not code.** The default GTK renderer burns about 75 % of
@@ -176,7 +216,7 @@ of Brave's on the same page.
 
 | # | Proposal | Expected gain | Cost and risk | How to verify |
 |---|---|---|---|---|
-| 1 | Use the `ngl` GSK renderer unless the user set `GSK_RENDERER` themselves. | About 10× less processor use in the window, steady 60 fps, about 100 ms faster first window. | Small. Under `unsafe_code = forbid` the program cannot call `set_var`, so it starts itself again once with the variable set (safe `CommandExt::exec`); the `.desktop` files and the AppImage's `AppRun` set it too. Where OpenGL is unusable GTK falls back by itself. | Repeat §4.3 on the real KDE session (real monitor, perhaps 144 Hz, both the NVIDIA and the Intel card), with a scrolling real page as well. |
+| 1 | **Applied (§4.6).** Use the OpenGL GSK renderer (`gl`, `ngl` before GTK 4.16) unless the user set `GSK_RENDERER` themselves. | About 10× less processor use in the window, steady 60 fps, about 100 ms faster first window. | Small. Under `unsafe_code = forbid` the program cannot call `set_var`, so it starts itself again once with the variable set (safe `CommandExt::exec`); the `.desktop` files and the AppImage's `AppRun` set it too. Where OpenGL is unusable GTK falls back by itself. | Repeat §4.3 on the real KDE session (real monitor, perhaps 144 Hz, both the NVIDIA and the Intel card), with a scrolling real page as well. |
 | 2 | Create the web view and start loading the first page before the rest of the window is built, so `WebKitWebProcess` starts in parallel with GTK's layout. | Up to 200 ms to page. | Small to medium: the order of start-up in `BrowserWindow` changes; the Tor window must still not load anything before Tor is connected. | Time to page (§3) before and after, 10 runs each. |
 | 3 | Find the 90 MB and the 100–200 ms that InDuckGo adds over a bare WebKit window, by profiling with the symbols-enabled build (sampling profiler such as `perf` or `samply`, plus a heap profiler). | Unknown until profiled; candidates are the tracker data and rule lists held in the interface process, and the scripts injected into every frame. | Needs `perf` or `samply` and a heap profiler installed (not available on the measuring machine). | Same memory and time-to-page measurements. |
 | 4 | Keep the `cairo` renderer out of the product. | Avoids a trap: it starts fastest and uses the least memory, but burns a full core per animation. | None. | Already measured. |

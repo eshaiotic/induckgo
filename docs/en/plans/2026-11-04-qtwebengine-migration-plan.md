@@ -92,11 +92,11 @@
   - `DuckDuckGoRequestPolicy` implementing it (tracker blocking, Guard network rules, HTTPS upgrade, link-parameter cleaning, GPC header names via `fn extra_headers(&self, &NetworkRequest) -> &[(&'static str, &'static str)]`)
   - `ThirdPartyPolicy::new(strict: bool, allow_list: &SiteAllowList)`, `decide(&NetworkRequest) -> RequestDecision` (default-deny when strict).
 
-- [ ] **Step 1: Failing tests** (scenario structs): `should_block_known_tracker_request`, `should_redirect_http_to_https_when_upgrade_list_matches`, `should_pass_when_site_is_unprotected`, `should_block_cname_cloaked_tracker_on_the_same_site`, `should_block_sub_resource_of_unknown_page_in_strict_mode`, `should_protect_navigation_from_unprotected_page_to_other_site`, `should_pass_non_network_schemes`, `should_block_third_party_in_strict_mode`, `should_pass_third_party_on_site_allow_list`, `should_treat_missing_first_party_as_first_party`.
-- [ ] **Step 2: Run** `cargo test -p induckgo-core --test request_policy` — Expected: FAIL.
-- [ ] **Step 3: Implement** the types; decision order: unprotected site → pass; non-network scheme → pass; strict third-party; tracker/Guard block; HTTPS upgrade; parameter cleaning. Allocation-free fast path (borrowed `&str`, pre-built lookup tables).
-- [ ] **Step 4: Run** same command — Expected: PASS; also `cargo clippy -p induckgo-core --all-targets`.
-- [ ] **Step 5: Commit.**
+- [x] **Step 1: Failing tests** (scenario structs): `should_block_known_tracker_request`, `should_redirect_http_to_https_when_upgrade_list_matches`, `should_pass_when_site_is_unprotected`, `should_block_cname_cloaked_tracker_on_the_same_site`, `should_block_sub_resource_of_unknown_page_in_strict_mode`, `should_protect_navigation_from_unprotected_page_to_other_site`, `should_pass_non_network_schemes`, `should_block_third_party_in_strict_mode`, `should_pass_third_party_on_site_allow_list`, `should_treat_missing_first_party_as_first_party`.
+- [x] **Step 2: Run** `cargo test -p induckgo-core --test request_policy` — Expected: FAIL.
+- [x] **Step 3: Implement** the types; decision order: unprotected site → pass; non-network scheme → pass; strict third-party; tracker/Guard block; HTTPS upgrade; parameter cleaning. Allocation-free fast path (borrowed `&str`, pre-built lookup tables).
+- [x] **Step 4: Run** same command — Expected: PASS; also `cargo clippy -p induckgo-core --all-targets`.
+- [x] **Step 5: Commit.**
 
 ### Task 4: Core ports — cookies, burn, page scripts, engine version
 
@@ -105,9 +105,9 @@
 **Interfaces:**
 - Produces: `CookieAccess::new(cookie_domain, first_party: Option<&str>, is_third_party: bool)`; `trait CookiePolicy { fn allows(&self, &CookieAccess) -> bool }` (`StrictCookiePolicy`, `DuckDuckGoCookiePolicy`); `trait DataBurner { fn burn(&self, scope: BurnScope) -> BurnPlan }` where `BurnPlan` lists cookie domains, cache and storage directories to delete; `PageScript { name, source, injection_point, all_frames, world }` and `PageScriptCatalog::for_profile(&ProfileSettings) -> Vec<PageScript>` (Content Scope Scripts, Guard hiding, smooth wheel, DDG overlays, fingerprint profile); `EngineVersion::parse(&str)`, `MinimumEngineVersion::verdict(&EngineVersion, WindowKind) -> EngineVerdict { Run, Warn, Refuse }`.
 
-- [ ] **Step 1: Failing tests:** `should_deny_third_party_cookie_in_strict_mode`, `should_allow_first_party_cookie`, `should_plan_deletion_of_storage_directories_on_burn`, `should_warn_below_minimum_engine_version_in_normal_window`, `should_refuse_below_minimum_engine_version_in_tor_window`, `should_list_smooth_wheel_script_only_when_enabled`, `should_inject_fingerprint_script_into_all_frames`.
-- [ ] **Step 2–4:** run (FAIL) → implement → run (PASS).
-- [ ] **Step 5: Commit.**
+- [x] **Step 1: Failing tests:** `should_deny_third_party_cookie_in_strict_mode`, `should_allow_first_party_cookie`, `should_plan_deletion_of_storage_directories_on_burn`, `should_warn_below_minimum_engine_version_in_normal_window`, `should_refuse_below_minimum_engine_version_in_tor_window`, `should_list_smooth_wheel_script_only_when_enabled`, `should_inject_fingerprint_script_into_all_frames`.
+- [x] **Step 2–4:** run (FAIL) → implement → run (PASS).
+- [x] **Step 5: Commit.**
 
 ### Task 5: `induckgo-engine-qt` — adapter and C++ shim
 
@@ -117,11 +117,11 @@
 - Consumes: Task 3/4 ports.
 - Produces: `ProfileFactory::persistent(&ProfileDirectories) -> QtProfile`, `QtProfile::install(policy: Arc<dyn RequestPolicy>, cookies: Arc<dyn CookiePolicy>, scripts: &[PageScript])`; `EngineVersionProbe::current() -> EngineVersion`. Shim exposes a C-compatible `extern "C"` callback table (`decide_request`, `allow_cookie`) — the only boundary; Rust side contains no `unsafe` in our crates (the `cxx` bridge generates it; the crate opts out of the `forbid` with a documented crate-level `deny` for the generated code only if `cxx-qt` requires it — record in the spec).
 
-- [ ] **Step 1: Failing integration test** `should_block_tracker_and_report_decision_counts` using the Task 2 page: engine loads it headless (`QT_QPA_PLATFORM=offscreen`), interceptor blocks the tracker URL and the test reads counters.
-- [ ] **Step 2:** `cargo test -p induckgo-engine-qt` — Expected FAIL.
-- [ ] **Step 3: Implement** the shim (interceptor and cookie filter subclasses) and Rust adapters. Decision path allocation-free after warm-up.
-- [ ] **Step 4:** run — Expected PASS; run Task 1 benchmark again with the interceptor active (must still pass the gate).
-- [ ] **Step 5: Commit.**
+- [x] **Step 1: Failing integration test** `should_block_tracker_and_report_decision_counts` using the Task 2 page: engine loads it headless (`QT_QPA_PLATFORM=offscreen`), interceptor blocks the tracker URL and the test reads counters.
+- [x] **Step 2:** `cargo test -p induckgo-engine-qt` — Expected FAIL.
+- [x] **Step 3: Implement** the shim (interceptor and cookie filter subclasses) and Rust adapters. Decision path allocation-free after warm-up.
+- [x] **Step 4:** run — Expected PASS; run Task 1 benchmark again with the interceptor active (must still pass the gate).
+- [x] **Step 5: Commit.**
 
 ### Task 6: `induckgo-qt` — application shell
 
@@ -129,10 +129,12 @@
 
 **Interfaces:** Consumes: existing `induckgo_core::navigation`, `profile`, `language` types and the `tr!` catalogues. Produces: QML-visible `BrowserModel` (open/close tab, navigate, back/forward, reload), `InterfaceMessages.text(key: QString) -> QString`.
 
-- [ ] **Step 1: Failing test** `should_resolve_polish_message_through_the_bridge` (model-level, no window) and `should_open_and_close_tabs` (`TabModel`).
-- [ ] **Step 2–4:** run (FAIL) → implement → run (PASS).
-- [ ] **Step 5: Manual check:** `QT_QPA_PLATFORM=offscreen` smoke test that the window loads `https://example.com` and renders (screenshot via `grabToImage` saved by the test).
-- [ ] **Step 6: Commit.**
+- [x] **Step 1: Failing test** `should_resolve_polish_message_through_the_bridge` (model-level, no window) and `should_open_and_close_tabs` (`TabModel`).
+- [x] **Step 2–4:** run (FAIL) → implement → run (PASS).
+- [x] **Step 5: Manual check:** `QT_QPA_PLATFORM=offscreen` smoke test that the window loads `https://example.com` and renders (screenshot via `grabToImage` saved by the test).
+- [x] **Step 6: Commit.**
+
+*Deviation (recorded at delivery):* tab state lives in QML (`TabBar` + one `WebEngineView` per tab) because the engine owns every tab's history and title; a Rust `TabModel` would only mirror it (YAGNI). Rust exposes `BrowserBridge` (address resolution, interface text, page scripts). The end-to-end test is `crates/induckgo-qt/tests/tracker_blocking.rs`, which starts the real binary headless.
 
 ### Task 7: Everyday features
 

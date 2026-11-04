@@ -88,11 +88,11 @@
   - `DuckDuckGoRequestPolicy` implementujący go (blokowanie trackerów, reguły sieciowe Guard, podniesienie do HTTPS, czyszczenie parametrów, nagłówki GPC przez `fn extra_headers(&self, &NetworkRequest) -> &[(&'static str, &'static str)]`)
   - `ThirdPartyPolicy::new(strict: bool, allow_list: &SiteAllowList)`, `decide(&NetworkRequest) -> RequestDecision` (domyślna odmowa w trybie ścisłym).
 
-- [ ] **Krok 1:** testy scenariuszowe: `should_block_known_tracker_request`, `should_redirect_http_to_https_when_upgrade_list_matches`, `should_pass_when_site_is_unprotected`, `should_block_cname_cloaked_tracker_on_the_same_site`, `should_block_sub_resource_of_unknown_page_in_strict_mode`, `should_protect_navigation_from_unprotected_page_to_other_site`, `should_pass_non_network_schemes`, `should_block_third_party_in_strict_mode`, `should_pass_third_party_on_site_allow_list`, `should_treat_missing_first_party_as_first_party`.
-- [ ] **Krok 2:** `cargo test -p induckgo-core --test request_policy` — oczekiwane: FAIL.
-- [ ] **Krok 3:** implementacja; kolejność decyzji: strona bez ochrony → pass; schemat nie-sieciowy → pass; strona trzecia w trybie ścisłym; blokada trackera/Guard; podniesienie do HTTPS; czyszczenie parametrów. Szybka ścieżka bez alokacji (pożyczone `&str`, tablice wyszukiwania zbudowane wcześniej).
-- [ ] **Krok 4:** to samo polecenie — oczekiwane: PASS; oraz `cargo clippy -p induckgo-core --all-targets`.
-- [ ] **Krok 5:** commit.
+- [x] **Krok 1:** testy scenariuszowe: `should_block_known_tracker_request`, `should_redirect_http_to_https_when_upgrade_list_matches`, `should_pass_when_site_is_unprotected`, `should_block_cname_cloaked_tracker_on_the_same_site`, `should_block_sub_resource_of_unknown_page_in_strict_mode`, `should_protect_navigation_from_unprotected_page_to_other_site`, `should_pass_non_network_schemes`, `should_block_third_party_in_strict_mode`, `should_pass_third_party_on_site_allow_list`, `should_treat_missing_first_party_as_first_party`.
+- [x] **Krok 2:** `cargo test -p induckgo-core --test request_policy` — oczekiwane: FAIL.
+- [x] **Krok 3:** implementacja; kolejność decyzji: strona bez ochrony → pass; schemat nie-sieciowy → pass; strona trzecia w trybie ścisłym; blokada trackera/Guard; podniesienie do HTTPS; czyszczenie parametrów. Szybka ścieżka bez alokacji (pożyczone `&str`, tablice wyszukiwania zbudowane wcześniej).
+- [x] **Krok 4:** to samo polecenie — oczekiwane: PASS; oraz `cargo clippy -p induckgo-core --all-targets`.
+- [x] **Krok 5:** commit.
 
 ### Zadanie 4: Porty rdzenia — cookies, wypalanie, skrypty strony, wersja silnika
 
@@ -100,9 +100,9 @@
 
 **Interfejsy:** `CookieAccess::new(cookie_domain, first_party: Option<&str>, is_third_party: bool)`; `trait CookiePolicy { fn allows(&self, &CookieAccess) -> bool }` (`StrictCookiePolicy`, `DuckDuckGoCookiePolicy`); `trait DataBurner { fn burn(&self, scope: BurnScope) -> BurnPlan }`, gdzie `BurnPlan` wylicza domeny cookies, cache i katalogi pamięci do usunięcia; `PageScript { name, source, injection_point, all_frames, world }` i `PageScriptCatalog::for_profile(&ProfileSettings) -> Vec<PageScript>` (Content Scope Scripts, ukrywanie Guard, płynne kółko, nakładki DDG, profil odcisku); `EngineVersion::parse(&str)`, `MinimumEngineVersion::verdict(&EngineVersion, WindowKind) -> EngineVerdict { Run, Warn, Refuse }`.
 
-- [ ] **Krok 1:** testy: `should_deny_third_party_cookie_in_strict_mode`, `should_allow_first_party_cookie`, `should_plan_deletion_of_storage_directories_on_burn`, `should_warn_below_minimum_engine_version_in_normal_window`, `should_refuse_below_minimum_engine_version_in_tor_window`, `should_list_smooth_wheel_script_only_when_enabled`, `should_inject_fingerprint_script_into_all_frames`.
-- [ ] **Kroki 2–4:** uruchom (FAIL) → zaimplementuj → uruchom (PASS).
-- [ ] **Krok 5:** commit.
+- [x] **Krok 1:** testy: `should_deny_third_party_cookie_in_strict_mode`, `should_allow_first_party_cookie`, `should_plan_deletion_of_storage_directories_on_burn`, `should_warn_below_minimum_engine_version_in_normal_window`, `should_refuse_below_minimum_engine_version_in_tor_window`, `should_list_smooth_wheel_script_only_when_enabled`, `should_inject_fingerprint_script_into_all_frames`.
+- [x] **Kroki 2–4:** uruchom (FAIL) → zaimplementuj → uruchom (PASS).
+- [x] **Krok 5:** commit.
 
 ### Zadanie 5: `induckgo-engine-qt` — adapter i shim C++
 
@@ -112,11 +112,11 @@
 - Konsumuje: porty z Zadań 3–4.
 - Produkuje: `ProfileFactory::persistent(&ProfileDirectories) -> QtProfile`, `QtProfile::install(policy: Arc<dyn RequestPolicy>, cookies: Arc<dyn CookiePolicy>, scripts: &[PageScript])`; `EngineVersionProbe::current() -> EngineVersion`. Shim udostępnia zgodną z C tablicę callbacków (`decide_request`, `allow_cookie`) — to jedyna granica; strona Rusta nie zawiera `unsafe` w naszych crate’ach (kod generuje `cxx`; jeśli `cxx-qt` wymaga wyjątku od `forbid`, jest on udokumentowany w specyfikacji i ograniczony do kodu generowanego).
 
-- [ ] **Krok 1:** test integracyjny `should_block_tracker_and_report_decision_counts` na stronie z Zadania 2: silnik ładuje ją headless (`QT_QPA_PLATFORM=offscreen`), interceptor blokuje URL trackera, test odczytuje liczniki.
-- [ ] **Krok 2:** `cargo test -p induckgo-engine-qt` — oczekiwane FAIL.
-- [ ] **Krok 3:** implementacja shimu (podklasy interceptora i filtra cookies) i adapterów Rusta. Ścieżka decyzji bez alokacji po rozgrzaniu.
-- [ ] **Krok 4:** uruchom — oczekiwane PASS; ponownie benchmark z Zadania 1 z aktywnym interceptorem (nadal musi przejść bramkę).
-- [ ] **Krok 5:** commit.
+- [x] **Krok 1:** test integracyjny `should_block_tracker_and_report_decision_counts` na stronie z Zadania 2: silnik ładuje ją headless (`QT_QPA_PLATFORM=offscreen`), interceptor blokuje URL trackera, test odczytuje liczniki.
+- [x] **Krok 2:** `cargo test -p induckgo-engine-qt` — oczekiwane FAIL.
+- [x] **Krok 3:** implementacja shimu (podklasy interceptora i filtra cookies) i adapterów Rusta. Ścieżka decyzji bez alokacji po rozgrzaniu.
+- [x] **Krok 4:** uruchom — oczekiwane PASS; ponownie benchmark z Zadania 1 z aktywnym interceptorem (nadal musi przejść bramkę).
+- [x] **Krok 5:** commit.
 
 ### Zadanie 6: `induckgo-qt` — powłoka aplikacji
 
@@ -124,10 +124,12 @@
 
 **Interfejsy:** konsumuje istniejące typy `induckgo_core::navigation`, `profile`, `language` i katalogi `tr!`. Produkuje widoczny w QML `BrowserModel` (otwórz/zamknij kartę, nawiguj, wstecz/naprzód, odśwież), `InterfaceMessages.text(key: QString) -> QString`.
 
-- [ ] **Krok 1:** testy, które padają: `should_resolve_polish_message_through_the_bridge` (na poziomie modelu, bez okna) i `should_open_and_close_tabs` (`TabModel`).
-- [ ] **Kroki 2–4:** uruchom (FAIL) → zaimplementuj → uruchom (PASS).
-- [ ] **Krok 5: kontrola ręczna:** test dymny `QT_QPA_PLATFORM=offscreen` — okno ładuje `https://example.com` i rysuje (zrzut przez `grabToImage` zapisany przez test).
-- [ ] **Krok 6:** commit.
+- [x] **Krok 1:** testy, które padają: `should_resolve_polish_message_through_the_bridge` (na poziomie modelu, bez okna) i `should_open_and_close_tabs` (`TabModel`).
+- [x] **Kroki 2–4:** uruchom (FAIL) → zaimplementuj → uruchom (PASS).
+- [x] **Krok 5: kontrola ręczna:** test dymny `QT_QPA_PLATFORM=offscreen` — okno ładuje `https://example.com` i rysuje (zrzut przez `grabToImage` zapisany przez test).
+- [x] **Krok 6:** commit.
+
+*Odstępstwo (zapisane przy odbiorze):* stan kart żyje w QML (`TabBar` + jeden `WebEngineView` na kartę), bo historię i tytuł każdej karty ma silnik; `TabModel` w Ruście tylko by go powielał (YAGNI). Rust udostępnia `BrowserBridge` (rozwiązywanie adresu, teksty interfejsu, skrypty strony). Test end-to-end to `crates/induckgo-qt/tests/tracker_blocking.rs`, który uruchamia prawdziwy plik binarny bez okna.
 
 ### Zadanie 7: Funkcje codzienne
 

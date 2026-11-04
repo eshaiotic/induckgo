@@ -32,6 +32,12 @@
   </provides>
   <content_rating type="oars-1.1"/>
   <releases>
+    <release version="1.1.2" date="2026-11-04">
+      <description>
+        <p>Smooth mouse-wheel scrolling: every wheel step is animated like in Chromium, with a switch in the preferences.</p>
+        <p>Faster scrolling on pages with scroll animations.</p>
+      </description>
+    </release>
     <release version="1.1.1" date="2026-11-04">
       <description>
         <p>Interface language: choose among 68 languages in the preferences.</p>

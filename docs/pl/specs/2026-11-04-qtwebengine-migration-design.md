@@ -122,6 +122,21 @@ zamiast Qt Widgets. Powody: wygląd 1:1 i tak wymaga własnego stylu, QML czyni 
 `cxx-qt` jest projektowany wokół QML. Spike musi pokazać, że `WebEngineView` z QML przyjmuje interceptor, filtr
 cookies i skrypty z shimu. Jeśli nie, wariant zapasowy to Qt Widgets z `QWebEngineView`; porty zostają bez zmian.
 
+**Wynik spike’u (2026-11-04, Zadanie 2 planu): QML + `cxx-qt` potwierdzone.** Na QtWebEngine 6.12 (Chromium
+140), w prywatnej sesji 2560×1440 na prawdziwym GPU, `WebEngineView` z aktywnym interceptorem żądań, filtrem
+cookies i skryptem użytkownika przewijał bpxglobal.com z **58,0–58,6 fps, p95 odstępu 16,8 ms** (trzy
+przebiegi); Brave 156 w tej samej sesji miał 59,9 fps, p95 16,7 ms. Bramka (≥ 58 fps, nie gorzej niż
+Brave − 2 fps) jest spełniona, na styk; jeden odstęp ≈ 167 ms na przebieg (Brave: żadnego powyżej 33 ms) do
+zbadania w Zadaniu 14. Zweryfikowane haki: interceptor widział każde żądanie (własne, trackera, strony
+trzeciej, favicon) i zablokował tracker; filtr cookies zgłaszał `thirdParty` z adresem pierwszej strony;
+skrypt zadziałał w ramce głównej i w podramce strony trzeciej. Z Rusta: obiekt QObject z `cxx-qt` dostarczył
+kod skryptu do QML, a interceptor pytał funkcję Rusta (przekazaną jako `rust::Fn`) o każdą decyzję.
+Konsekwencje dla planu: `QQuickWebEngineScriptCollection` nie jest publiczną klasą C++, więc skrypty są
+deklarowane w QML (`userScripts.collection: [ { … } ]`, literały obiektów, nie `WebEngineScript {}`) z kodem
+pobieranym z obiektu Rusta; `QtWebEngineQuick::initialize()` musi działać przed utworzeniem `QGuiApplication`;
+crate’y silnika nie mogą dziedziczyć `unsafe_code = "forbid"` z workspace (kod generowany przez `cxx` zawiera
+`unsafe`), więc używają `deny` z wąskim `allow` tylko na modułach mostu.
+
 ## 6. Projekt prywatności
 
 Badanie (strony pomocy i repozytoria DuckDuckGo, wiki Brave, ungoogled-chromium i Vanadium, dokumentacja Qt)

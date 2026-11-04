@@ -56,14 +56,14 @@
 - Modify: `Cargo.toml` (workspace members)
 
 **Interfaces:**
-- Produces: `FrameStatistics::from_gaps_ms(&[f64]) -> FrameStatistics` with `frames_per_second() -> f64`, `percentile_gap_ms(f64) -> f64`, `frames_longer_than_ms(f64) -> usize`. `ScrollScenario::new(url, viewport: (u32,u32), duration_s)`; CLI `induckgo-bench --engine <chromium|qt|webkit> --url … --size 2560x1440`.
+- Produces: `FrameStatistics::from_gaps_ms(&[f64]) -> FrameStatistics` with `frames_per_second() -> f64`, `percentile_gap_ms(percent: u32) -> f64`, `frames_longer_than_ms(f64) -> usize`. `ScrollScenario::new(url, viewport: (u32,u32), duration_s)`; CLI `induckgo-bench --engine <chromium|qt|webkit> --url … --size 2560x1440`.
 
-- [ ] **Step 1: Write failing tests** `should_report_60_fps_for_16_7_ms_gaps`, `should_count_frames_longer_than_33_ms`, `should_return_p95_of_sorted_gaps` using the Chromium numbers of spec §1 as fixtures.
-- [ ] **Step 2: Run** `cargo test -p induckgo-bench` — Expected: FAIL (types missing).
-- [ ] **Step 3: Implement** `FrameStatistics` (sorted gaps, nearest-rank percentile).
-- [ ] **Step 4: Run** `cargo test -p induckgo-bench` — Expected: PASS.
-- [ ] **Step 5: Implement** the page `scroll.html` (rAF loop recording frame gaps while `scrollBy` steps run for `duration_s`, posts the array to the local server) and `BenchmarkServer` (std `TcpListener`, serves the page, stores the POSTed array). Port the measurement method of the throwaway `/tmp/spike` harness (8 s scripted scroll).
-- [ ] **Step 6: Commit** `git commit -m "Add the in-repository scroll benchmark harness"`.
+- [x] **Step 1: Write failing tests** `should_report_60_fps_for_16_7_ms_gaps`, `should_count_frames_longer_than_33_ms`, `should_return_p95_of_sorted_gaps` using the Chromium numbers of spec §1 as fixtures.
+- [x] **Step 2: Run** `cargo test -p induckgo-bench` — Expected: FAIL (types missing).
+- [x] **Step 3: Implement** `FrameStatistics` (sorted gaps, nearest-rank percentile).
+- [x] **Step 4: Run** `cargo test -p induckgo-bench` — Expected: PASS.
+- [x] **Step 5: Implement** the page `scroll.html` (rAF loop recording frame gaps while `scrollBy` steps run for `duration_s`, posts the array to the local server) and `BenchmarkServer` (std `TcpListener`, serves the page, stores the POSTed array). Port the measurement method of the throwaway `/tmp/spike` harness (8 s scripted scroll).
+- [x] **Step 6: Commit** `git commit -m "Add the in-repository scroll benchmark harness"`.
 
 ### Task 2: Spike — QML WebEngineView with hooks from Rust (throwaway, performance gate)
 
@@ -71,11 +71,13 @@
 
 **Interfaces:** Produces the *decision* recorded in `docs/en/specs/…` §5.3/§11a: QML+`cxx-qt`, Widgets, or CEF.
 
-- [ ] **Step 1:** Minimal `cxx-qt` project: a Rust `QObject` exposed to QML; C++ `QWebEngineUrlRequestInterceptor` subclass calling a Rust function over `cxx`; `QWebEngineCookieStore::setCookieFilter`; one `QWebEngineScript` injected from Rust; `WebEngineView` in QML.
-- [ ] **Step 2: Verify the hooks** — a local page loads three subresources (own, tracker-listed, third-party); assert via logs that the interceptor saw all three, blocked the tracker, the cookie filter saw the third-party cookie, and the script ran in a subframe.
-- [ ] **Step 3: Performance gate** — run Task 1's benchmark on the spike at 2560×1440. Expected: ≥ 58 fps, p95 ≤ 17 ms.
-- [ ] **Step 4: Record the decision** in spec §5.3/§11a (both languages). If the gate fails, stop and escalate to the owner (CEF fallback per §11a); if only `cxx-qt`→QML hooks fail, switch to Widgets for Task 6.
-- [ ] **Step 5: Commit** the decision note only (the spike directory is not committed).
+- [x] **Step 1:** Minimal `cxx-qt` project: a Rust `QObject` exposed to QML; C++ `QWebEngineUrlRequestInterceptor` subclass calling a Rust function over `cxx`; `QWebEngineCookieStore::setCookieFilter`; one `QWebEngineScript` injected from Rust; `WebEngineView` in QML.
+- [x] **Step 2: Verify the hooks** — a local page loads three subresources (own, tracker-listed, third-party); assert via logs that the interceptor saw all three, blocked the tracker, the cookie filter saw the third-party cookie, and the script ran in a subframe.
+- [x] **Step 3: Performance gate** — run Task 1's benchmark on the spike at 2560×1440. Expected: ≥ 58 fps, p95 ≤ 17 ms.
+- [x] **Step 4: Record the decision** in spec §5.3/§11a (both languages). If the gate fails, stop and escalate to the owner (CEF fallback per §11a); if only `cxx-qt`→QML hooks fail, switch to Widgets for Task 6.
+- [x] **Step 5: Commit** the decision note only (the spike directory is not committed).
+
+**Done 2026-11-04:** QML + `cxx-qt` confirmed, gate passed (58.0–58.6 fps vs Brave 59.9 at 2560×1440); see spec §5.3.
 
 ### Task 3: Core ports — network request policy
 

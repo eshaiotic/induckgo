@@ -52,14 +52,14 @@
 
 **Pliki:** utwórz `crates/induckgo-bench/{Cargo.toml,src/main.rs,src/scroll_scenario.rs,src/frame_statistics.rs,src/benchmark_server.rs}`, `crates/induckgo-bench/pages/scroll.html`; zmodyfikuj `Cargo.toml` (członkowie workspace).
 
-**Interfejsy:** produkuje `FrameStatistics::from_gaps_ms(&[f64])` z `frames_per_second()`, `percentile_gap_ms(f64)`, `frames_longer_than_ms(f64)`; `ScrollScenario::new(url, viewport, duration_s)`; CLI `induckgo-bench --engine <chromium|qt|webkit> --url … --size 2560x1440`.
+**Interfejsy:** produkuje `FrameStatistics::from_gaps_ms(&[f64])` z `frames_per_second()`, `percentile_gap_ms(percent: u32)`, `frames_longer_than_ms(f64)`; `ScrollScenario::new(url, viewport, duration_s)`; CLI `induckgo-bench --engine <chromium|qt|webkit> --url … --size 2560x1440`.
 
-- [ ] **Krok 1:** testy, które padają: `should_report_60_fps_for_16_7_ms_gaps`, `should_count_frames_longer_than_33_ms`, `should_return_p95_of_sorted_gaps` (dane z §1 specyfikacji).
-- [ ] **Krok 2:** `cargo test -p induckgo-bench` — oczekiwane: FAIL.
-- [ ] **Krok 3:** zaimplementuj `FrameStatistics` (posortowane odstępy, percentyl metodą najbliższej rangi).
-- [ ] **Krok 4:** `cargo test -p induckgo-bench` — oczekiwane: PASS.
-- [ ] **Krok 5:** strona `scroll.html` (pętla rAF zapisująca odstępy klatek podczas przewijania `scrollBy` przez `duration_s`, wysyła tablicę do lokalnego serwera) i `BenchmarkServer` (std `TcpListener`). Przenieś metodę z jednorazowego harnessu `/tmp/spike` (8 s przewijania skryptem).
-- [ ] **Krok 6:** commit „Add the in-repository scroll benchmark harness”.
+- [x] **Krok 1:** testy, które padają: `should_report_60_fps_for_16_7_ms_gaps`, `should_count_frames_longer_than_33_ms`, `should_return_p95_of_sorted_gaps` (dane z §1 specyfikacji).
+- [x] **Krok 2:** `cargo test -p induckgo-bench` — oczekiwane: FAIL.
+- [x] **Krok 3:** zaimplementuj `FrameStatistics` (posortowane odstępy, percentyl metodą najbliższej rangi).
+- [x] **Krok 4:** `cargo test -p induckgo-bench` — oczekiwane: PASS.
+- [x] **Krok 5:** strona `scroll.html` (pętla rAF zapisująca odstępy klatek podczas przewijania `scrollBy` przez `duration_s`, wysyła tablicę do lokalnego serwera) i `BenchmarkServer` (std `TcpListener`). Przenieś metodę z jednorazowego harnessu `/tmp/spike` (8 s przewijania skryptem).
+- [x] **Krok 6:** commit „Add the in-repository scroll benchmark harness”.
 
 ### Zadanie 2: Spike — QML WebEngineView z hakami z Rusta (jednorazowy, bramka wydajności)
 
@@ -67,11 +67,13 @@
 
 **Interfejsy:** produkuje *decyzję* zapisaną w specyfikacji §5.3/§11a: QML+`cxx-qt`, Widgets albo CEF.
 
-- [ ] **Krok 1:** minimalny projekt `cxx-qt`: obiekt Rusta widoczny w QML; podklasa C++ `QWebEngineUrlRequestInterceptor` wołająca funkcję Rusta przez `cxx`; `QWebEngineCookieStore::setCookieFilter`; jeden `QWebEngineScript` z Rusta; `WebEngineView` w QML.
-- [ ] **Krok 2: weryfikacja haków** — lokalna strona ładuje trzy podzasoby (własny, z listy trackerów, strony trzeciej); logi potwierdzają, że interceptor widział wszystkie trzy, zablokował tracker, filtr cookies widział cookie strony trzeciej, a skrypt zadziałał w podramce.
-- [ ] **Krok 3: bramka wydajności** — benchmark z Zadania 1 na spike’u w 2560×1440. Oczekiwane: ≥ 58 fps, p95 ≤ 17 ms.
-- [ ] **Krok 4: zapisz decyzję** w specyfikacji §5.3/§11a (oba języki). Jeśli bramka nie przejdzie, stop i eskalacja do właściciela (zapas CEF wg §11a); jeśli zawiodą tylko haki `cxx-qt`→QML, przejdź na Widgets w Zadaniu 6.
-- [ ] **Krok 5:** commit tylko notatki z decyzją (katalog spike’u nie jest commitowany).
+- [x] **Krok 1:** minimalny projekt `cxx-qt`: obiekt Rusta widoczny w QML; podklasa C++ `QWebEngineUrlRequestInterceptor` wołająca funkcję Rusta przez `cxx`; `QWebEngineCookieStore::setCookieFilter`; jeden `QWebEngineScript` z Rusta; `WebEngineView` w QML.
+- [x] **Krok 2: weryfikacja haków** — lokalna strona ładuje trzy podzasoby (własny, z listy trackerów, strony trzeciej); logi potwierdzają, że interceptor widział wszystkie trzy, zablokował tracker, filtr cookies widział cookie strony trzeciej, a skrypt zadziałał w podramce.
+- [x] **Krok 3: bramka wydajności** — benchmark z Zadania 1 na spike’u w 2560×1440. Oczekiwane: ≥ 58 fps, p95 ≤ 17 ms.
+- [x] **Krok 4: zapisz decyzję** w specyfikacji §5.3/§11a (oba języki). Jeśli bramka nie przejdzie, stop i eskalacja do właściciela (zapas CEF wg §11a); jeśli zawiodą tylko haki `cxx-qt`→QML, przejdź na Widgets w Zadaniu 6.
+- [x] **Krok 5:** commit tylko notatki z decyzją (katalog spike’u nie jest commitowany).
+
+**Zrobione 2026-11-04:** QML + `cxx-qt` potwierdzone, bramka przeszła (58,0–58,6 fps vs Brave 59,9 w 2560×1440); zob. specyfikacja §5.3.
 
 ### Zadanie 3: Porty rdzenia — polityka żądań sieciowych
 

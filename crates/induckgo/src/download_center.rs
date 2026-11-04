@@ -78,6 +78,13 @@ impl DownloadCenter {
         self.notify();
     }
 
+    /// Forgets the list of finished and failed downloads, for a profile whose browsing data was burned.
+    pub fn forget_all(&self) {
+        self.recent.borrow_mut().forget_finished();
+        self.save_history();
+        self.notify();
+    }
+
     pub fn asks_where_to_save(&self) -> bool {
         self.settings.borrow().asks_where_to_save()
     }

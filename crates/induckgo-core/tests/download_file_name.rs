@@ -91,3 +91,19 @@ fn should_shorten_overlong_name_but_keep_its_extension() {
 
     assert!(name.len() <= 255 && name.ends_with("ż.pdf"), "{name}");
 }
+
+#[test]
+fn should_remove_a_right_to_left_override_that_disguises_the_extension() {
+    assert_eq!(
+        DownloadScenario::given_site_suggests("invoice\u{202E}fdp.exe").when_saving_to_downloads(),
+        Path::new("/home/me/Downloads/invoicefdp.exe")
+    );
+}
+
+#[test]
+fn should_remove_zero_width_characters_from_the_name() {
+    assert_eq!(
+        DownloadScenario::given_site_suggests("re\u{200B}port\u{FEFF}.pdf").when_saving_to_downloads(),
+        Path::new("/home/me/Downloads/report.pdf")
+    );
+}

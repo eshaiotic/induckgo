@@ -130,6 +130,11 @@ impl RecentDownloads {
         self.entries.retain(|entry| entry.id != id);
     }
 
+    /// Forgets every download that is not running, for a profile whose browsing data was burned.
+    pub fn forget_finished(&mut self) {
+        self.entries.retain(|entry| matches!(entry.state, DownloadState::InProgress { .. }));
+    }
+
     fn set_state(&mut self, id: DownloadId, state: DownloadState) {
         if let Some(entry) = self.entries.iter_mut().find(|entry| entry.id == id) {
             entry.state = state;

@@ -459,6 +459,7 @@ impl ProfileSession {
     /// zoom of this session; a profile keeps its HSTS list.
     pub async fn burn_website_data(&self) -> Result<(), glib::Error> {
         self.zoom.forget_all();
+        self.downloads.forget_all();
         let Some(data_manager) = self.network_session.website_data_manager() else { return Ok(()) };
         if let Some(favicons) = data_manager.favicon_database() {
             favicons.clear();

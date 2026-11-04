@@ -2,7 +2,8 @@
 //!
 //! The suggestion comes from the `Content-Disposition` header or the URL, both controlled by the site. It
 //! is reduced to a single visible path component: no directories (`../../.bashrc`), no hidden files, no
-//! control characters, at most 255 bytes (the Linux file name limit). An existing file is never
+//! control or invisible formatting characters (a right-to-left override would show `invoice\u{202E}fdp.exe` as
+//! `invoiceexe.pdf`), at most 255 bytes (the Linux file name limit). An existing file is never
 //! overwritten; the name is numbered instead, as file managers do.
 
 use std::path::Path;
@@ -25,7 +26,10 @@ impl DownloadFileName {
     #[must_use]
     pub fn from_suggestion(suggested: &str) -> Self {
         let last_component = suggested.rsplit(['/', '\\']).next().unwrap_or_default();
-        let visible: String = last_component.chars().filter(|character| !character.is_control()).collect();
+        let visible: String = last_component
+            .chars()
+            .filter(|character| !character.is_control() && !Self::is_invisible_formatting(*character))
+            .collect();
         let name = visible.trim().trim_start_matches('.');
         let name = if name.is_empty() { Self::FALLBACK } else { name };
         let (stem, extension) = Self::split_extension(name);
@@ -43,6 +47,28 @@ impl DownloadFileName {
             number += 1;
         }
         candidate
+    }
+
+    /// Unicode format characters (category Cf) that change how a name is drawn without being drawn themselves:
+    /// bidirectional overrides and isolates, zero-width characters, the byte order mark, tag characters.
+    fn is_invisible_formatting(character: char) -> bool {
+        matches!(
+            character,
+            '\u{00AD}'
+                | '\u{0600}'..='\u{0605}'
+                | '\u{061C}'
+                | '\u{06DD}'
+                | '\u{070F}'
+                | '\u{180E}'
+                | '\u{200B}'..='\u{200F}'
+                | '\u{202A}'..='\u{202E}'
+                | '\u{2060}'..='\u{2064}'
+                | '\u{2066}'..='\u{206F}'
+                | '\u{FEFF}'
+                | '\u{FFF9}'..='\u{FFFB}'
+                | '\u{E0001}'
+                | '\u{E0020}'..='\u{E007F}'
+        )
     }
 
     /// Splits `report.tar.gz` into `report` and `.tar.gz`, so numbering lands before the whole extension.

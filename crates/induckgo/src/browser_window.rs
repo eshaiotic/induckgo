@@ -247,7 +247,9 @@ impl BrowserWindow {
     }
 
     fn downloads_popover(context: &AppContext) -> gtk::Popover {
-        gtk::Popover::builder().child(DownloadsList::new(context.session.downloads()).widget()).build()
+        gtk::Popover::builder()
+            .child(DownloadsList::new(context.session.downloads(), context.tor.is_none()).widget())
+            .build()
     }
 
     /// The main menu's "Downloads": the toolbar button's list, or, when that button is hidden, the same list

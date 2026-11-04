@@ -48,6 +48,11 @@ impl RecentDownloadsScenario {
         self
     }
 
+    fn when_browsing_data_is_burned(mut self) -> Self {
+        self.downloads.forget_finished();
+        self
+    }
+
     fn after_saving_and_loading(self) -> Self {
         Self { downloads: RecentDownloads::from_json(&self.downloads.to_json()), last: None }
     }
@@ -135,4 +140,23 @@ fn should_ignore_stored_entries_without_an_absolute_path() {
         &json!({"downloads": [{"path": "rel/a.txt"}, {"name": "x"}, 5, {"path": "/d/ok.txt"}]}),
     )
     .then_lists(&["ok.txt"]);
+}
+
+#[test]
+fn should_forget_finished_and_failed_downloads_when_browsing_data_is_burned() {
+    RecentDownloadsScenario::given_nothing_downloaded()
+        .when_started("/home/me/Downloads/done.pdf")
+        .when_finished()
+        .when_started("/home/me/Downloads/broken.zip")
+        .when_failed()
+        .when_browsing_data_is_burned()
+        .then_lists(&[]);
+}
+
+#[test]
+fn should_keep_a_download_that_is_still_running_when_browsing_data_is_burned() {
+    RecentDownloadsScenario::given_nothing_downloaded()
+        .when_started("/home/me/Downloads/big.iso")
+        .when_browsing_data_is_burned()
+        .then_lists(&["big.iso"]);
 }

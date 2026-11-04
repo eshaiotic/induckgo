@@ -19,12 +19,14 @@ use crate::download_center::DownloadCenter;
 pub struct DownloadsList {
     root: gtk::Box,
     center: Rc<DownloadCenter>,
+    /// `false` in the Tor window: a file opened in another application would connect outside Tor.
+    opens_files: bool,
 }
 
 impl DownloadsList {
     const WIDTH: i32 = 360;
 
-    pub fn new(center: &Rc<DownloadCenter>) -> Rc<Self> {
+    pub fn new(center: &Rc<DownloadCenter>, opens_files: bool) -> Rc<Self> {
         let list = Rc::new(Self {
             root: gtk::Box::builder()
                 .orientation(gtk::Orientation::Vertical)
@@ -32,6 +34,7 @@ impl DownloadsList {
                 .width_request(Self::WIDTH)
                 .build(),
             center: Rc::clone(center),
+            opens_files,
         });
         list.rebuild();
         let followed = list.root.downgrade();
@@ -69,7 +72,7 @@ impl DownloadsList {
             self.root.append(&empty);
         }
         for entry in &entries {
-            self.root.append(&Self::row(entry));
+            self.root.append(&self.row(entry));
         }
         self.root.append(&gtk::Separator::new(gtk::Orientation::Horizontal));
         let folder = self.center.folder();
@@ -85,7 +88,7 @@ impl DownloadsList {
         self.root.append(&go);
     }
 
-    fn row(entry: &RecentDownload) -> gtk::Box {
+    fn row(&self, entry: &RecentDownload) -> gtk::Box {
         let row = gtk::Box::builder().spacing(4).build();
         let name = gtk::Label::builder()
             .label(entry.name())
@@ -107,13 +110,18 @@ impl DownloadsList {
         let open = gtk::Button::builder().child(&text).css_classes(["flat"]).hexpand(true).build();
         let path = entry.path().to_owned();
         let finished = *entry.state() == DownloadState::Finished;
-        open.set_sensitive(finished && path.exists());
+        open.set_sensitive(self.opens_files && finished && path.exists());
+        if !self.opens_files {
+            open.set_tooltip_text(Some(tr!(
+                "Other applications do not open from the Tor window: they would connect outside Tor."
+            )));
+        }
         open.connect_clicked(move |button| {
-            gtk::FileLauncher::new(Some(&gio::File::for_path(&path))).launch(
-                Self::window_of(button).as_ref(),
-                None::<&gio::Cancellable>,
-                |_| {},
-            );
+            let launcher = gtk::FileLauncher::new(Some(&gio::File::for_path(&path)));
+            // A program, script or launcher the site sent is never started without the person choosing so.
+            let (content_type, _) = gio::content_type_guess(Some(&path), None::<&[u8]>);
+            launcher.set_always_ask(gio::content_type_can_be_executable(&content_type));
+            launcher.launch(Self::window_of(button).as_ref(), None::<&gio::Cancellable>, |_| {});
         });
         let folder = gtk::Button::builder()
             .icon_name("folder-open-symbolic")

@@ -6,6 +6,7 @@ members = [
     "crates/induckgo-test-report",
     "crates/induckgo-bench",
     "crates/induckgo-engine-qt",
+    "crates/induckgo-qt",
 ]
 # The Qt crates need Qt 6 with QtWebEngine; they are built on request (`-p induckgo-engine-qt`) until packaging
 # and CI install Qt (plan Task 13).

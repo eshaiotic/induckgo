@@ -1,0 +1,83 @@
+//! Starts the browser: language, engine, policies, then the QML window.
+
+use std::fs;
+use std::path::Path;
+use std::process::ExitCode;
+
+use cxx_qt_lib::QGuiApplication;
+use cxx_qt_lib::QQmlApplicationEngine;
+use cxx_qt_lib::QString;
+use cxx_qt_lib::QUrl;
+use induckgo_core::engine::engine_verdict::EngineVerdict;
+use induckgo_core::engine::minimum_engine_version::MinimumEngineVersion;
+use induckgo_core::engine::window_kind::WindowKind;
+use induckgo_core::network::site_allow_list::SiteAllowList;
+use induckgo_core::profile::profile_id::ProfileId;
+use induckgo_core::profile::unprotected_sites::UnprotectedSites;
+use induckgo_engine_qt::qt_web_engine::QtWebEngine;
+use serde_json::Value;
+
+use crate::installation_directories::InstallationDirectories;
+use crate::interface_catalogue::InterfaceCatalogue;
+use crate::profile_policies::ProfilePolicies;
+use crate::profile_policies::ProfileStrictness;
+use crate::protection_documents::ProtectionDocuments;
+use crate::startup_notice::StartupNotice;
+
+pub struct BrowserApplication;
+
+impl BrowserApplication {
+    const WINDOW: &'static str = "qrc:/qt/qml/io/induckgo/browser/qml/Main.qml";
+
+    #[must_use]
+    pub fn run() -> ExitCode {
+        let directories = InstallationDirectories::from_environment();
+        InterfaceCatalogue::choose(&directories);
+        QtWebEngine::initialize();
+
+        let mut application = QGuiApplication::new();
+        if let Some(mut application) = application.as_mut() {
+            application.as_mut().set_application_name(&QString::from("InDuckGo"));
+        }
+        Self::install_policies(&directories);
+        Self::check_engine_version();
+
+        let mut engine = QQmlApplicationEngine::new();
+        if let Some(mut engine) = engine.as_mut() {
+            engine.as_mut().load(&QUrl::from(Self::WINDOW));
+        }
+        match application.as_mut() {
+            Some(application) => ExitCode::from(u8::try_from(application.exec()).unwrap_or(1)),
+            None => ExitCode::FAILURE,
+        }
+    }
+
+    fn install_policies(directories: &InstallationDirectories) {
+        let profile = directories.profile(&ProfileId::default_profile());
+        let documents = ProtectionDocuments::from_cache(&directories.protection_cache());
+        let unprotected_sites = Self::read_json(&profile.data.join("unprotected-sites.json"))
+            .map(|document| UnprotectedSites::from_json(&document))
+            .unwrap_or_default();
+        let allow_list = Self::read_json(&profile.data.join("site-allow-list.json"))
+            .map(|document| SiteAllowList::from_json(&document))
+            .unwrap_or_default();
+        let policies =
+            ProfilePolicies::assemble(documents.as_ref(), unprotected_sites, allow_list, ProfileStrictness::Standard);
+        let engine_directory = profile.data.join("engine");
+        let engine_cache = profile.cache.join("engine");
+        QtWebEngine::install_policies(policies.request, policies.cookies, &engine_directory, &engine_cache);
+    }
+
+    fn check_engine_version() {
+        let Some(installed) = QtWebEngine::chromium_version() else { return };
+        if MinimumEngineVersion::current().verdict(&installed, WindowKind::Normal) == EngineVerdict::Warn {
+            StartupNotice::set(format!(
+                "The web engine ({installed}) is older than InDuckGo expects and may lack security fixes."
+            ));
+        }
+    }
+
+    fn read_json(path: &Path) -> Option<Value> {
+        serde_json::from_slice(&fs::read(path).ok()?).ok()
+    }
+}

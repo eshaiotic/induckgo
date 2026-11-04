@@ -38,8 +38,16 @@ void initialize_web_engine() {
     QtWebEngineQuick::initialize();
 }
 
-void install_hooks() {
+void install_hooks(rust::Str storage_path, rust::Str cache_path) {
     QQuickWebEngineProfile *profile = QQuickWebEngineProfile::defaultProfile();
+    // The directories are set before the profile becomes persistent: making it persistent first would create
+    // the engine's files (history, favicons) in Qt's default location, outside the directory burning deletes.
+    profile->setPersistentStoragePath(QString::fromUtf8(storage_path.data(), static_cast<int>(storage_path.size())));
+    profile->setCachePath(QString::fromUtf8(cache_path.data(), static_cast<int>(cache_path.size())));
+    // The default profile of QtWebEngine Quick keeps nothing on disk until it is made persistent.
+    profile->setStorageName(QStringLiteral("InDuckGo"));
+    profile->setOffTheRecord(false);
+    profile->setPersistentCookiesPolicy(QQuickWebEngineProfile::ForcePersistentCookies);
     profile->setUrlRequestInterceptor(new DecidingInterceptor);
     profile->cookieStore()->setCookieFilter([](const QWebEngineCookieStore::FilterRequest &request) {
         const QByteArray domain = request.origin.host().toUtf8();

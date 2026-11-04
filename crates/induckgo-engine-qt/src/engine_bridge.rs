@@ -18,7 +18,7 @@ pub mod ffi {
     unsafe extern "C++" {
         include!("engine_hooks.h");
         fn initialize_web_engine();
-        fn install_hooks();
+        fn install_hooks(storage_path: &str, cache_path: &str);
         fn chromium_version() -> String;
     }
 }

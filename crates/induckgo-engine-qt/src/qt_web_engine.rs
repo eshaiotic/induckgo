@@ -1,5 +1,6 @@
 //! `QtWebEngine` as the application sees it.
 
+use std::path::Path;
 use std::sync::Arc;
 
 use induckgo_core::engine::engine_version::EngineVersion;
@@ -17,12 +18,18 @@ impl QtWebEngine {
         ffi::initialize_web_engine();
     }
 
-    /// Makes Chromium ask these policies about every request and cookie. Call it once the application exists.
-    /// A second call changes nothing and returns `false`.
-    pub fn install_policies(request: Arc<dyn RequestPolicy>, cookies: Arc<dyn CookiePolicy>) -> bool {
+    /// Makes Chromium ask these policies about every request and cookie, and keep everything it stores under
+    /// `storage` and `cache`. Call it once the application exists; a second call changes nothing and returns
+    /// `false`.
+    pub fn install_policies(
+        request: Arc<dyn RequestPolicy>,
+        cookies: Arc<dyn CookiePolicy>,
+        storage: &Path,
+        cache: &Path,
+    ) -> bool {
         let is_first = EnginePolicies::new(request, cookies).install();
         if is_first {
-            ffi::install_hooks();
+            ffi::install_hooks(&storage.to_string_lossy(), &cache.to_string_lossy());
         }
         is_first
     }

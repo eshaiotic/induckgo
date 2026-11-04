@@ -119,7 +119,7 @@ impl PageProtections {
     /// DuckDuckGo Content Scope Scripts 20.0.0 (Apache-2.0), vendored and pinned by SHA-256 in the repository.
     const SCRIPT_TEMPLATE: &'static str = include_str!("../../../assets/content-scope-scripts/contentScope.js");
     /// The macOS app version that bundles this script; the privacy configuration gates features on it.
-    pub const COMPATIBILITY_VERSION: &'static str = "1.214.0";
+    pub const COMPATIBILITY_VERSION: &'static str = PrivacyConfiguration::COMPATIBILITY_VERSION;
     const LOG_DOMAIN: &'static str = "induckgo";
     /// InDuckGo Guard's page script (generic element hiding), its script world and message handler.
     const GUARD_SCRIPT_TEMPLATE: &'static str = include_str!("../../../assets/guard/generic-hiding.js");

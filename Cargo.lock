@@ -289,6 +289,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "cxx-qt-lib"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1e3c9fea8106d4bbe438d15c1242acd38f4869ca4f6d2a0b19e1f0dbbf23a50e"
+dependencies = [
+ "cxx",
+ "cxx-qt",
+ "cxx-qt-build",
+ "qt-build-utils",
+]
+
+[[package]]
 name = "cxx-qt-macro"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -881,6 +893,7 @@ dependencies = [
  "adblock",
  "form_urlencoded",
  "idna",
+ "psl",
  "regex",
  "serde_json",
  "url",
@@ -894,6 +907,19 @@ dependencies = [
  "cxx-qt",
  "cxx-qt-build",
  "induckgo-core",
+]
+
+[[package]]
+name = "induckgo-qt"
+version = "1.1.2"
+dependencies = [
+ "cxx",
+ "cxx-qt",
+ "cxx-qt-build",
+ "cxx-qt-lib",
+ "induckgo-core",
+ "induckgo-engine-qt",
+ "serde_json",
 ]
 
 [[package]]

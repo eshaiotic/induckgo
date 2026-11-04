@@ -1,4 +1,4 @@
-//! Translates QtWebEngine's resource-type numbers (`QWebEngineUrlRequestInfo::ResourceType`) to the core's.
+//! Translates `QtWebEngine`'s resource-type numbers (`QWebEngineUrlRequestInfo::ResourceType`) to the core's.
 
 use induckgo_core::network::resource_type::ResourceType;
 

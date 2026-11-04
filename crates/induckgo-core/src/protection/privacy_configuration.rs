@@ -25,6 +25,9 @@ pub struct PrivacyConfiguration {
 }
 
 impl PrivacyConfiguration {
+    /// The macOS app version whose Content Scope Scripts are bundled; the configuration gates features on it.
+    pub const COMPATIBILITY_VERSION: &'static str = "1.214.0";
+
     #[must_use]
     pub fn new(document: Value, compatibility_version: &str) -> Self {
         Self { document, compatibility_version: AppVersion::parse(compatibility_version) }

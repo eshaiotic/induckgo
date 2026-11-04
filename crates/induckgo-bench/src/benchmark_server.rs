@@ -68,18 +68,18 @@ impl BenchmarkServer {
     fn answer(stream: &TcpStream, page: &BenchmarkPage) -> Result<Option<FrameStatistics>, String> {
         let _ = stream.set_nonblocking(false);
         let _ = stream.set_read_timeout(Some(REQUEST_READ_TIMEOUT));
-        let Some(request) = Self::read_request(&stream) else { return Ok(None) };
+        let Some(request) = Self::read_request(stream) else { return Ok(None) };
         match (request.method.as_str(), request.path.as_str()) {
             ("GET", "/") => {
-                Self::respond(&stream, "200 OK", "text/html; charset=utf-8", page.html().as_bytes());
+                Self::respond(stream, "200 OK", "text/html; charset=utf-8", page.html().as_bytes());
                 Ok(None)
             }
             ("POST", "/result") => {
-                Self::respond(&stream, "204 No Content", "text/plain", b"");
+                Self::respond(stream, "204 No Content", "text/plain", b"");
                 Self::statistics_from(&request.body).map(Some)
             }
             _ => {
-                Self::respond(&stream, "204 No Content", "text/plain", b"");
+                Self::respond(stream, "204 No Content", "text/plain", b"");
                 Ok(None)
             }
         }

@@ -38,9 +38,11 @@ impl fmt::Display for FetchError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Network(error) => write!(formatter, "{error}"),
-            Self::Status(status, url) => write!(formatter, "{url} answered {status:?}"),
-            Self::TooLarge(url) => write!(formatter, "{url} is larger than allowed"),
-            Self::InvalidAddress(url) => write!(formatter, "{url} is not a valid address"),
+            Self::Status(status, url) => {
+                formatter.write_str(&tr!("{url} answered {status}", url = url, status = format!("{status:?}")))
+            }
+            Self::TooLarge(url) => formatter.write_str(&tr!("{url} is larger than allowed", url = url)),
+            Self::InvalidAddress(url) => formatter.write_str(&tr!("{url} is not a valid address", url = url)),
         }
     }
 }

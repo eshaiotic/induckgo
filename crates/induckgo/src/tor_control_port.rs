@@ -30,7 +30,9 @@ pub struct TorControlPort {
 }
 
 impl TorControlPort {
-    const CLOSED: &'static str = "Tor closed its control port";
+    fn closed() -> String {
+        tr!("Tor closed its control port").to_owned()
+    }
 
     /// # Errors
     /// The control port cannot be reached.
@@ -40,7 +42,7 @@ impl TorControlPort {
         let connection = gio::SocketClient::new()
             .connect_future(&socket_address)
             .await
-            .map_err(|error| format!("cannot reach Tor's control port: {error}"))?;
+            .map_err(|error| tr!("Cannot reach Tor's control port: {error}", error = error))?;
         let input = gio::DataInputStream::new(&connection.input_stream());
         input.set_newline_type(gio::DataStreamNewlineType::CrLf);
         let waiting: WaitingCommands = Rc::new(RefCell::new(Some(VecDeque::new())));
@@ -54,13 +56,13 @@ impl TorControlPort {
     /// The connection broke before Tor answered.
     pub async fn send(&self, command: &ControlCommand) -> Result<ControlReply, String> {
         let (sender, answer) = oneshot::channel();
-        self.waiting.borrow_mut().as_mut().ok_or_else(|| Self::CLOSED.to_owned())?.push_back(sender);
+        self.waiting.borrow_mut().as_mut().ok_or_else(Self::closed)?.push_back(sender);
         self.connection
             .output_stream()
             .write_all_future(command.to_line().into_bytes(), glib::Priority::DEFAULT)
             .await
-            .map_err(|(_, error)| format!("cannot write to Tor's control port: {error}"))?;
-        answer.await.map_err(|_| Self::CLOSED.to_owned())?
+            .map_err(|(_, error)| tr!("Cannot write to Tor's control port: {error}", error = error))?;
+        answer.await.map_err(|_| Self::closed())?
     }
 
     /// Closes the connection; Tor, owned by this connection, exits.
@@ -83,8 +85,8 @@ impl TorControlPort {
                     Ok(None) => {}
                     Err(malformed) => break malformed.to_string(),
                 },
-                Ok(None) => break Self::CLOSED.to_owned(),
-                Err(error) => break format!("reading Tor's control port failed: {error}"),
+                Ok(None) => break Self::closed(),
+                Err(error) => break tr!("Reading Tor's control port failed: {error}", error = error),
             }
         };
         for sender in waiting.borrow_mut().take().into_iter().flatten() {

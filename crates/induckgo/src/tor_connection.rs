@@ -68,8 +68,6 @@ pub struct TorConnection {
 
 impl TorConnection {
     const LOG_DOMAIN: &'static str = "induckgo";
-    const NOT_INSTALLED: &'static str = "Tor is not installed. Install your distribution's tor package; the Tor \
-                                         window starts its own Tor and needs no Tor service running.";
     const SUPERSEDED: &'static str = "superseded by a newer start";
     const TERMINATE_SIGNAL: i32 = 15;
     const KEPT_LOG_LINES: usize = 4;
@@ -153,17 +151,17 @@ impl TorConnection {
     async fn run(self: &Rc<Self>, generation: u64) -> Result<(), String> {
         self.stop_running().await;
         self.ensure_current(generation)?;
-        let programs = Self::programs().ok_or_else(|| Self::NOT_INSTALLED.to_owned())?;
+        let programs = Self::programs().ok_or_else(Self::not_installed)?;
         let bridges = self.bridges();
         let configuration = TorConfiguration::new(self.data_directory.clone(), std::process::id(), &bridges, &programs)
             .map_err(|problem| problem.to_string())?;
         let torrc = configuration.to_torrc().map_err(|problem| problem.to_string())?;
         StoredFile::new(configuration.torrc_file())
             .write(torrc.as_bytes())
-            .map_err(|error| format!("cannot write Tor's configuration: {error}"))?;
+            .map_err(|error| tr!("Cannot write Tor's configuration: {error}", error = error))?;
         StoredFile::new(configuration.control_port_file())
             .remove()
-            .map_err(|error| format!("cannot remove Tor's old control port file: {error}"))?;
+            .map_err(|error| tr!("Cannot remove Tor's old control port file: {error}", error = error))?;
         let process = Self::spawn(&programs, &configuration)?;
         self.last_log.borrow_mut().clear();
         self.follow_log(&process);
@@ -182,9 +180,9 @@ impl TorConnection {
         self.ensure_current(generation)?;
         self.with_running(|running| running.control = Some(Rc::clone(&control)));
         let cookie = std::fs::read(configuration.cookie_file())
-            .map_err(|error| format!("cannot read Tor's control cookie: {error}"))?;
+            .map_err(|error| tr!("Cannot read Tor's control cookie: {error}", error = error))?;
         let authenticate =
-            ControlCommand::authenticate(&cookie).ok_or_else(|| "Tor's control cookie is damaged".to_owned())?;
+            ControlCommand::authenticate(&cookie).ok_or_else(|| tr!("Tor's control cookie is damaged").to_owned())?;
         for command in [authenticate, ControlCommand::TakeOwnership, ControlCommand::FollowStatus] {
             Self::accepted(control.send(&command).await?)?;
         }
@@ -192,7 +190,7 @@ impl TorConnection {
         let socks = listeners
             .value(ControlCommand::SOCKS_LISTENERS_KEY)
             .and_then(TorEndpoint::from_listeners)
-            .ok_or_else(|| "Tor opened no local SOCKS port".to_owned())?;
+            .ok_or_else(|| tr!("Tor opened no local SOCKS port").to_owned())?;
         self.ensure_current(generation)?;
         self.with_running(|running| running.socks = Some(socks));
         let phase = Self::accepted(control.send(&ControlCommand::GetBootstrapPhase).await?)?;
@@ -211,7 +209,7 @@ impl TorConnection {
         let mut command_line: Vec<OsString> = vec![programs.tor().into()];
         command_line.extend(configuration.command_line());
         let arguments: Vec<&OsStr> = command_line.iter().map(OsString::as_os_str).collect();
-        launcher.spawn(&arguments).map_err(|error| format!("cannot start Tor: {error}"))
+        launcher.spawn(&arguments).map_err(|error| tr!("Cannot start Tor: {error}", error = error))
     }
 
     /// Keeps Tor's last log lines (Tor's own logs scrub addresses) and passes them on as debug messages.
@@ -244,7 +242,7 @@ impl TorConnection {
                 control.close();
             }
             let log = connection.last_log.borrow().iter().cloned().collect::<Vec<String>>().join("\n");
-            connection.set_state(TorState::Failed(format!("Tor stopped.\n{log}").trim_end().to_owned()));
+            connection.set_state(TorState::Failed(format!("{}\n{log}", tr!("Tor stopped.")).trim_end().to_owned()));
         });
     }
 
@@ -263,7 +261,7 @@ impl TorConnection {
             glib::timeout_future(Self::CONTROL_PORT_POLL).await;
             waited += Self::CONTROL_PORT_POLL;
         }
-        Err("Tor did not open its control port".to_owned())
+        Err(tr!("Tor did not open its control port").to_owned())
     }
 
     async fn stop_running(&self) {
@@ -323,7 +321,14 @@ impl TorConnection {
     }
 
     fn accepted(reply: ControlReply) -> Result<ControlReply, String> {
-        if reply.is_success() { Ok(reply) } else { Err(format!("Tor refused: {}", reply.message())) }
+        if reply.is_success() { Ok(reply) } else { Err(tr!("Tor refused: {reason}", reason = reply.message())) }
+    }
+
+    fn not_installed() -> String {
+        tr!(
+            "Tor is not installed. Install your distribution's tor package; the Tor window starts its own Tor and needs no Tor service running."
+        )
+        .to_owned()
     }
 
     fn is_program(path: &Path) -> bool {

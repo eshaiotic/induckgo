@@ -28,6 +28,7 @@ use webkit6::prelude::WebViewExt;
 use crate::app_context::AppContext;
 use crate::external_launcher::ExternalLauncher;
 use crate::http_client::Fetched;
+use crate::interface_messages::InterfaceMessages;
 use crate::stored_file::StoredFile;
 
 pub struct WebAppInstaller;
@@ -49,7 +50,7 @@ impl WebAppInstaller {
         when_started: impl Fn(&InstalledWebApp) + 'static,
     ) {
         let Some(page_url) = web_view.uri().map(String::from).filter(|address| Self::is_web_address(address)) else {
-            toasts.add_toast(adw::Toast::new("Only web pages can be installed as apps"));
+            toasts.add_toast(adw::Toast::new(tr!("Only web pages can be installed as apps")));
             return;
         };
         let context = Rc::clone(context);
@@ -97,14 +98,15 @@ impl WebAppInstaller {
         let host =
             Url::parse(&draft.start_url).ok().and_then(|url| url.host_str().map(str::to_owned)).unwrap_or_default();
         let dialog = adw::AlertDialog::new(
-            Some("Install as App"),
-            Some(&format!(
-                "{host} will open in its own window, with cookies and logins kept apart from the browser and every other app."
+            Some(tr!("Install as App")),
+            Some(&tr!(
+                "{host} will open in its own window, with cookies and logins kept apart from the browser and every other app.",
+                host = host
             )),
         );
         let name = gtk::Entry::builder().text(&draft.name).activates_default(true).build();
         dialog.set_extra_child(Some(&name));
-        dialog.add_responses(&[(Self::CANCEL, "_Cancel"), (Self::INSTALL, "_Install")]);
+        dialog.add_responses(&[(Self::CANCEL, tr!("_Cancel")), (Self::INSTALL, tr!("_Install"))]);
         dialog.set_response_appearance(Self::INSTALL, adw::ResponseAppearance::Suggested);
         dialog.set_default_response(Some(Self::INSTALL));
         dialog.set_close_response(Self::CANCEL);
@@ -117,17 +119,19 @@ impl WebAppInstaller {
                 let toast = match Self::install(&context, &draft, &chosen_name, favicon).await {
                     Ok(app) if ExternalLauncher::start_web_app(&app.id) => {
                         when_started(&app);
-                        adw::Toast::new(&format!("Installed {}", app.name))
+                        adw::Toast::new(&tr!("Installed {name}", name = app.name))
                     }
                     Ok(app) => {
-                        let toast =
-                            adw::Toast::builder().title(format!("Installed {}", app.name)).button_label("Open").build();
+                        let toast = adw::Toast::builder()
+                            .title(tr!("Installed {name}", name = app.name))
+                            .button_label(tr!("Open"))
+                            .build();
                         toast.connect_button_clicked(move |_| {
                             ExternalLauncher::start_web_app(&app.id);
                         });
                         toast
                     }
-                    Err(error) => adw::Toast::new(&format!("Could not install the app: {error}")),
+                    Err(error) => adw::Toast::new(&tr!("Could not install the app: {error}", error = error)),
                 };
                 toasts.add_toast(toast);
             });
@@ -152,7 +156,7 @@ impl WebAppInstaller {
             None => context.icons.application_icon(),
         };
         let executable = ExternalLauncher::program()?;
-        let entry = DesktopEntry::new(&app, &executable, &icon);
+        let entry = DesktopEntry::new(&app, &executable, &icon, InterfaceMessages::catalogue());
         StoredFile::new(context.paths.desktop_entry(&entry.file_name())).write(entry.render().as_bytes())?;
         context.catalogs.save_web_apps(&catalog)?;
         Ok(app)

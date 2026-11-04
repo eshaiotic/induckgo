@@ -7,6 +7,7 @@
 
 use std::path::Path;
 
+use crate::language::message_catalogue::MessageCatalogue;
 use crate::web_app::installed_web_app::InstalledWebApp;
 use crate::web_app::web_app_id::WebAppId;
 
@@ -14,6 +15,7 @@ pub struct DesktopEntry<'app> {
     app: &'app InstalledWebApp,
     executable: &'app Path,
     icon: &'app Path,
+    catalogue: &'app MessageCatalogue,
 }
 
 impl<'app> DesktopEntry<'app> {
@@ -24,8 +26,13 @@ impl<'app> DesktopEntry<'app> {
         &[' ', '\t', '\n', '"', '\'', '\\', '>', '<', '~', '|', '&', ';', '$', '*', '?', '#', '(', ')', '`', '='];
 
     #[must_use]
-    pub fn new(app: &'app InstalledWebApp, executable: &'app Path, icon: &'app Path) -> Self {
-        Self { app, executable, icon }
+    pub fn new(
+        app: &'app InstalledWebApp,
+        executable: &'app Path,
+        icon: &'app Path,
+        catalogue: &'app MessageCatalogue,
+    ) -> Self {
+        Self { app, executable, icon, catalogue }
     }
 
     /// Named after the application id, which lets the desktop match windows to this entry.
@@ -46,7 +53,7 @@ impl<'app> DesktopEntry<'app> {
             "Type=Application".to_owned(),
             "Version=1.5".to_owned(),
             format!("Name={}", Self::escaped_value(&self.app.name)),
-            format!("Comment={}", Self::escaped_value(&format!("{} — InDuckGo web app", self.app.host()))),
+            format!("Comment={}", Self::escaped_value(&self.comment())),
             format!("Exec={}", Self::escaped_value(&self.exec_command())),
             format!("Icon={}", Self::escaped_value(&self.icon.to_string_lossy())),
             "Terminal=false".to_owned(),
@@ -57,6 +64,11 @@ impl<'app> DesktopEntry<'app> {
         let mut text = lines.join("\n");
         text.push('\n');
         text
+    }
+
+    /// The menu's tooltip for the app: where it lives and that InDuckGo runs it.
+    fn comment(&self) -> String {
+        self.catalogue.text_with("{host} — InDuckGo web app", &[("host", &self.app.host())])
     }
 
     /// `<executable> --web-app <id>`; the id is a slug and never needs quoting.

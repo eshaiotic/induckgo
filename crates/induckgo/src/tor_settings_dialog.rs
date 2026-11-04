@@ -45,7 +45,7 @@ impl TorSettingsDialog {
             .height_request(120)
             .build();
         let settings = Rc::new(Self {
-            dialog: adw::PreferencesDialog::builder().title("Tor Connection").build(),
+            dialog: adw::PreferencesDialog::builder().title(tr!("Tor Connection")).build(),
             direct,
             snowflake,
             obfs4,
@@ -61,30 +61,44 @@ impl TorSettingsDialog {
 
     fn build(self: &Rc<Self>) {
         let programs = TorConnection::programs();
-        let needs = |transport: PluggableTransport| {
-            let installed = programs.as_ref().is_some_and(|programs| programs.program_for(transport).is_some());
-            if installed { String::new() } else { format!(" Needs {}.", transport.package_hint()) }
+        let is_missing = |transport: PluggableTransport| {
+            programs.as_ref().is_none_or(|programs| programs.program_for(transport).is_none())
         };
         let choices = adw::PreferencesGroup::builder()
-            .title("How to Reach Tor")
-            .description("Bridges are unlisted Tor relays for networks that block Tor.")
+            .title(tr!("How to Reach Tor"))
+            .description(tr!("Bridges are unlisted Tor relays for networks that block Tor."))
             .build();
         let rows = [
-            (&self.direct, "Connect directly", "Best wherever Tor is not blocked.".to_owned()),
+            (&self.direct, tr!("Connect directly"), tr!("Best wherever Tor is not blocked.").to_owned()),
             (
                 &self.snowflake,
                 "Snowflake",
-                format!(
-                    "Through volunteers' browsers; works on most censored networks.{}",
-                    needs(PluggableTransport::Snowflake)
-                ),
+                if is_missing(PluggableTransport::Snowflake) {
+                    tr!(
+                        "Through volunteers' browsers; works on most censored networks. Needs {package}.",
+                        package = PluggableTransport::Snowflake.package_hint()
+                    )
+                } else {
+                    tr!("Through volunteers' browsers; works on most censored networks.").to_owned()
+                },
             ),
             (
                 &self.obfs4,
                 "obfs4",
-                format!("Disguised connections to Tor Browser's built-in bridges.{}", needs(PluggableTransport::Obfs4)),
+                if is_missing(PluggableTransport::Obfs4) {
+                    tr!(
+                        "Disguised connections to Tor Browser's built-in bridges. Needs {package}.",
+                        package = PluggableTransport::Obfs4.package_hint()
+                    )
+                } else {
+                    tr!("Disguised connections to Tor Browser's built-in bridges.").to_owned()
+                },
             ),
-            (&self.custom, "Bridges I provide", "From bridges.torproject.org, by e-mail or from a friend.".to_owned()),
+            (
+                &self.custom,
+                tr!("Bridges I provide"),
+                tr!("From bridges.torproject.org, by e-mail or from a friend.").to_owned(),
+            ),
         ];
         for (check, title, subtitle) in rows {
             let row = adw::ActionRow::builder().title(title).subtitle(subtitle).activatable_widget(check).build();
@@ -92,8 +106,8 @@ impl TorSettingsDialog {
             choices.add(&row);
         }
         let own = adw::PreferencesGroup::builder()
-            .title("Your Bridges")
-            .description("One bridge per line, for example: obfs4 192.0.2.1:443 FINGERPRINT cert=… iat-mode=0")
+            .title(tr!("Your Bridges"))
+            .description(tr!("One bridge per line, for example: obfs4 192.0.2.1:443 FINGERPRINT cert=… iat-mode=0"))
             .build();
         own.add(&gtk::Frame::builder().child(&self.custom_lines).build());
         own.add(&self.problem);
@@ -104,7 +118,7 @@ impl TorSettingsDialog {
             }
         });
         let connect = gtk::Button::builder()
-            .label("Connect")
+            .label(tr!("Connect"))
             .halign(gtk::Align::Center)
             .margin_top(12)
             .css_classes(["pill", "suggested-action"])
@@ -148,7 +162,7 @@ impl TorSettingsDialog {
             let buffer = self.custom_lines.buffer();
             match BridgeLine::parse_all(&buffer.text(&buffer.start_iter(), &buffer.end_iter(), false)) {
                 Ok(bridges) if !bridges.is_empty() => BridgeChoice::Custom(bridges),
-                Ok(_) => return self.show_problem("Paste at least one bridge."),
+                Ok(_) => return self.show_problem(tr!("Paste at least one bridge.")),
                 Err(invalid) => return self.show_problem(&invalid.to_string()),
             }
         } else {

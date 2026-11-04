@@ -101,7 +101,7 @@ impl ProfileFiles {
 
     /// Error text when `application_id` runs elsewhere, so its data must stay.
     fn in_use_message(name: &str, application_id: &ApplicationId) -> Option<String> {
-        RunningInstances::may_be_running(application_id).then(|| format!("Close {name} before deleting it"))
+        RunningInstances::may_be_running(application_id).then(|| tr!("Close {name} before deleting it", name = name))
     }
 }
 
@@ -113,14 +113,14 @@ pub struct ProfilesDialog {
 
 impl ProfilesDialog {
     pub fn present(context: &Rc<AppContext>, parent: &impl IsA<gtk::Widget>) {
-        let dialog = adw::PreferencesDialog::builder().title("Profiles").build();
+        let dialog = adw::PreferencesDialog::builder().title(tr!("Profiles")).build();
         let page = adw::PreferencesPage::new();
         let profiles = RowList::new(
-            "Profiles",
-            "Each profile keeps its own cookies, logins, history and cache, and runs as a separate process.",
+            tr!("Profiles"),
+            tr!("Each profile keeps its own cookies, logins, history and cache, and runs as a separate process."),
         );
         let creation = adw::PreferencesGroup::new();
-        let new_profile = adw::EntryRow::builder().title("New profile name").show_apply_button(true).build();
+        let new_profile = adw::EntryRow::builder().title(tr!("New profile name")).show_apply_button(true).build();
         creation.add(&new_profile);
         page.add(&profiles.group);
         page.add(&creation);
@@ -149,10 +149,11 @@ impl ProfilesDialog {
             .profiles()
             .map(|profile| {
                 let id = profile.id.clone();
-                let mut buttons = vec![RowList::button("Open", false, move || ExternalLauncher::start_profile(&id))];
+                let mut buttons =
+                    vec![RowList::button(tr!("Open"), false, move || ExternalLauncher::start_profile(&id))];
                 if !profile.id.is_default() && Some(&profile.id) != current.as_ref() {
                     let (manager, id, name) = (Rc::downgrade(self), profile.id.clone(), profile.name.clone());
-                    buttons.push(RowList::button("Delete", true, move || {
+                    buttons.push(RowList::button(tr!("Delete"), true, move || {
                         if let Some(manager) = manager.upgrade() {
                             manager.delete(&id, &name);
                         }
@@ -199,11 +200,11 @@ pub struct WebAppsDialog {
 
 impl WebAppsDialog {
     pub fn present(context: &Rc<AppContext>, parent: &impl IsA<gtk::Widget>) {
-        let dialog = adw::PreferencesDialog::builder().title("Installed Apps").build();
+        let dialog = adw::PreferencesDialog::builder().title(tr!("Installed Apps")).build();
         let page = adw::PreferencesPage::new();
         let web_apps = RowList::new(
-            "Installed Apps",
-            "Each app runs in its own window and process, with cookies and logins of its own.",
+            tr!("Installed Apps"),
+            tr!("Each app runs in its own window and process, with cookies and logins of its own."),
         );
         page.add(&web_apps.group);
         dialog.add(&page);
@@ -221,11 +222,11 @@ impl WebAppsDialog {
             .web_apps()
             .map(|app| {
                 let id = app.id.clone();
-                let open = RowList::button("Open", false, move || {
+                let open = RowList::button(tr!("Open"), false, move || {
                     ExternalLauncher::start_web_app(&id);
                 });
                 let (manager, installed) = (Rc::downgrade(self), app.clone());
-                let uninstall = RowList::button("Uninstall", true, move || {
+                let uninstall = RowList::button(tr!("Uninstall"), true, move || {
                     if let Some(manager) = manager.upgrade() {
                         manager.uninstall(&installed);
                     }
@@ -253,7 +254,7 @@ impl WebAppsDialog {
             .and_then(|()| icon.parent().map_or(Ok(()), ProfileFiles::delete_directory))
             .and_then(|()| ProfileFiles::delete(&paths.profile(&app.id.profile_id())));
         if let Err(error) = removed {
-            self.dialog.add_toast(adw::Toast::new(&format!("Could not remove everything: {error}")));
+            self.dialog.add_toast(adw::Toast::new(&tr!("Could not remove everything: {error}", error = error)));
         }
         self.rebuild();
     }

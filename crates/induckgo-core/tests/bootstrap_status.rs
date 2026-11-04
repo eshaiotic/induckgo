@@ -1,5 +1,6 @@
 //! Following Tor's connection progress for the Tor window's connection screen.
 
+use induckgo_core::language::message_catalogue::MessageCatalogue;
 use induckgo_core::tor::bootstrap_status::BootstrapStatus;
 
 struct BootstrapReportScenario {
@@ -26,11 +27,16 @@ impl BootstrapOutcome {
     }
 
     fn then_shows(&self, progress: u8, summary: &str) {
-        assert_eq!((self.status().progress(), self.status().summary()), (progress, summary));
+        let catalogue = MessageCatalogue::untranslated();
+        assert_eq!((self.status().progress(), self.status().summary(&catalogue)), (progress, summary));
     }
 
     fn then_reports_problem(&self, problem: Option<&str>) {
-        assert_eq!(self.status().problem(), problem);
+        assert_eq!(self.status().problem(&MessageCatalogue::untranslated()), problem);
+    }
+
+    fn then_shows_in(&self, catalogue: &MessageCatalogue, summary: &str) {
+        assert_eq!(self.status().summary(catalogue), summary);
     }
 
     fn then_is_connected(&self) {
@@ -89,4 +95,34 @@ fn should_ignore_other_client_status_reports() {
 #[test]
 fn should_ignore_progress_beyond_one_hundred_percent() {
     BootstrapReportScenario::given_report("NOTICE BOOTSTRAP PROGRESS=250").when_read().then_is_not_a_bootstrap_report();
+}
+
+#[test]
+fn should_show_a_known_step_in_the_interface_language_instead_of_tors_english() {
+    let catalogue =
+        MessageCatalogue::parse("msgid \"Loading relay descriptors\"\nmsgstr \"Ładowanie opisów przekaźników\"\n");
+
+    BootstrapReportScenario::given_report(
+        "NOTICE BOOTSTRAP PROGRESS=50 TAG=loading_descriptors SUMMARY=\"Loading relay descriptors\"",
+    )
+    .when_read()
+    .then_shows_in(&catalogue, "Ładowanie opisów przekaźników");
+}
+
+#[test]
+fn should_fall_back_to_tors_own_words_for_a_step_it_added_later() {
+    let catalogue = MessageCatalogue::parse("msgid \"Done\"\nmsgstr \"Gotowe\"\n");
+
+    BootstrapReportScenario::given_report(
+        "NOTICE BOOTSTRAP PROGRESS=42 TAG=brand_new_step SUMMARY=\"Doing a new thing\"",
+    )
+    .when_read()
+    .then_shows_in(&catalogue, "Doing a new thing");
+}
+
+#[test]
+fn should_describe_a_warning_without_text_in_the_interface_language() {
+    BootstrapReportScenario::given_report("WARN BOOTSTRAP PROGRESS=10 RECOMMENDATION=warn")
+        .when_read()
+        .then_reports_problem(Some("Tor reported a problem"));
 }

@@ -4,6 +4,7 @@
 
 use std::path::Path;
 
+use induckgo_core::language::message_catalogue::MessageCatalogue;
 use induckgo_core::web_app::desktop_entry::DesktopEntry;
 use induckgo_core::web_app::web_app_catalog::WebAppCatalog;
 
@@ -26,10 +27,12 @@ impl DesktopEntryScenario {
 
     fn when_desktop_entry_is_rendered(&self) -> RenderedDesktopEntry {
         let app = self.catalog.web_apps().next().expect("one web app");
+        let catalogue = MessageCatalogue::untranslated();
         let entry = DesktopEntry::new(
             app,
             Path::new(&self.executable),
             Path::new("/home/me/.local/share/induckgo/web-apps/online_mbank_pl/icon.png"),
+            &catalogue,
         );
         RenderedDesktopEntry { file_name: entry.file_name(), text: entry.render() }
     }

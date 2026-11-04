@@ -19,17 +19,19 @@ pub enum ToolbarButton {
     TorWindow,
     Protections,
     BurnData,
+    Downloads,
     NewTab,
     InstallApp,
 }
 
 impl ToolbarButton {
-    pub const ALL: [Self; 7] = [
+    pub const ALL: [Self; 8] = [
         Self::BackAndForward,
         Self::Reload,
         Self::TorWindow,
         Self::Protections,
         Self::BurnData,
+        Self::Downloads,
         Self::NewTab,
         Self::InstallApp,
     ];
@@ -43,6 +45,7 @@ impl ToolbarButton {
             Self::TorWindow => "torWindow",
             Self::Protections => "protections",
             Self::BurnData => "burnData",
+            Self::Downloads => "downloads",
             Self::NewTab => "newTab",
             Self::InstallApp => "installApp",
         }

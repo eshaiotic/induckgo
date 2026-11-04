@@ -7,12 +7,16 @@
 
 use std::rc::Rc;
 
+use adw::prelude::ActionRowExt;
 use adw::prelude::AdwDialogExt;
 use adw::prelude::ComboRowExt;
 use adw::prelude::ObjectExt;
 use adw::prelude::PreferencesDialogExt;
 use adw::prelude::PreferencesGroupExt;
 use adw::prelude::PreferencesPageExt;
+use gio::prelude::FileExt;
+use gtk::prelude::AccessibleExtManual;
+use gtk::prelude::ButtonExt;
 use induckgo_core::language::interface_language::InterfaceLanguage;
 use induckgo_core::language::language_choice::LanguageChoice;
 use induckgo_core::profile::toolbar_layout::ToolbarButton;
@@ -27,6 +31,7 @@ impl PreferencesDialog {
         let dialog = adw::PreferencesDialog::builder().title(tr!("Preferences")).build();
         dialog.add(&Self::interface_page(context, &dialog));
         dialog.add(&Self::appearance_page(context));
+        dialog.add(&Self::downloads_page(context, parent));
         dialog.present(Some(parent));
     }
 
@@ -115,6 +120,57 @@ impl PreferencesDialog {
         page
     }
 
+    /// The Downloads page: whether each download asks where to go, and the folder it goes to otherwise.
+    fn downloads_page(context: &Rc<AppContext>, parent: &adw::ApplicationWindow) -> adw::PreferencesPage {
+        let downloads = Rc::clone(context.session.downloads());
+        let asking = adw::SwitchRow::builder()
+            .title(tr!("Ask Where to Save Each File"))
+            .subtitle(tr!("Otherwise files go straight to the download folder"))
+            .active(downloads.asks_where_to_save())
+            .build();
+        let center = Rc::clone(&downloads);
+        asking.connect_active_notify(move |row| center.set_asking(row.is_active()));
+        let folder = adw::ActionRow::builder()
+            .title(tr!("Download Folder"))
+            .subtitle(downloads.folder().display().to_string())
+            .build();
+        let choose = gtk::Button::builder()
+            .icon_name("folder-open-symbolic")
+            .tooltip_text(tr!("Choose Folder"))
+            .valign(gtk::Align::Center)
+            .css_classes(["flat"])
+            .build();
+        choose.update_property(&[gtk::accessible::Property::Label(tr!("Choose Folder"))]);
+        let center = Rc::clone(&downloads);
+        let parent = parent.downgrade();
+        choose.connect_clicked(move |_| {
+            let dialog = gtk::FileDialog::builder().title(tr!("Download Folder")).accept_label(tr!("_Select")).build();
+            dialog.set_initial_folder(Some(&gio::File::for_path(center.folder())));
+            let center = Rc::clone(&center);
+            let window = parent.upgrade();
+            dialog.select_folder(window.as_ref(), None::<&gio::Cancellable>, move |chosen| {
+                if let Some(path) = chosen.ok().and_then(|folder| folder.path()) {
+                    center.set_folder(path);
+                }
+            });
+        });
+        folder.add_suffix(&choose);
+        let shown = Rc::clone(&downloads);
+        let row = folder.downgrade();
+        downloads.observe(move || {
+            let Some(row) = row.upgrade() else { return glib::ControlFlow::Break };
+            row.set_subtitle(&shown.folder().display().to_string());
+            glib::ControlFlow::Continue
+        });
+        let group = adw::PreferencesGroup::builder().title(tr!("Downloads")).build();
+        group.add(&asking);
+        group.add(&folder);
+        let page =
+            adw::PreferencesPage::builder().title(tr!("Downloads")).icon_name("folder-download-symbolic").build();
+        page.add(&group);
+        page
+    }
+
     fn describe(button: ToolbarButton) -> (&'static str, &'static str) {
         match button {
             ToolbarButton::BackAndForward => (tr!("Back and Forward"), tr!("Go to the previous or next page")),
@@ -126,6 +182,7 @@ impl PreferencesDialog {
             ToolbarButton::BurnData => {
                 (tr!("Burn Browsing Data"), tr!("Delete this profile's cookies, site data and cache"))
             }
+            ToolbarButton::Downloads => (tr!("Downloads"), tr!("The five latest downloads, and the download folder")),
             ToolbarButton::NewTab => (tr!("New Tab"), tr!("Open a new tab")),
             ToolbarButton::InstallApp => (tr!("Install Site as App"), tr!("The icon at the end of the address bar")),
         }

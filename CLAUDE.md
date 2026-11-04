@@ -12,6 +12,10 @@ This file is an index; the content lives in the linked documents.
 
 - [Architecture overview](docs/en/architecture/overview.md) — process per profile/web app, protection pipeline, WebKitGTK limits.
 - [Przegląd architektury (PL)](docs/pl/architecture/overview.md) — polish mirror of the architecture overview.
+- [Interface language](docs/en/architecture/interface-language.md) — 68 languages, system default, `tr!` messages, `.po` catalogues, how to add one.
+- [Język interfejsu (PL)](docs/pl/architecture/interface-language.md) — polish mirror of the interface-language document.
+- [Downloads](docs/en/architecture/downloads.md) — save-folder choice, recent-downloads list, toolbar button and menu entry.
+- [Pobieranie plików (PL)](docs/pl/architecture/downloads.md) — polish mirror of the downloads document.
 - `docs/assets/diagrams/` — SVG + PNG diagrams, one file per language (`.en` / `.pl`).
 
 ## Reports

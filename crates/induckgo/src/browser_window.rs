@@ -22,11 +22,10 @@ use gtk::prelude::EditableExt;
 use gtk::prelude::EntryExt;
 use gtk::prelude::GtkApplicationExt;
 use gtk::prelude::GtkWindowExt;
-use gtk::prelude::ToVariant;
+use gtk::prelude::PopoverExt;
 use gtk::prelude::ToggleButtonExt;
 use gtk::prelude::WidgetExt;
 use induckgo_core::navigation::address_bar_input::AddressBarInput;
-use induckgo_core::navigation::search_engine::SearchEngine;
 use induckgo_core::page_zoom::zoom_level::ZoomLevel;
 use induckgo_core::profile::toolbar_layout::ToolbarButton;
 use induckgo_core::protection::domain_name::DomainName;
@@ -37,7 +36,9 @@ use webkit6::prelude::WebViewExt;
 
 use crate::app_context::AppContext;
 use crate::app_icons::AppIcons;
+use crate::downloads_list::DownloadsList;
 use crate::find_bar::FindBar;
+use crate::main_menu::MainMenu;
 use crate::management_dialogs::ProfilesDialog;
 use crate::management_dialogs::WebAppsDialog;
 use crate::page_view::PageView;
@@ -59,6 +60,7 @@ pub struct BrowserWindow {
     address: gtk::Entry,
     reload: gtk::Button,
     shield: gtk::ToggleButton,
+    downloads: gtk::MenuButton,
     find_bar: Rc<FindBar>,
     zoom: ZoomControls,
     toasts: adw::ToastOverlay,
@@ -98,6 +100,10 @@ impl BrowserWindow {
             shield: gtk::ToggleButton::builder()
                 .icon_name("security-high-symbolic")
                 .tooltip_text(tr!("Tracker protection on this site"))
+                .build(),
+            downloads: gtk::MenuButton::builder()
+                .icon_name("folder-download-symbolic")
+                .tooltip_text(tr!("Downloads"))
                 .build(),
             tab_view,
             address,
@@ -205,10 +211,12 @@ impl BrowserWindow {
         menu.set_create_popup_func(move |button| {
             if let Some(browser) = browser.upgrade() {
                 let level = browser.selected_page().map_or(ZoomLevel::ACTUAL_SIZE, |page| page.zoom_level());
-                button.set_menu_model(Some(&Self::menu_model(&browser.context, level)));
+                button.set_popover(Some(&MainMenu::popover(&browser.context, level)));
             }
         });
+        self.downloads.set_popover(Some(&Self::downloads_popover(&self.context)));
         header.pack_end(&menu);
+        header.pack_end(&self.downloads);
         header.pack_end(&new_tab);
         header.pack_end(&fire);
         header.pack_end(&self.shield);
@@ -220,6 +228,7 @@ impl BrowserWindow {
             (ToolbarButton::TorWindow, tor_window),
             (ToolbarButton::Protections, self.shield.clone().upcast()),
             (ToolbarButton::BurnData, fire),
+            (ToolbarButton::Downloads, self.downloads.clone().upcast()),
             (ToolbarButton::NewTab, new_tab),
         ]);
         self.show_toolbar_buttons();
@@ -237,57 +246,26 @@ impl BrowserWindow {
         self.window.set_title(Some(&self.product_title()));
     }
 
-    fn menu_model(context: &AppContext, zoom: ZoomLevel) -> gio::Menu {
-        let menu = gio::Menu::new();
-        let tabs = gio::Menu::new();
-        tabs.append(Some(tr!("New Tab")), Some("win.new-tab"));
-        if context.tor.is_none() {
-            tabs.append(Some(tr!("New Window")), Some("app.new-window"));
+    fn downloads_popover(context: &AppContext) -> gtk::Popover {
+        gtk::Popover::builder().child(DownloadsList::new(context.session.downloads()).widget()).build()
+    }
+
+    /// The main menu's "Downloads": the toolbar button's list, or, when that button is hidden, the same list
+    /// at the window's top right corner.
+    fn show_downloads(self: &Rc<Self>) {
+        if self.downloads.is_visible() {
+            self.downloads.popup();
+            return;
         }
-        tabs.append(Some(tr!("New Tor Window")), Some("app.new-tor-window"));
-        menu.append_section(None, &tabs);
-        let page = gio::Menu::new();
-        page.append(Some(tr!("Find in Page…")), Some("win.find"));
-        menu.append_section(None, &page);
-        menu.append_item(&ZoomControls::menu_row(zoom));
-        if context.tor.is_some() {
-            let tor = gio::Menu::new();
-            tor.append(Some(tr!("New Identity")), Some("win.fire"));
-            tor.append(Some(tr!("Tor Connection…")), Some(TorConnectionPage::SETTINGS_ACTION));
-            menu.append_section(None, &tor);
-            let about = gio::Menu::new();
-            about.append(Some(tr!("About InDuckGo")), Some("app.about"));
-            menu.append_section(None, &about);
-            return menu;
-        }
-        let apps = gio::Menu::new();
-        apps.append(Some(tr!("Install Site as App…")), Some("win.install-web-app"));
-        apps.append(Some(tr!("Installed Apps…")), Some("win.manage-web-apps"));
-        menu.append_section(None, &apps);
-        let profiles = gio::Menu::new();
-        for profile in context.catalogs.profiles().profiles() {
-            let item = gio::MenuItem::new(Some(&profile.name), None);
-            item.set_action_and_target_value(Some("app.open-profile"), Some(&profile.id.as_str().to_variant()));
-            profiles.append_item(&item);
-        }
-        profiles.append(Some(tr!("Manage Profiles…")), Some("win.manage-profiles"));
-        menu.append_section(Some(tr!("Profiles")), &profiles);
-        let search_engines = gio::Menu::new();
-        for engine in SearchEngine::ALL {
-            let item = gio::MenuItem::new(Some(engine.name()), None);
-            item.set_action_and_target_value(Some("app.search-engine"), Some(&engine.id().to_variant()));
-            search_engines.append_item(&item);
-        }
-        let about = gio::Menu::new();
-        about.append_submenu(Some(tr!("Search Engine")), &search_engines);
-        about.append(Some(tr!("Preferences…")), Some("win.preferences"));
-        about.append(Some(tr!("About InDuckGo")), Some("app.about"));
-        menu.append_section(None, &about);
-        menu
+        let popover = Self::downloads_popover(&self.context);
+        popover.set_parent(&self.window);
+        popover.set_pointing_to(Some(&gtk::gdk::Rectangle::new(self.window.width() - 48, 48, 1, 1)));
+        popover.connect_closed(WidgetExt::unparent);
+        popover.popup();
     }
 
     fn install_actions(self: &Rc<Self>) {
-        let actions: [BrowserCommand; 17] = [
+        let actions: [BrowserCommand; 18] = [
             ("back", |browser| browser.with_web_view(WebViewExt::go_back)),
             ("forward", |browser| browser.with_web_view(WebViewExt::go_forward)),
             ("reload", |browser| {
@@ -311,6 +289,7 @@ impl BrowserWindow {
             ("zoom-in", |browser| browser.change_zoom(ZoomLevel::zoomed_in)),
             ("zoom-out", |browser| browser.change_zoom(ZoomLevel::zoomed_out)),
             ("zoom-reset", |browser| browser.change_zoom(|_| ZoomLevel::ACTUAL_SIZE)),
+            ("downloads", Self::show_downloads),
             ("fire", Self::confirm_fire),
             ("install-web-app", Self::install_web_app),
             ("manage-web-apps", |browser| WebAppsDialog::present(&browser.context, &browser.window)),

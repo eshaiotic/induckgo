@@ -43,6 +43,9 @@ msgstr ""
 msgid "Applies the next time InDuckGo starts"
 msgstr ""
 
+msgid "Ask Where to Save Each File"
+msgstr ""
+
 msgid "Asking for relay descriptors"
 msgstr ""
 
@@ -116,6 +119,9 @@ msgid "Check the network cable or the Wi-Fi connection."
 msgstr ""
 
 msgid "Check your internet connection."
+msgstr ""
+
+msgid "Choose Folder"
 msgstr ""
 
 msgid "Clear App Data…"
@@ -208,6 +214,12 @@ msgstr ""
 msgid "Disguised connections to Tor Browser's built-in bridges. Needs {package}."
 msgstr ""
 
+msgid "Download Folder"
+msgstr ""
+
+msgid "Download failed"
+msgstr ""
+
 msgid "Download failed: {error}"
 msgstr ""
 
@@ -215,6 +227,15 @@ msgid "Downloaded at run time from DuckDuckGo; licensed CC BY-NC-SA 4.0."
 msgstr ""
 
 msgid "Downloaded {name}"
+msgstr ""
+
+msgid "Downloading…"
+msgstr ""
+
+msgid "Downloading… {percent}%"
+msgstr ""
+
+msgid "Downloads"
 msgstr ""
 
 msgid "DuckDuckGo protections"
@@ -257,6 +278,9 @@ msgid "Forward"
 msgstr ""
 
 msgid "From bridges.torproject.org, by e-mail or from a friend."
+msgstr ""
+
+msgid "Go to Download Folder"
 msgstr ""
 
 msgid "Go to Home Page"
@@ -376,6 +400,9 @@ msgstr ""
 msgid "New profile name"
 msgstr ""
 
+msgid "No downloads yet"
+msgstr ""
+
 msgid "One bridge per line, for example: obfs4 192.0.2.1:443 FINGERPRINT cert=… iat-mode=0"
 msgstr ""
 
@@ -395,6 +422,9 @@ msgid "Open a window whose traffic goes only through Tor"
 msgstr ""
 
 msgid "Other applications do not open from the Tor window: they would connect outside Tor."
+msgstr ""
+
+msgid "Otherwise files go straight to the download folder"
 msgstr ""
 
 msgid "Pages stay unopened until the Tor window is connected."
@@ -431,6 +461,9 @@ msgid "Reload Page"
 msgstr ""
 
 msgid "Reset Zoom"
+msgstr ""
+
+msgid "Save File"
 msgstr ""
 
 msgid "Search Engine"
@@ -488,6 +521,9 @@ msgid "The certificate wasn’t issued by an authority this computer trusts."
 msgstr ""
 
 msgid "The connection to {host} was interrupted."
+msgstr ""
+
+msgid "The five latest downloads, and the download folder"
 msgstr ""
 
 msgid "The icon at the end of the address bar"
@@ -650,6 +686,12 @@ msgid "_Install"
 msgstr ""
 
 msgid "_New Identity"
+msgstr ""
+
+msgid "_Save"
+msgstr ""
+
+msgid "_Select"
 msgstr ""
 
 msgid "obfs4proxy (Debian, Ubuntu), obfs4 (Fedora) or obfs4proxy from the AUR (Arch)"

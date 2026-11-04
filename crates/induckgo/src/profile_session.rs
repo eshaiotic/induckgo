@@ -57,6 +57,7 @@ use webkit6::WebView;
 use webkit6::WebsiteDataTypes;
 
 use crate::closed_proxy::ClosedProxy;
+use crate::download_center::DownloadCenter;
 use crate::download_tracker::DownloadTracker;
 use crate::filter_list_feed::FilterListFeed;
 use crate::http_client::HttpClient;
@@ -99,6 +100,7 @@ struct SessionStorage {
     unprotected_sites: StoredFile,
     search_engine: StoredFile,
     site_zoom: StoredFile,
+    downloads: Rc<DownloadCenter>,
     default_search_engine: SearchEngine,
     burned: WebsiteDataTypes,
     /// Deleted at start and on close.
@@ -170,7 +172,8 @@ pub struct ProfileSession {
     /// What rebuilds promised (reloads, Guard left out), kept for whichever rebuild activates rules.
     pending: RefCell<PendingRuleChanges<Box<dyn FnOnce()>>>,
     started: Instant,
-    _downloads: DownloadTracker,
+    downloads: Rc<DownloadCenter>,
+    _download_tracker: DownloadTracker,
 }
 
 impl ProfileSession {
@@ -192,6 +195,11 @@ impl ProfileSession {
             unprotected_sites: StoredFile::new(location.data.join("unprotected-sites.json")),
             search_engine: StoredFile::new(location.data.join("search-engine.json")),
             site_zoom: StoredFile::new(location.data.join("site-zoom-levels.json")),
+            downloads: DownloadCenter::load(
+                StoredFile::new(location.data.join(DownloadCenter::HISTORY_FILE_NAME)),
+                StoredFile::new(location.data.join(DownloadCenter::SETTINGS_FILE_NAME)),
+                paths.downloads(),
+            ),
             default_search_engine: SearchEngine::default(),
             // The HSTS list is kept: forgetting it would let a network attacker downgrade sites to plain HTTP.
             burned: WebsiteDataTypes::all() - WebsiteDataTypes::HSTS_CACHE,
@@ -199,7 +207,7 @@ impl ProfileSession {
             is_routed: true,
             closed_proxy: None,
         };
-        Self::assemble(storage, paths, http)
+        Self::assemble(storage, http)
     }
 
     /// The Tor window's session: nothing on disk, no page before [`Self::route_through_tor`]; `http` must be
@@ -232,13 +240,14 @@ impl ProfileSession {
             unprotected_sites: StoredFile::discarded(),
             search_engine: StoredFile::discarded(),
             site_zoom: StoredFile::discarded(),
+            downloads: DownloadCenter::load(StoredFile::discarded(), StoredFile::discarded(), paths.downloads()),
             default_search_engine: SearchEngine::DUCKDUCKGO_ONION,
             burned: WebsiteDataTypes::all(),
             scratch: Some(scratch),
             is_routed: false,
             closed_proxy,
         };
-        let session = Self::assemble(storage, paths, http);
+        let session = Self::assemble(storage, http);
         session.await_tor();
         session
     }
@@ -267,7 +276,7 @@ impl ProfileSession {
         }
     }
 
-    fn assemble(storage: SessionStorage, paths: &InstallationPaths, http: Rc<HttpClient>) -> Rc<Self> {
+    fn assemble(storage: SessionStorage, http: Rc<HttpClient>) -> Rc<Self> {
         let search_engine = storage.search_engine.read_json().map(|document| SearchEngine::from_json(&document));
         let unprotected_sites = storage
             .unprotected_sites
@@ -277,7 +286,8 @@ impl ProfileSession {
         let filter_list_feed = FilterListFeed::new(&storage.feed);
         let session = Rc::new(Self {
             profile: storage.profile,
-            _downloads: DownloadTracker::watch(&storage.network_session, paths.downloads()),
+            _download_tracker: DownloadTracker::watch(&storage.network_session, &storage.downloads),
+            downloads: storage.downloads,
             network_session: storage.network_session,
             settings: storage.settings,
             protections: PageProtections::new(&storage.content_filters),
@@ -312,6 +322,11 @@ impl ProfileSession {
         }
         Self::keep_refreshing(Rc::downgrade(&session));
         session
+    }
+
+    /// The recent downloads and download settings of this session.
+    pub fn downloads(&self) -> &Rc<DownloadCenter> {
+        &self.downloads
     }
 
     /// `None` for the Tor window's session, which belongs to no profile.

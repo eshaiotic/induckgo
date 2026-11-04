@@ -193,6 +193,30 @@ karcie: `nvh264dec` i `vah264dec` mają wyższy priorytet niż `avdec_h264`); de
 dekoderów sprzętowych niczego wymiernie nie zmieniło); ochrony InDuckGo (w spoczynku na tej stronie zużywa mniej niż
 goły WebKitGTK, bo blokuje trackery); liczba wątków malowania Skia i `WEBKIT_DISABLE_COMPOSITING_MODE` (bez zysku).
 
+**Druga przyczyna (znaleziona po pierwszej poprawce): skrypt strony Guarda.** Z rendererem OpenGL InDuckGo nadal
+przewijał tę stronę z prędkością 4 klatek/s, z przerwami 0,8–1,4 s, podczas gdy goły WebKitGTK dawał 47 klatek/s.
+Główny wątek procesu strony był zajęty w 95 % (goły: 35 %). Wyłączanie po jednej warstwie (tymczasowy build,
+niezachowany) wskazało winowajcę:
+
+| Wyłączone | Klatki/s | 95. percentyl przerwy | Główny wątek procesu strony |
+|---|---|---|---|
+| nic | 4,2 | 760 ms | 95 % |
+| Content Scope Scripts | 4,0 | 1090 ms | 94 % |
+| reguły blokera treści | 51,5 | 34 ms | 34 % |
+| skrypt strony Guarda | 58,2 | 19 ms | 37 % |
+
+(Bez reguł skrypt Guarda nie znajduje żadnej listy i od razu kończy, więc te dwa wiersze mierzą to samo.)
+`generic-hiding.js` obserwuje każdą zmianę `id` i `class` i co 50 ms testuje każdy zmieniony element względem
+wszystkich selektorów ogólnych bez klasy i id (`matches` i `querySelector` z jedną bardzo długą listą selektorów).
+19 animacji przewijania na stronie zmienia klasy w każdej klatce, a ten sam element trafiał do kolejki przy każdej
+zmianie, więc testy powtarzały się tysiące razy dla stanów już sprawdzonych.
+**Poprawka:** kolejka to `Set`, a zmieniony element trafia do niej tylko wtedy, gdy jego stan `id|class` nie był
+jeszcze testowany (ukrywanie jest trwałe, więc powtórzony stan nie ukryje niczego nowego). Ta sama strona, te same
+zabezpieczenia: 57–59 klatek/s, 95. percentyl przerwy 18 ms, główny wątek procesu strony 18–20 %, na poziomie
+Brave (59,5 klatki/s). Ukrywanie nadal działa, także dla klasy zmienionej po załadowaniu. Skrypt nie ma jeszcze
+własnego testu automatycznego; sprawdziłem go stroną, która dodaje, zdejmuje i znów dodaje `ad-banner` i odczytuje
+obliczone `display`.
+
 **Co zostaje.** Z rendererem OpenGL przebieg ląduje w jednym z dwóch trybów: ok. 59 fps (p95 19 ms) albo ok. 49 fps
 (p95 34 ms, co ósma klatka trwa dwa odświeżenia), z wideo i bez, podczas gdy Brave trzyma 59,5 w każdym przebiegu.
 Prywatny kompozytor to wirtualne wyjście 60 Hz napędzane zegarem, więc część może być artefaktem pomiaru; trzeba to

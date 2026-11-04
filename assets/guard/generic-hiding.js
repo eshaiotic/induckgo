@@ -31,7 +31,10 @@
   const hidden = new Set();
   const reported = new Set();
   let pendingTokens = [];
-  let pendingElements = [];
+  let pendingElements = new Set();
+  // The id and classes each element was tested with: pages toggle the same few states over and over (scroll
+  // animations do it every frame), and a state that was tested once hides nothing new the next time.
+  const testedStates = new WeakMap();
   let unkeyed = null;
   let flushing = false;
   let timer = 0;
@@ -64,10 +67,22 @@
     }
   }
 
+  function isNewState(element) {
+    const state = `${element.getAttribute("id")}|${element.getAttribute("class")}`;
+    const seen = testedStates.get(element);
+    if (!seen) {
+      testedStates.set(element, new Set([state]));
+      return true;
+    }
+    if (seen.has(state)) return false;
+    seen.add(state);
+    return true;
+  }
+
   function survey(element) {
     note(element);
     for (const descendant of element.querySelectorAll("[id],[class]")) note(descendant);
-    pendingElements.push(element);
+    pendingElements.add(element);
     schedule();
   }
 
@@ -96,7 +111,7 @@
     const tokens = pendingTokens;
     const elements = pendingElements;
     pendingTokens = [];
-    pendingElements = [];
+    pendingElements = new Set();
     try {
       if (tokens.length > 0 || unkeyed === null) {
         const asksUnkeyed = unkeyed === null;
@@ -117,7 +132,7 @@
     for (const record of records) {
       if (record.type === "attributes") {
         note(record.target);
-        pendingElements.push(record.target);
+        if (isNewState(record.target)) pendingElements.add(record.target);
       } else {
         for (const node of record.addedNodes) if (node.nodeType === Node.ELEMENT_NODE) survey(node);
       }

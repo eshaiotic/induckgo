@@ -190,6 +190,28 @@ on the card: `nvh264dec` and `vah264dec` outrank `avdec_h264`); software decodin
 changed nothing measurable); InDuckGo's own protections (idle on this page it uses less than a bare WebKitGTK window
 because it blocks trackers); the Skia painting thread counts and `WEBKIT_DISABLE_COMPOSITING_MODE` (no gain).
 
+**Second cause (found after the first fix): Guard's page script.** With the OpenGL renderer InDuckGo still scrolled
+this page at 4 fps with frame gaps of 0.8–1.4 s, while bare WebKitGTK managed 47 fps. The web process's main thread
+was at 95 % (bare: 35 %). Switching off one layer at a time (a temporary build, not kept) pinned it down:
+
+| Switched off | Frames per second | 95th-percentile frame gap | Web process main thread |
+|---|---|---|---|
+| nothing | 4.2 | 760 ms | 95 % |
+| Content Scope Scripts | 4.0 | 1090 ms | 94 % |
+| content-blocker rules | 51.5 | 34 ms | 34 % |
+| Guard's page script | 58.2 | 19 ms | 37 % |
+
+(Without the rules Guard's script finds no list and returns at once, so those two rows measure the same thing.)
+`generic-hiding.js` watches every change of an `id` or `class` and, every 50 ms, tests each changed element against
+all generic selectors that name no class or id (`matches` and `querySelector` with one very long selector list).
+The page's 19 scroll animations change classes on every frame, and the same element was queued again for every
+change, so the tests ran thousands of times over states already tested.
+**Fix:** the queue is a `Set`, and a changed element is queued only when its `id|class` state was never tested
+before (hiding is permanent, so a repeated state cannot hide anything new). Same page, same protections: 57–59 fps,
+95th-percentile gap 18 ms, web process main thread 18–20 %, as good as Brave (59.5 fps). Hiding still works,
+including for a class that changes after load. The script has no automated test of its own yet; the check was a
+page that adds, removes and re-adds `ad-banner` and reads the computed `display`.
+
 **Left over.** With the OpenGL renderer a run lands in one of two modes, about 59 fps (p95 19 ms) or about 49 fps
 (p95 34 ms, one frame in eight takes two refreshes), with or without the video, while Brave stays at 59.5 in every
 run. The private compositor is a virtual 60 Hz output driven by a timer, so part of this may be an artefact of the

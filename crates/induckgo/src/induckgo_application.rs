@@ -28,6 +28,7 @@ use crate::catalog_files::CatalogFiles;
 use crate::external_launcher::ExternalLauncher;
 use crate::http_client::HttpClient;
 use crate::installation_paths::InstallationPaths;
+use crate::interface_language_setting::InterfaceLanguageSetting;
 use crate::profile_session::ProfileSession;
 use crate::stored_file::StoredFile;
 use crate::toolbar_preferences::ToolbarPreferences;
@@ -73,6 +74,8 @@ impl InDuckGoApplication {
                 return glib::ExitCode::from(Self::USAGE_ERROR);
             }
         };
+        InterfaceLanguageSetting::load(StoredFile::new(InstallationPaths::from_environment().interface_language()))
+            .activate();
         let application = adw::Application::builder()
             .application_id(request.application_id().as_str())
             .flags(gio::ApplicationFlags::HANDLES_COMMAND_LINE)
@@ -106,6 +109,7 @@ impl InDuckGoApplication {
             (http, Rc::clone(&session), Some(Self::start_tor(&paths, &session)), StoredFile::discarded())
         };
         let catalogs = CatalogFiles::new(&paths);
+        let interface_language = InterfaceLanguageSetting::load(StoredFile::new(paths.interface_language()));
         let _ = self.context.set(Rc::new(AppContext {
             paths,
             http,
@@ -113,6 +117,7 @@ impl InDuckGoApplication {
             icons,
             session,
             toolbar: ToolbarPreferences::load(toolbar_file),
+            interface_language,
             browser_windows: BrowserWindows::default(),
             tor,
         }));
@@ -263,49 +268,49 @@ impl InDuckGoApplication {
             .application_icon(AppIcons::APPLICATION)
             .version(env!("CARGO_PKG_VERSION"))
             .license_type(gtk::License::Gpl30)
-            .comments(
+            .comments(tr!(
                 "A privacy-first browser for Linux built on DuckDuckGo's open-source protections. \
-                 Not affiliated with or endorsed by DuckDuckGo.",
-            )
+                 Not affiliated with or endorsed by DuckDuckGo."
+            ))
             .build();
         about.add_legal_section(
-            "DuckDuckGo protections",
+            tr!("DuckDuckGo protections"),
             Some("© DuckDuckGo, Inc."),
             gtk::License::Apache20,
-            Some("Content Scope Scripts, the privacy configuration and the TrackerRadarKit rule algorithm."),
+            Some(tr!("Content Scope Scripts, the privacy configuration and the TrackerRadarKit rule algorithm.")),
         );
         about.add_legal_section(
-            "Tracker Data Set",
+            tr!("Tracker Data Set"),
             Some("© DuckDuckGo, Inc."),
             gtk::License::Custom,
-            Some("Downloaded at run time from DuckDuckGo; licensed CC BY-NC-SA 4.0."),
+            Some(tr!("Downloaded at run time from DuckDuckGo; licensed CC BY-NC-SA 4.0.")),
         );
         about.add_legal_section(
             "adblock-rust",
             Some("© Brave Software, Inc."),
             gtk::License::Mpl20,
-            Some(
-                "Turns InDuckGo Guard's filter lists into WebKit rules. Source: https://github.com/brave/adblock-rust",
-            ),
+            Some(tr!(
+                "Turns InDuckGo Guard's filter lists into WebKit rules. Source: https://github.com/brave/adblock-rust"
+            )),
         );
         about.add_legal_section(
-            "InDuckGo Guard filter lists",
-            Some("© their maintainers"),
+            tr!("InDuckGo Guard filter lists"),
+            Some(tr!("© their maintainers")),
             gtk::License::Custom,
-            Some(
+            Some(tr!(
                 "Downloaded at run time from their publishers: EasyList, EasyPrivacy and EasyList Cookie List \
                  (GPL-3.0 or CC BY-SA 3.0, CC BY 3.0), uBlock Origin's lists (GPL-3.0), Peter Lowe's list \
-                 (pgl.yoyo.org terms), Polish Filters (CC BY-NC-SA 4.0).",
-            ),
+                 (pgl.yoyo.org terms), Polish Filters (CC BY-NC-SA 4.0)."
+            )),
         );
         about.add_legal_section(
             "Tor",
             Some("© The Tor Project, Inc."),
             gtk::License::Bsd3,
-            Some(
+            Some(tr!(
                 "The Tor window runs tor (bundled or your distribution's) and Tor Browser's built-in bridges. \
-                 Not affiliated with or endorsed by the Tor Project. Source: https://gitlab.torproject.org/tpo/core/tor",
-            ),
+                 Not affiliated with or endorsed by the Tor Project. Source: https://gitlab.torproject.org/tpo/core/tor"
+            )),
         );
         about.present(application.active_window().as_ref());
     }

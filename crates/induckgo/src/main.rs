@@ -17,6 +17,7 @@ mod find_bar;
 mod http_client;
 mod induckgo_application;
 mod installation_paths;
+mod interface_language_setting;
 mod management_dialogs;
 mod page_protections;
 mod page_view;

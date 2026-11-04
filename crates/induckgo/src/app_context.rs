@@ -8,6 +8,7 @@ use crate::browser_windows::BrowserWindows;
 use crate::catalog_files::CatalogFiles;
 use crate::http_client::HttpClient;
 use crate::installation_paths::InstallationPaths;
+use crate::interface_language_setting::InterfaceLanguageSetting;
 use crate::profile_session::ProfileSession;
 use crate::toolbar_preferences::ToolbarPreferences;
 use crate::tor_connection::TorConnection;
@@ -19,6 +20,7 @@ pub struct AppContext {
     pub icons: AppIcons,
     pub session: Rc<ProfileSession>,
     pub toolbar: ToolbarPreferences,
+    pub interface_language: InterfaceLanguageSetting,
     pub browser_windows: BrowserWindows,
     /// `Some` only in the Tor window's process.
     pub tor: Option<Rc<TorConnection>>,

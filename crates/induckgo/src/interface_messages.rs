@@ -1,28 +1,39 @@
 //! The messages of the interface in the language this process speaks.
 //!
-//! One language is chosen when the process starts (see `InterfaceLanguageSetting`) and installed here before
+//! One language is chosen when the process starts (see `InterfaceLanguageSetting::activate`) and installed here before
 //! any window exists, so every part of the interface (menus, dialogs, toasts, the error page) draws from the
 //! same catalogue and no screen mixes two languages. A message is written in English at its place in the code
 //! and acts as its own key: `tr!("Back")`, `tr!("Close {name} first", name = profile)`.
 
 use std::sync::OnceLock;
 
+use induckgo_core::language::interface_language::InterfaceLanguage;
 use induckgo_core::language::message_catalogue::MessageCatalogue;
+use induckgo_core::language::translation_sources::TranslationSources;
 
-static CATALOGUE: OnceLock<MessageCatalogue> = OnceLock::new();
+static CATALOGUE: OnceLock<(InterfaceLanguage, MessageCatalogue)> = OnceLock::new();
 
 /// Looks a message up in `tr!`'s catalogue; nothing else should call it.
 pub struct InterfaceMessages;
 
 impl InterfaceMessages {
-    /// Installs the process's catalogue. Only the first call has an effect.
-    pub fn install(catalogue: MessageCatalogue) {
-        let _ = CATALOGUE.set(catalogue);
+    /// Makes `language` the process's language. Only the first call has an effect.
+    pub fn install(language: InterfaceLanguage) {
+        let _ = CATALOGUE.set((language, TranslationSources::catalogue_of(language)));
     }
 
-    /// The catalogue in use; English as written until one is installed (tests, tools).
+    /// The language in use; American English until one is installed (tests, tools).
+    pub fn language() -> InterfaceLanguage {
+        Self::installed().0
+    }
+
+    /// The catalogue in use; the messages as written until a language is installed.
     pub fn catalogue() -> &'static MessageCatalogue {
-        CATALOGUE.get_or_init(MessageCatalogue::untranslated)
+        &Self::installed().1
+    }
+
+    fn installed() -> &'static (InterfaceLanguage, MessageCatalogue) {
+        CATALOGUE.get_or_init(|| (InterfaceLanguage::ENGLISH, MessageCatalogue::untranslated()))
     }
 
     pub fn text(message: &'static str) -> &'static str {

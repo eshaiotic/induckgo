@@ -45,6 +45,11 @@ impl InstallationPaths {
         self.data_root.join("profiles.json")
     }
 
+    /// The interface language the person chose, shared by every profile and web app.
+    pub fn interface_language(&self) -> PathBuf {
+        self.data_root.join("interface.json")
+    }
+
     pub fn web_app_catalog(&self) -> PathBuf {
         self.data_root.join("web-apps.json")
     }

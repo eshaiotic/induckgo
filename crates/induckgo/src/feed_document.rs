@@ -46,7 +46,7 @@ impl<T> FeedDocument<T> {
                 let is_unchanged = self.content.read_bytes().is_some_and(|cached| cached == bytes);
                 if !is_unchanged {
                     if (self.parse)(&bytes).is_none() {
-                        return Err(format!("{} did not return the expected document", self.url).into());
+                        return Err(tr!("{url} did not return the expected document", url = self.url).into());
                     }
                     self.content.write(&bytes)?;
                 }

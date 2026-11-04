@@ -40,7 +40,7 @@ impl PermissionPrompt {
             .uri()
             .and_then(|address| Url::parse(&address).ok())
             .and_then(|url| url.host_str().map(str::to_owned))
-            .unwrap_or_else(|| "This page".to_owned());
+            .unwrap_or_else(|| tr!("This page").to_owned());
         let answer = if in_tor_window && request.is::<GeolocationPermissionRequest>() {
             Answer::Deny
         } else {
@@ -51,7 +51,7 @@ impl PermissionPrompt {
             Answer::Deny => request.deny(),
             Answer::Ask(question) => {
                 let dialog = adw::AlertDialog::new(Some(&question), None);
-                dialog.add_responses(&[(Self::DENY, "_Deny"), (Self::ALLOW, "_Allow")]);
+                dialog.add_responses(&[(Self::DENY, tr!("_Deny")), (Self::ALLOW, tr!("_Allow"))]);
                 dialog.set_response_appearance(Self::ALLOW, adw::ResponseAppearance::Suggested);
                 dialog.set_default_response(Some(Self::DENY));
                 dialog.set_close_response(Self::DENY);
@@ -70,30 +70,33 @@ impl PermissionPrompt {
 
     fn answer(site: &str, request: &PermissionRequest) -> Answer {
         if request.is::<GeolocationPermissionRequest>() {
-            return Answer::Ask(format!("Allow {site} to know your location?"));
+            return Answer::Ask(tr!("Allow {site} to know your location?", site = site));
         }
         if request.is::<NotificationPermissionRequest>() {
-            return Answer::Ask(format!("Allow {site} to show notifications?"));
+            return Answer::Ask(tr!("Allow {site} to show notifications?", site = site));
         }
         if request.is::<ClipboardPermissionRequest>() {
-            return Answer::Ask(format!("Allow {site} to read your clipboard?"));
+            return Answer::Ask(tr!("Allow {site} to read your clipboard?", site = site));
         }
         if request.is::<PointerLockPermissionRequest>() {
             return Answer::Allow;
         }
         if let Some(media) = request.downcast_ref::<UserMediaPermissionRequest>() {
-            let device = match (media.is_for_video_device(), media.is_for_audio_device()) {
-                (true, true) => "camera and microphone",
-                (true, false) => "camera",
-                (false, true) => "microphone",
-                (false, false) => "screen",
-            };
-            return Answer::Ask(format!("Allow {site} to use your {device}?"));
+            return Answer::Ask(match (media.is_for_video_device(), media.is_for_audio_device()) {
+                (true, true) => tr!("Allow {site} to use your camera and microphone?", site = site),
+                (true, false) => tr!("Allow {site} to use your camera?", site = site),
+                (false, true) => tr!("Allow {site} to use your microphone?", site = site),
+                (false, false) => tr!("Allow {site} to use your screen?", site = site),
+            });
         }
         if let Some(storage) = request.downcast_ref::<WebsiteDataAccessPermissionRequest>() {
             let requesting = storage.requesting_domain().unwrap_or_default();
             let current = storage.current_domain().unwrap_or_default();
-            return Answer::Ask(format!("Allow {requesting} to use its cookies and data while you are on {current}?"));
+            return Answer::Ask(tr!(
+                "Allow {requesting} to use its cookies and data while you are on {current}?",
+                requesting = requesting,
+                current = current
+            ));
         }
         Answer::Deny
     }

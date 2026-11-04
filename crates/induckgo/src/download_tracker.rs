@@ -30,7 +30,7 @@ impl DownloadTracker {
             if let Some(directory) = destination.parent()
                 && let Err(error) = std::fs::create_dir_all(directory)
             {
-                Self::announce(download, &format!("Cannot save download: {error}"), None);
+                Self::announce(download, &tr!("Cannot save download: {error}", error = error), None);
                 download.cancel();
                 return true;
             }
@@ -42,7 +42,7 @@ impl DownloadTracker {
         download.connect_failed(move |download, error| {
             failed_flag.set(true);
             if !error.matches(webkit6::DownloadError::CancelledByUser) {
-                Self::announce(download, &format!("Download failed: {error}"), None);
+                Self::announce(download, &tr!("Download failed: {error}", error = error), None);
             }
         });
         download.connect_finished(move |download| {
@@ -51,7 +51,7 @@ impl DownloadTracker {
             }
             let destination = download.destination().map(|path| PathBuf::from(path.as_str()));
             let name = destination.as_deref().and_then(Path::file_name).map(|name| name.to_string_lossy().into_owned());
-            Self::announce(download, &format!("Downloaded {}", name.unwrap_or_default()), destination);
+            Self::announce(download, &tr!("Downloaded {name}", name = name.unwrap_or_default()), destination);
         });
     }
 
@@ -66,7 +66,7 @@ impl DownloadTracker {
         };
         let toast = adw::Toast::new(text);
         if let Some(saved) = saved {
-            toast.set_button_label(Some("Show in Folder"));
+            toast.set_button_label(Some(tr!("Show in Folder")));
             let window = overlay.root().and_then(|root| root.downcast::<gtk::Window>().ok());
             toast.connect_button_clicked(move |_| {
                 gtk::FileLauncher::new(Some(&gio::File::for_path(&saved))).open_containing_folder(

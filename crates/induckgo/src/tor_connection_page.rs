@@ -7,6 +7,7 @@ use gtk::prelude::Cast;
 use induckgo_core::tor::bootstrap_status::BootstrapStatus;
 
 use crate::app_icons::AppIcons;
+use crate::interface_messages::InterfaceMessages;
 use crate::tor_connection::TorState;
 
 pub struct TorConnectionPage {
@@ -30,14 +31,14 @@ impl TorConnectionPage {
             .visible(false)
             .build();
         let retry = gtk::Button::builder()
-            .label("Try Again")
+            .label(tr!("Try Again"))
             .action_name(Self::RETRY_ACTION)
             .halign(gtk::Align::Center)
             .css_classes(["pill", "suggested-action"])
             .visible(false)
             .build();
         let settings = gtk::Button::builder()
-            .label("Connection Settings…")
+            .label(tr!("Connection Settings…"))
             .action_name(Self::SETTINGS_ACTION)
             .halign(gtk::Align::Center)
             .css_classes(["pill"])
@@ -61,12 +62,12 @@ impl TorConnectionPage {
 
     pub fn show(&self, state: &TorState) {
         match state {
-            TorState::Starting => self.show_progress(0.0, "Starting Tor…", None),
+            TorState::Starting => self.show_progress(0.0, tr!("Starting Tor…"), None),
             TorState::Connecting(status) => self.show_bootstrap(status),
-            TorState::Connected { .. } => self.show_progress(1.0, "Connected", None),
+            TorState::Connected { .. } => self.show_progress(1.0, tr!("Connected"), None),
             TorState::Failed(problem) => {
-                self.status.set_title("Cannot Connect to Tor");
-                self.status.set_description(Some("Pages stay unopened until the Tor window is connected."));
+                self.status.set_title(tr!("Cannot Connect to Tor"));
+                self.status.set_description(Some(tr!("Pages stay unopened until the Tor window is connected.")));
                 self.progress.set_visible(false);
                 self.show_problem(Some(problem));
                 self.retry.set_visible(true);
@@ -75,14 +76,15 @@ impl TorConnectionPage {
     }
 
     fn show_bootstrap(&self, status: &BootstrapStatus) {
-        self.show_progress(f64::from(status.progress()) / 100.0, status.summary(), status.problem());
+        let catalogue = InterfaceMessages::catalogue();
+        self.show_progress(f64::from(status.progress()) / 100.0, status.summary(catalogue), status.problem(catalogue));
     }
 
     fn show_progress(&self, fraction: f64, doing: &str, problem: Option<&str>) {
-        self.status.set_title("Connecting to Tor");
-        self.status.set_description(Some(
-            "InDuckGo's own Tor is connecting. Nothing leaves this window until it is connected.",
-        ));
+        self.status.set_title(tr!("Connecting to Tor"));
+        self.status.set_description(Some(tr!(
+            "InDuckGo's own Tor is connecting. Nothing leaves this window until it is connected."
+        )));
         self.progress.set_visible(true);
         self.progress.set_fraction(fraction);
         self.progress.set_text(Some(doing));

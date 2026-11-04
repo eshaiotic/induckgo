@@ -9,7 +9,8 @@ use crate::frame_statistics::FrameStatistics;
 use crate::scroll_scenario::ScrollScenario;
 
 const USAGE: &str = "usage: induckgo-bench --page-url URL [--port N] [--label NAME]\n\
-Serves URL with a scroll script injected and waits for one browser to open http://127.0.0.1:PORT/ .";
+Serves URL with a scroll script injected and waits for one browser to open http://127.0.0.1:PORT/ .\n\
+The page is third-party content served from loopback: open it only in a throwaway browser profile.";
 
 #[derive(Debug)]
 pub struct BenchmarkCommand {
@@ -49,6 +50,7 @@ impl BenchmarkCommand {
         let origin = format!("http://127.0.0.1:{}", server.port()?);
         let page = BenchmarkPage::injected_into(&self.fetch_page()?, &self.page_url, &scenario, &origin);
         eprintln!("Open {origin}/ in the browser under test (fullscreen, nothing else running).");
+        eprintln!("The page is third-party content served from loopback: use a throwaway browser profile, never a signed-in one.");
         let wait = Duration::from_millis(u64::from(scenario.duration_ms())) + Duration::from_secs(90);
         let statistics = server.serve_until_result(&page, wait)?;
         Ok(Self::result_line(&self.label, &statistics))

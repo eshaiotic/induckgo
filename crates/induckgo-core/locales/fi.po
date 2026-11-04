@@ -749,3 +749,21 @@ msgstr "_Tallenna"
 
 msgid "_Select"
 msgstr "_Valitse"
+
+msgid "Show All Downloads"
+msgstr "Näytä kaikki lataukset"
+
+msgid "Clear List"
+msgstr "Tyhjennä luettelo"
+
+msgid "Remove from List"
+msgstr "Poista luettelosta"
+
+msgid "Clear History"
+msgstr "Tyhjennä historia"
+
+msgid "Search Downloads"
+msgstr "Hae latauksista"
+
+msgid "File Moved or Deleted"
+msgstr "Tiedosto siirretty tai poistettu"

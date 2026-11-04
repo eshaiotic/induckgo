@@ -749,3 +749,21 @@ msgstr "შენახვა(_S)"
 
 msgid "_Select"
 msgstr "არჩევა(_S)"
+
+msgid "Show All Downloads"
+msgstr "ყველა ჩამოტვირთვის ჩვენება"
+
+msgid "Clear List"
+msgstr "სიის გასუფთავება"
+
+msgid "Remove from List"
+msgstr "სიიდან ამოშლა"
+
+msgid "Clear History"
+msgstr "ისტორიის გასუფთავება"
+
+msgid "Search Downloads"
+msgstr "ჩამოტვირთვებში ძებნა"
+
+msgid "File Moved or Deleted"
+msgstr "ფაილი გადატანილია ან წაშლილია"

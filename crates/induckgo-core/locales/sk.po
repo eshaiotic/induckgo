@@ -749,3 +749,21 @@ msgstr "_Uložiť"
 
 msgid "_Select"
 msgstr "_Vybrať"
+
+msgid "Show All Downloads"
+msgstr "Zobraziť všetky stiahnuté súbory"
+
+msgid "Clear List"
+msgstr "Vymazať zoznam"
+
+msgid "Remove from List"
+msgstr "Odstrániť zo zoznamu"
+
+msgid "Clear History"
+msgstr "Vymazať históriu"
+
+msgid "Search Downloads"
+msgstr "Hľadať v stiahnutých súboroch"
+
+msgid "File Moved or Deleted"
+msgstr "Súbor bol presunutý alebo odstránený"

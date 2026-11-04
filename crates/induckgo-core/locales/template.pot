@@ -130,6 +130,12 @@ msgstr ""
 msgid "Clear Data of {name}?"
 msgstr ""
 
+msgid "Clear History"
+msgstr ""
+
+msgid "Clear List"
+msgstr ""
+
 msgid "Close tabs or apps you don’t need, then reload the page."
 msgstr ""
 
@@ -251,6 +257,9 @@ msgid "Establishing a Tor circuit"
 msgstr ""
 
 msgid "Establishing an encrypted directory connection"
+msgstr ""
+
+msgid "File Moved or Deleted"
 msgstr ""
 
 msgid "File not found"
@@ -460,10 +469,16 @@ msgstr ""
 msgid "Reload Page"
 msgstr ""
 
+msgid "Remove from List"
+msgstr ""
+
 msgid "Reset Zoom"
 msgstr ""
 
 msgid "Save File"
+msgstr ""
+
+msgid "Search Downloads"
 msgstr ""
 
 msgid "Search Engine"
@@ -473,6 +488,9 @@ msgid "Search {engine}"
 msgstr ""
 
 msgid "Search {engine} or enter address"
+msgstr ""
+
+msgid "Show All Downloads"
 msgstr ""
 
 msgid "Show in Folder"

@@ -749,3 +749,21 @@ msgstr "_Uložit"
 
 msgid "_Select"
 msgstr "_Vybrat"
+
+msgid "Show All Downloads"
+msgstr "Zobrazit všechna stažení"
+
+msgid "Clear List"
+msgstr "Vymazat seznam"
+
+msgid "Remove from List"
+msgstr "Odebrat ze seznamu"
+
+msgid "Clear History"
+msgstr "Vymazat historii"
+
+msgid "Search Downloads"
+msgstr "Hledat ve stažených souborech"
+
+msgid "File Moved or Deleted"
+msgstr "Soubor byl přesunut nebo odstraněn"

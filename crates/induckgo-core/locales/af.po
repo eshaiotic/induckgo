@@ -749,3 +749,21 @@ msgstr "_Stoor"
 
 msgid "_Select"
 msgstr "_Kies"
+
+msgid "Show All Downloads"
+msgstr "Wys alle aflaaie"
+
+msgid "Clear List"
+msgstr "Maak lys skoon"
+
+msgid "Remove from List"
+msgstr "Verwyder van lys"
+
+msgid "Clear History"
+msgstr "Maak geskiedenis skoon"
+
+msgid "Search Downloads"
+msgstr "Soek aflaaie"
+
+msgid "File Moved or Deleted"
+msgstr "Lêer geskuif of uitgevee"

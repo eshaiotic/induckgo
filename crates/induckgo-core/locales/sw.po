@@ -749,3 +749,21 @@ msgstr "_Hifadhi"
 
 msgid "_Select"
 msgstr "_Chagua"
+
+msgid "Show All Downloads"
+msgstr "Onyesha vipakuliwa vyote"
+
+msgid "Clear List"
+msgstr "Futa orodha"
+
+msgid "Remove from List"
+msgstr "Ondoa kwenye orodha"
+
+msgid "Clear History"
+msgstr "Futa historia"
+
+msgid "Search Downloads"
+msgstr "Tafuta vipakuliwa"
+
+msgid "File Moved or Deleted"
+msgstr "Faili imehamishwa au imefutwa"

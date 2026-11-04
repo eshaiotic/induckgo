@@ -749,3 +749,21 @@ msgstr "সংরক্ষণ(_S)"
 
 msgid "_Select"
 msgstr "নির্বাচন করুন(_C)"
+
+msgid "Show All Downloads"
+msgstr "সব ডাউনলোড দেখান"
+
+msgid "Clear List"
+msgstr "তালিকা মুছুন"
+
+msgid "Remove from List"
+msgstr "তালিকা থেকে সরান"
+
+msgid "Clear History"
+msgstr "ইতিহাস মুছুন"
+
+msgid "Search Downloads"
+msgstr "ডাউনলোড অনুসন্ধান করুন"
+
+msgid "File Moved or Deleted"
+msgstr "ফাইল সরানো হয়েছে বা মুছে ফেলা হয়েছে"

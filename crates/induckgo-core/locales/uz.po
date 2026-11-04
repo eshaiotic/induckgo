@@ -749,3 +749,21 @@ msgstr "_Saqlash"
 
 msgid "_Select"
 msgstr "_Tanlash"
+
+msgid "Show All Downloads"
+msgstr "Barcha yuklab olishlarni ko‘rsatish"
+
+msgid "Clear List"
+msgstr "Ro‘yxatni tozalash"
+
+msgid "Remove from List"
+msgstr "Ro‘yxatdan olib tashlash"
+
+msgid "Clear History"
+msgstr "Tarixni tozalash"
+
+msgid "Search Downloads"
+msgstr "Yuklab olishlardan qidirish"
+
+msgid "File Moved or Deleted"
+msgstr "Fayl ko‘chirilgan yoki o‘chirilgan"

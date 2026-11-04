@@ -749,3 +749,21 @@ msgstr "_Lagre"
 
 msgid "_Select"
 msgstr "_Velg"
+
+msgid "Show All Downloads"
+msgstr "Vis alle nedlastinger"
+
+msgid "Clear List"
+msgstr "Tøm listen"
+
+msgid "Remove from List"
+msgstr "Fjern fra listen"
+
+msgid "Clear History"
+msgstr "Tøm historikken"
+
+msgid "Search Downloads"
+msgstr "Søk i nedlastinger"
+
+msgid "File Moved or Deleted"
+msgstr "Filen er flyttet eller slettet"

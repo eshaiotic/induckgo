@@ -749,3 +749,21 @@ msgstr "_Desa"
 
 msgid "_Select"
 msgstr "_Selecciona"
+
+msgid "Show All Downloads"
+msgstr "Mostra totes les baixades"
+
+msgid "Clear List"
+msgstr "Esborra la llista"
+
+msgid "Remove from List"
+msgstr "Elimina de la llista"
+
+msgid "Clear History"
+msgstr "Esborra l'historial"
+
+msgid "Search Downloads"
+msgstr "Cerca a les baixades"
+
+msgid "File Moved or Deleted"
+msgstr "Fitxer mogut o suprimit"

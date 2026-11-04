@@ -749,3 +749,21 @@ msgstr "_Salvează"
 
 msgid "_Select"
 msgstr "_Selectează"
+
+msgid "Show All Downloads"
+msgstr "Afișează toate descărcările"
+
+msgid "Clear List"
+msgstr "Golește lista"
+
+msgid "Remove from List"
+msgstr "Elimină din listă"
+
+msgid "Clear History"
+msgstr "Șterge istoricul"
+
+msgid "Search Downloads"
+msgstr "Caută în descărcări"
+
+msgid "File Moved or Deleted"
+msgstr "Fișier mutat sau șters"

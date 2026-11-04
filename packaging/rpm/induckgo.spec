@@ -5,7 +5,7 @@
 %global debug_package %{nil}
 
 Name:           induckgo
-Version:        1.1.0
+Version:        1.1.1
 Release:        1%{?dist}
 Summary:        Privacy-first WebKitGTK browser built on DuckDuckGo's open-source tracker protections
 License:        GPL-3.0-or-later
@@ -56,6 +56,11 @@ install -Dm0644 assets/icons/io.github.induckgo.InDuckGo.svg -t %{buildroot}%{_d
 %{_datadir}/icons/hicolor/scalable/apps/io.github.induckgo.InDuckGo.svg
 
 %changelog
+* Wed Nov 04 2026 Michał Ligus <eshaiotic@eshaiotic.io> - 1.1.1-1
+- Interface language: choose among 68 languages in the preferences.
+- Downloads: toolbar list, save-folder choice, clear list, and a manager with the whole history.
+- Faster pages: drawing with GTK's OpenGL renderer instead of copying every frame through memory.
+
 * Tue Nov 03 2026 Michał Ligus <eshaiotic@eshaiotic.io> - 1.1.0-1
 - Tor window: browsing through InDuckGo's own Tor, with bridges and New Identity.
 - Toolbar: an onion button for the Tor window, and preferences to choose the toolbar's buttons.

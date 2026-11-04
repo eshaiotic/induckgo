@@ -749,3 +749,21 @@ msgstr "_حفظ"
 
 msgid "_Select"
 msgstr "_اختيار"
+
+msgid "Show All Downloads"
+msgstr "عرض كل التنزيلات"
+
+msgid "Clear List"
+msgstr "مسح القائمة"
+
+msgid "Remove from List"
+msgstr "إزالة من القائمة"
+
+msgid "Clear History"
+msgstr "مسح السجل"
+
+msgid "Search Downloads"
+msgstr "بحث في التنزيلات"
+
+msgid "File Moved or Deleted"
+msgstr "تم نقل الملف أو حذفه"

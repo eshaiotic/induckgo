@@ -749,3 +749,21 @@ msgstr "जतन करा(_S)"
 
 msgid "_Select"
 msgstr "निवडा(_S)"
+
+msgid "Show All Downloads"
+msgstr "सर्व डाउनलोड दाखवा"
+
+msgid "Clear List"
+msgstr "यादी साफ करा"
+
+msgid "Remove from List"
+msgstr "यादीतून काढून टाका"
+
+msgid "Clear History"
+msgstr "इतिहास साफ करा"
+
+msgid "Search Downloads"
+msgstr "डाउनलोड शोधा"
+
+msgid "File Moved or Deleted"
+msgstr "फाइल हलवली किंवा हटवली"

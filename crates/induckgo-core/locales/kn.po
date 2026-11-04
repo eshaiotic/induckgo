@@ -749,3 +749,21 @@ msgstr "ಉಳಿಸಿ(_S)"
 
 msgid "_Select"
 msgstr "ಆಯ್ಕೆಮಾಡಿ(_S)"
+
+msgid "Show All Downloads"
+msgstr "ಎಲ್ಲಾ ಡೌನ್‌ಲೋಡ್‌ಗಳನ್ನು ತೋರಿಸಿ"
+
+msgid "Clear List"
+msgstr "ಪಟ್ಟಿಯನ್ನು ತೆರವುಗೊಳಿಸಿ"
+
+msgid "Remove from List"
+msgstr "ಪಟ್ಟಿಯಿಂದ ತೆಗೆದುಹಾಕಿ"
+
+msgid "Clear History"
+msgstr "ಇತಿಹಾಸವನ್ನು ತೆರವುಗೊಳಿಸಿ"
+
+msgid "Search Downloads"
+msgstr "ಡೌನ್‌ಲೋಡ್‌ಗಳನ್ನು ಹುಡುಕಿ"
+
+msgid "File Moved or Deleted"
+msgstr "ಫೈಲ್ ಸ್ಥಳಾಂತರಿಸಲಾಗಿದೆ ಅಥವಾ ಅಳಿಸಲಾಗಿದೆ"

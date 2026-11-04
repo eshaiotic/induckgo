@@ -749,3 +749,21 @@ msgstr "_Хадгалах"
 
 msgid "_Select"
 msgstr "_Сонгох"
+
+msgid "Show All Downloads"
+msgstr "Бүх татаж авсныг харуулах"
+
+msgid "Clear List"
+msgstr "Жагсаалтыг цэвэрлэх"
+
+msgid "Remove from List"
+msgstr "Жагсаалтаас хасах"
+
+msgid "Clear History"
+msgstr "Түүхийг цэвэрлэх"
+
+msgid "Search Downloads"
+msgstr "Татаж авсан файл хайх"
+
+msgid "File Moved or Deleted"
+msgstr "Файл зөөгдсөн эсвэл устгагдсан"

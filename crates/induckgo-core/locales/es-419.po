@@ -749,3 +749,21 @@ msgstr "_Guardar"
 
 msgid "_Select"
 msgstr "_Seleccionar"
+
+msgid "Show All Downloads"
+msgstr "Mostrar todas las descargas"
+
+msgid "Clear List"
+msgstr "Borrar lista"
+
+msgid "Remove from List"
+msgstr "Quitar de la lista"
+
+msgid "Clear History"
+msgstr "Borrar historial"
+
+msgid "Search Downloads"
+msgstr "Buscar descargas"
+
+msgid "File Moved or Deleted"
+msgstr "Archivo movido o eliminado"

@@ -749,3 +749,21 @@ msgstr "محفوظ کریں(_S)"
 
 msgid "_Select"
 msgstr "منتخب کریں(_C)"
+
+msgid "Show All Downloads"
+msgstr "تمام ڈاؤن لوڈز دکھائیں"
+
+msgid "Clear List"
+msgstr "فہرست صاف کریں"
+
+msgid "Remove from List"
+msgstr "فہرست سے ہٹائیں"
+
+msgid "Clear History"
+msgstr "تاریخ صاف کریں"
+
+msgid "Search Downloads"
+msgstr "ڈاؤن لوڈز تلاش کریں"
+
+msgid "File Moved or Deleted"
+msgstr "فائل منتقل یا حذف کر دی گئی"

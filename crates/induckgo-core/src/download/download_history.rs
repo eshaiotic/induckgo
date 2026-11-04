@@ -1,4 +1,5 @@
-//! The few most recent downloads of a profile, newest first, as its downloads list shows them.
+//! The downloads of a profile, newest first: the long history the downloads manager lists, from which each
+//! window's downloads list shows the latest few.
 //!
 //! Only finished downloads outlive the process (`downloads.json`): a download that was running or failed
 //! when the browser closed has no file worth offering.
@@ -10,7 +11,8 @@ use serde_json::Value;
 use serde_json::json;
 
 /// Names one download while it runs; never reused within a process.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+/// A later download always has a greater id, so ids also say which of two downloads came first.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct DownloadId(u64);
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -25,13 +27,13 @@ pub enum DownloadState {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct RecentDownload {
+pub struct DownloadEntry {
     id: DownloadId,
     path: PathBuf,
     state: DownloadState,
 }
 
-impl RecentDownload {
+impl DownloadEntry {
     #[must_use]
     pub fn id(&self) -> DownloadId {
         self.id
@@ -56,14 +58,14 @@ impl RecentDownload {
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct RecentDownloads {
-    entries: Vec<RecentDownload>,
+pub struct DownloadHistory {
+    entries: Vec<DownloadEntry>,
     next_id: u64,
 }
 
-impl RecentDownloads {
-    /// How many downloads the list keeps.
-    pub const CAPACITY: usize = 5;
+impl DownloadHistory {
+    /// How many downloads the history keeps; the oldest are forgotten beyond it.
+    pub const CAPACITY: usize = 500;
 
     #[must_use]
     pub fn new() -> Self {
@@ -99,8 +101,22 @@ impl RecentDownloads {
 
     /// Newest first.
     #[must_use]
-    pub fn entries(&self) -> &[RecentDownload] {
+    pub fn entries(&self) -> &[DownloadEntry] {
         &self.entries
+    }
+
+    /// The newest `count` downloads that came after `cleared_through` (all of them when it is `None`), plus any
+    /// download still running: what a window's downloads list shows after its person cleared that list.
+    #[must_use]
+    pub fn latest_after(&self, cleared_through: Option<DownloadId>, count: usize) -> Vec<&DownloadEntry> {
+        self.entries
+            .iter()
+            .filter(|entry| {
+                matches!(entry.state, DownloadState::InProgress { .. })
+                    || cleared_through.is_none_or(|cleared| entry.id > cleared)
+            })
+            .take(count)
+            .collect()
     }
 
     /// Adds a download that has just started as the newest, dropping the oldest beyond [`Self::CAPACITY`].
@@ -108,7 +124,7 @@ impl RecentDownloads {
         let id = DownloadId(self.next_id);
         self.next_id += 1;
         self.entries
-            .insert(0, RecentDownload { id, path, state: DownloadState::InProgress { received: 0, total: None } });
+            .insert(0, DownloadEntry { id, path, state: DownloadState::InProgress { received: 0, total: None } });
         self.entries.truncate(Self::CAPACITY);
         id
     }
@@ -125,7 +141,7 @@ impl RecentDownloads {
         self.set_state(id, DownloadState::Failed);
     }
 
-    /// Forgets a download, for one the person cancelled.
+    /// Forgets a download: one the person cancelled, or removed from the history. Its file is left alone.
     pub fn discard(&mut self, id: DownloadId) {
         self.entries.retain(|entry| entry.id != id);
     }

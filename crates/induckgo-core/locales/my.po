@@ -749,3 +749,21 @@ msgstr "သိမ်းရန်(_S)"
 
 msgid "_Select"
 msgstr "ရွေးရန်(_S)"
+
+msgid "Show All Downloads"
+msgstr "ဒေါင်းလုဒ်အားလုံး ပြရန်"
+
+msgid "Clear List"
+msgstr "စာရင်းရှင်းရန်"
+
+msgid "Remove from List"
+msgstr "စာရင်းမှ ဖယ်ရှားရန်"
+
+msgid "Clear History"
+msgstr "မှတ်တမ်းရှင်းရန်"
+
+msgid "Search Downloads"
+msgstr "ဒေါင်းလုဒ်များ ရှာရန်"
+
+msgid "File Moved or Deleted"
+msgstr "ဖိုင်ကို ရွှေ့ထားသည် သို့မဟုတ် ဖျက်ထားသည်"

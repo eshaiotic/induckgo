@@ -749,3 +749,21 @@ msgstr "ذخیره(_S)"
 
 msgid "_Select"
 msgstr "انتخاب(_S)"
+
+msgid "Show All Downloads"
+msgstr "نمایش همه بارگیری‌ها"
+
+msgid "Clear List"
+msgstr "پاک کردن فهرست"
+
+msgid "Remove from List"
+msgstr "حذف از فهرست"
+
+msgid "Clear History"
+msgstr "پاک کردن تاریخچه"
+
+msgid "Search Downloads"
+msgstr "جستجو در بارگیری‌ها"
+
+msgid "File Moved or Deleted"
+msgstr "پرونده جابه‌جا یا حذف شده است"

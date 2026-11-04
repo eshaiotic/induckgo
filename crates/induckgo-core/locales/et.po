@@ -749,3 +749,21 @@ msgstr "_Salvesta"
 
 msgid "_Select"
 msgstr "_Vali"
+
+msgid "Show All Downloads"
+msgstr "Kuva kõik allalaadimised"
+
+msgid "Clear List"
+msgstr "Tühjenda loend"
+
+msgid "Remove from List"
+msgstr "Eemalda loendist"
+
+msgid "Clear History"
+msgstr "Tühjenda ajalugu"
+
+msgid "Search Downloads"
+msgstr "Otsi allalaadimistest"
+
+msgid "File Moved or Deleted"
+msgstr "Fail on teisaldatud või kustutatud"

@@ -749,3 +749,21 @@ msgstr "保存(_S)"
 
 msgid "_Select"
 msgstr "選択(_S)"
+
+msgid "Show All Downloads"
+msgstr "すべてのダウンロードを表示"
+
+msgid "Clear List"
+msgstr "リストを消去"
+
+msgid "Remove from List"
+msgstr "リストから削除"
+
+msgid "Clear History"
+msgstr "履歴を消去"
+
+msgid "Search Downloads"
+msgstr "ダウンロードを検索"
+
+msgid "File Moved or Deleted"
+msgstr "ファイルが移動または削除されました"

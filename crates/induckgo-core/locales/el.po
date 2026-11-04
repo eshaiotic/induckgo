@@ -749,3 +749,21 @@ msgstr "Απο_θήκευση"
 
 msgid "_Select"
 msgstr "_Επιλογή"
+
+msgid "Show All Downloads"
+msgstr "Εμφάνιση όλων των λήψεων"
+
+msgid "Clear List"
+msgstr "Εκκαθάριση λίστας"
+
+msgid "Remove from List"
+msgstr "Αφαίρεση από τη λίστα"
+
+msgid "Clear History"
+msgstr "Εκκαθάριση ιστορικού"
+
+msgid "Search Downloads"
+msgstr "Αναζήτηση στις λήψεις"
+
+msgid "File Moved or Deleted"
+msgstr "Το αρχείο μετακινήθηκε ή διαγράφηκε"

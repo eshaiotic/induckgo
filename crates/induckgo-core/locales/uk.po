@@ -749,3 +749,21 @@ msgstr "_Зберегти"
 
 msgid "_Select"
 msgstr "_Вибрати"
+
+msgid "Show All Downloads"
+msgstr "Показати всі завантаження"
+
+msgid "Clear List"
+msgstr "Очистити список"
+
+msgid "Remove from List"
+msgstr "Вилучити зі списку"
+
+msgid "Clear History"
+msgstr "Очистити історію"
+
+msgid "Search Downloads"
+msgstr "Шукати завантаження"
+
+msgid "File Moved or Deleted"
+msgstr "Файл переміщено або видалено"

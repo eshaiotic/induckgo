@@ -749,3 +749,21 @@ msgstr "Į_rašyti"
 
 msgid "_Select"
 msgstr "_Pasirinkti"
+
+msgid "Show All Downloads"
+msgstr "Rodyti visus atsisiuntimus"
+
+msgid "Clear List"
+msgstr "Išvalyti sąrašą"
+
+msgid "Remove from List"
+msgstr "Pašalinti iš sąrašo"
+
+msgid "Clear History"
+msgstr "Išvalyti istoriją"
+
+msgid "Search Downloads"
+msgstr "Ieškoti atsisiuntimų"
+
+msgid "File Moved or Deleted"
+msgstr "Failas perkeltas arba ištrintas"

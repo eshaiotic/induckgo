@@ -749,3 +749,21 @@ msgstr "保存(_S)"
 
 msgid "_Select"
 msgstr "选择(_S)"
+
+msgid "Show All Downloads"
+msgstr "显示全部下载内容"
+
+msgid "Clear List"
+msgstr "清除列表"
+
+msgid "Remove from List"
+msgstr "从列表中移除"
+
+msgid "Clear History"
+msgstr "清除历史记录"
+
+msgid "Search Downloads"
+msgstr "搜索下载内容"
+
+msgid "File Moved or Deleted"
+msgstr "文件已移动或删除"

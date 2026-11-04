@@ -749,3 +749,21 @@ msgstr "_Spara"
 
 msgid "_Select"
 msgstr "_Välj"
+
+msgid "Show All Downloads"
+msgstr "Visa alla hämtningar"
+
+msgid "Clear List"
+msgstr "Rensa listan"
+
+msgid "Remove from List"
+msgstr "Ta bort från listan"
+
+msgid "Clear History"
+msgstr "Rensa historik"
+
+msgid "Search Downloads"
+msgstr "Sök i hämtningar"
+
+msgid "File Moved or Deleted"
+msgstr "Filen flyttades eller raderades"

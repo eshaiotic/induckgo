@@ -749,3 +749,21 @@ msgstr "_Simpan"
 
 msgid "_Select"
 msgstr "_Pilih"
+
+msgid "Show All Downloads"
+msgstr "Tampilkan Semua Unduhan"
+
+msgid "Clear List"
+msgstr "Hapus Daftar"
+
+msgid "Remove from List"
+msgstr "Hapus dari Daftar"
+
+msgid "Clear History"
+msgstr "Hapus Riwayat"
+
+msgid "Search Downloads"
+msgstr "Cari Unduhan"
+
+msgid "File Moved or Deleted"
+msgstr "File Dipindahkan atau Dihapus"

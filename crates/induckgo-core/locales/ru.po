@@ -749,3 +749,21 @@ msgstr "_Сохранить"
 
 msgid "_Select"
 msgstr "_Выбрать"
+
+msgid "Show All Downloads"
+msgstr "Показать все загрузки"
+
+msgid "Clear List"
+msgstr "Очистить список"
+
+msgid "Remove from List"
+msgstr "Удалить из списка"
+
+msgid "Clear History"
+msgstr "Очистить историю"
+
+msgid "Search Downloads"
+msgstr "Поиск загрузок"
+
+msgid "File Moved or Deleted"
+msgstr "Файл перемещён или удалён"

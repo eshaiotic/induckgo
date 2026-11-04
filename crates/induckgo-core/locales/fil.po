@@ -749,3 +749,21 @@ msgstr "I-_save"
 
 msgid "_Select"
 msgstr "_Piliin"
+
+msgid "Show All Downloads"
+msgstr "Ipakita ang Lahat ng Download"
+
+msgid "Clear List"
+msgstr "I-clear ang Listahan"
+
+msgid "Remove from List"
+msgstr "Alisin sa Listahan"
+
+msgid "Clear History"
+msgstr "I-clear ang History"
+
+msgid "Search Downloads"
+msgstr "Maghanap sa Mga Download"
+
+msgid "File Moved or Deleted"
+msgstr "Inilipat o Binura ang File"

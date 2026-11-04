@@ -749,3 +749,21 @@ msgstr "सहेजें(_S)"
 
 msgid "_Select"
 msgstr "चुनें(_C)"
+
+msgid "Show All Downloads"
+msgstr "सभी डाउनलोड दिखाएँ"
+
+msgid "Clear List"
+msgstr "सूची साफ़ करें"
+
+msgid "Remove from List"
+msgstr "सूची से हटाएँ"
+
+msgid "Clear History"
+msgstr "इतिहास साफ़ करें"
+
+msgid "Search Downloads"
+msgstr "डाउनलोड खोजें"
+
+msgid "File Moved or Deleted"
+msgstr "फ़ाइल स्थानांतरित या हटा दी गई"

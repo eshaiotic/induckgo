@@ -749,3 +749,21 @@ msgstr "సేవ్(_S)"
 
 msgid "_Select"
 msgstr "ఎంచుకోండి(_C)"
+
+msgid "Show All Downloads"
+msgstr "అన్ని డౌన్‌లోడ్‌లను చూపు"
+
+msgid "Clear List"
+msgstr "జాబితాను క్లియర్ చేయి"
+
+msgid "Remove from List"
+msgstr "జాబితా నుండి తీసివేయి"
+
+msgid "Clear History"
+msgstr "చరిత్రను క్లియర్ చేయి"
+
+msgid "Search Downloads"
+msgstr "డౌన్‌లోడ్‌లను శోధించు"
+
+msgid "File Moved or Deleted"
+msgstr "ఫైల్ తరలించబడింది లేదా తొలగించబడింది"

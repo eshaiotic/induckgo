@@ -749,3 +749,21 @@ msgstr "_Сақтау"
 
 msgid "_Select"
 msgstr "_Таңдау"
+
+msgid "Show All Downloads"
+msgstr "Барлық жүктеп алуларды көрсету"
+
+msgid "Clear List"
+msgstr "Тізімді тазалау"
+
+msgid "Remove from List"
+msgstr "Тізімнен жою"
+
+msgid "Clear History"
+msgstr "Тарихты тазалау"
+
+msgid "Search Downloads"
+msgstr "Жүктеп алуларды іздеу"
+
+msgid "File Moved or Deleted"
+msgstr "Файл жылжытылған немесе жойылған"

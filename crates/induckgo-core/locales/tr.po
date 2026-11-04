@@ -749,3 +749,21 @@ msgstr "_Kaydet"
 
 msgid "_Select"
 msgstr "_Seç"
+
+msgid "Show All Downloads"
+msgstr "Tüm indirmeleri göster"
+
+msgid "Clear List"
+msgstr "Listeyi temizle"
+
+msgid "Remove from List"
+msgstr "Listeden kaldır"
+
+msgid "Clear History"
+msgstr "Geçmişi temizle"
+
+msgid "Search Downloads"
+msgstr "İndirmelerde ara"
+
+msgid "File Moved or Deleted"
+msgstr "Dosya taşındı veya silindi"

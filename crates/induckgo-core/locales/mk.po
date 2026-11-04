@@ -749,3 +749,21 @@ msgstr "_Зачувај"
 
 msgid "_Select"
 msgstr "_Избери"
+
+msgid "Show All Downloads"
+msgstr "Прикажи ги сите преземања"
+
+msgid "Clear List"
+msgstr "Исчисти го списокот"
+
+msgid "Remove from List"
+msgstr "Отстрани од списокот"
+
+msgid "Clear History"
+msgstr "Исчисти ја историјата"
+
+msgid "Search Downloads"
+msgstr "Пребарај преземања"
+
+msgid "File Moved or Deleted"
+msgstr "Датотеката е преместена или избришана"

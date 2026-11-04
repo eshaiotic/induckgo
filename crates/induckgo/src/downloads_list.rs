@@ -1,32 +1,40 @@
-//! The list the downloads button and the main menu's "Downloads" entry open: the latest downloads, each with
-//! a button that shows its folder (files can be in different folders), and a last row to the download folder.
+//! The list the downloads button and the main menu's "Downloads" entry open: the latest downloads of this
+//! window, a way to clear that list, a way into the whole history, and a last row to the download folder.
 //!
-//! Clicking a finished download opens the file; the list follows the [`DownloadCenter`] while it is visible.
+//! Clearing empties only this window's view (a downloads list that starts clean); the history, the files and
+//! the other windows' lists are untouched. The list follows the [`DownloadCenter`] while it is visible.
 
-use std::path::Path;
+use std::cell::Cell;
 use std::rc::Rc;
 
-use gio::prelude::FileExt;
+use glib::prelude::Cast;
+use glib::prelude::CastNone;
 use glib::prelude::ObjectExt;
 use gtk::prelude::BoxExt;
 use gtk::prelude::ButtonExt;
-use gtk::prelude::Cast;
+use gtk::prelude::PopoverExt;
+use gtk::prelude::StaticType;
 use gtk::prelude::WidgetExt;
-use induckgo_core::download::passive_content_type::PassiveContentType;
-use induckgo_core::download::recent_downloads::DownloadState;
-use induckgo_core::download::recent_downloads::RecentDownload;
+use induckgo_core::download::download_history::DownloadEntry;
+use induckgo_core::download::download_history::DownloadId;
 
 use crate::download_center::DownloadCenter;
+use crate::download_row::DownloadRow;
+use crate::downloads_manager::DownloadsManager;
 
 pub struct DownloadsList {
     root: gtk::Box,
     center: Rc<DownloadCenter>,
     /// `false` in the Tor window: a file opened in another application would connect outside Tor.
     opens_files: bool,
+    /// The newest download this window's person cleared away; this list shows only later ones.
+    cleared_through: Cell<Option<DownloadId>>,
 }
 
 impl DownloadsList {
     const WIDTH: i32 = 360;
+    /// How many downloads the list shows.
+    const ROWS: usize = 5;
 
     pub fn new(center: &Rc<DownloadCenter>, opens_files: bool) -> Rc<Self> {
         let list = Rc::new(Self {
@@ -37,6 +45,7 @@ impl DownloadsList {
                 .build(),
             center: Rc::clone(center),
             opens_files,
+            cleared_through: Cell::new(None),
         });
         list.rebuild();
         let followed = list.root.downgrade();
@@ -59,11 +68,11 @@ impl DownloadsList {
         &self.root
     }
 
-    fn rebuild(&self) {
+    fn rebuild(self: &Rc<Self>) {
         while let Some(child) = self.root.first_child() {
             self.root.remove(&child);
         }
-        let entries = self.center.entries();
+        let entries = self.center.latest_after(self.cleared_through.get(), Self::ROWS);
         if entries.is_empty() {
             let empty = gtk::Label::builder()
                 .label(tr!("No downloads yet"))
@@ -74,99 +83,60 @@ impl DownloadsList {
             self.root.append(&empty);
         }
         for entry in &entries {
-            self.root.append(&self.row(entry));
+            self.root.append(&DownloadRow::build(entry, self.opens_files, None));
         }
         self.root.append(&gtk::Separator::new(gtk::Orientation::Horizontal));
+        self.root.append(&self.show_all_button());
+        self.root.append(&self.clear_button(!entries.is_empty()));
+        self.root.append(&self.folder_button());
+    }
+
+    fn show_all_button(self: &Rc<Self>) -> gtk::Button {
+        let button = Self::text_button(tr!("Show All Downloads"));
+        let list = Rc::clone(self);
+        button.connect_clicked(move |button| {
+            let window = Self::window_of(button);
+            Self::close_popover(button);
+            if let Some(window) = window {
+                DownloadsManager::present(&list.center, list.opens_files, &window);
+            }
+        });
+        button
+    }
+
+    fn clear_button(self: &Rc<Self>, has_rows: bool) -> gtk::Button {
+        let button = Self::text_button(tr!("Clear List"));
+        button.set_sensitive(has_rows);
+        let list = Rc::clone(self);
+        button.connect_clicked(move |_| {
+            let newest = list.center.entries().first().map(DownloadEntry::id);
+            list.cleared_through.set(newest);
+            list.rebuild();
+        });
+        button
+    }
+
+    fn folder_button(&self) -> gtk::Button {
+        let button = Self::text_button(tr!("Go to Download Folder"));
         let folder = self.center.folder();
-        let go_label = gtk::Label::builder().label(tr!("Go to Download Folder")).css_classes(["body"]).build();
-        let go = gtk::Button::builder().child(&go_label).css_classes(["flat"]).build();
-        go.connect_clicked(move |button| {
+        button.connect_clicked(move |button| {
             gtk::FileLauncher::new(Some(&gio::File::for_path(&folder))).launch(
                 Self::window_of(button).as_ref(),
                 None::<&gio::Cancellable>,
                 |_| {},
             );
         });
-        self.root.append(&go);
+        button
     }
 
-    fn row(&self, entry: &RecentDownload) -> gtk::Box {
-        let row = gtk::Box::builder().spacing(4).build();
-        let name = gtk::Label::builder()
-            .label(entry.name())
-            .xalign(0.0)
-            .ellipsize(gtk::pango::EllipsizeMode::Middle)
-            .max_width_chars(34)
-            .css_classes(["body"])
-            .build();
-        let status = gtk::Label::builder()
-            .label(Self::status_of(entry))
-            .xalign(0.0)
-            .ellipsize(gtk::pango::EllipsizeMode::Start)
-            .max_width_chars(40)
-            .css_classes(["caption", "dim-label"])
-            .build();
-        let text = gtk::Box::builder().orientation(gtk::Orientation::Vertical).build();
-        text.append(&name);
-        text.append(&status);
-        let open = gtk::Button::builder().child(&text).css_classes(["flat"]).hexpand(true).build();
-        let path = entry.path().to_owned();
-        let finished = *entry.state() == DownloadState::Finished;
-        let can_open = self.opens_files && finished && Self::is_passive(&path);
-        open.set_sensitive(can_open);
-        if !self.opens_files {
-            open.set_tooltip_text(Some(tr!(
-                "Other applications do not open from the Tor window: they would connect outside Tor."
-            )));
-        }
-        open.connect_clicked(move |button| {
-            gtk::FileLauncher::new(Some(&gio::File::for_path(&path))).launch(
-                Self::window_of(button).as_ref(),
-                None::<&gio::Cancellable>,
-                |_| {},
-            );
-        });
-        let folder = gtk::Button::builder()
-            .icon_name("folder-open-symbolic")
-            .tooltip_text(tr!("Show in Folder"))
-            .valign(gtk::Align::Center)
-            .css_classes(["flat", "circular"])
-            .build();
-        let path = entry.path().to_owned();
-        folder.connect_clicked(move |button| {
-            gtk::FileLauncher::new(Some(&gio::File::for_path(&path))).open_containing_folder(
-                Self::window_of(button).as_ref(),
-                None::<&gio::Cancellable>,
-                |_| {},
-            );
-        });
-        row.append(&open);
-        row.append(&folder);
-        row
+    fn text_button(label: &str) -> gtk::Button {
+        let text = gtk::Label::builder().label(label).css_classes(["body"]).build();
+        gtk::Button::builder().child(&text).css_classes(["flat"]).build()
     }
 
-    /// Only a file that merely displays something opens with one click, judged by what the file really is (its
-    /// content, not just its name); a program, script or launcher is shown in its folder instead. Anything
-    /// that cannot be examined counts as not passive.
-    fn is_passive(path: &Path) -> bool {
-        gio::File::for_path(path)
-            .query_info("standard::content-type", gio::FileQueryInfoFlags::NOFOLLOW_SYMLINKS, None::<&gio::Cancellable>)
-            .ok()
-            .and_then(|info| info.content_type())
-            .is_some_and(|content_type| PassiveContentType::new(&content_type).is_passive())
-    }
-
-    /// Where the file is, or how far the download got.
-    fn status_of(entry: &RecentDownload) -> String {
-        match entry.state() {
-            DownloadState::Finished => {
-                entry.path().parent().map(Path::display).map(|folder| folder.to_string()).unwrap_or_default()
-            }
-            DownloadState::Failed => tr!("Download failed").to_owned(),
-            DownloadState::InProgress { received, total: Some(total) } if *total > 0 => {
-                tr!("Downloading… {percent}%", percent = received.saturating_mul(100) / total)
-            }
-            DownloadState::InProgress { .. } => tr!("Downloading…").to_owned(),
+    fn close_popover(button: &gtk::Button) {
+        if let Some(popover) = button.ancestor(gtk::Popover::static_type()).and_downcast::<gtk::Popover>() {
+            popover.popdown();
         }
     }
 

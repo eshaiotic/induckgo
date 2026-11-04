@@ -17,7 +17,7 @@ use gio::prelude::FileExt;
 use gtk::prelude::Cast;
 use gtk::prelude::StaticType;
 use induckgo_core::download::download_file_name::DownloadFileName;
-use induckgo_core::download::recent_downloads::DownloadId;
+use induckgo_core::download::download_history::DownloadId;
 use webkit6::Download;
 use webkit6::NetworkSession;
 

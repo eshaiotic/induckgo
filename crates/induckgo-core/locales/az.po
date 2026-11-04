@@ -749,3 +749,21 @@ msgstr "_Saxla"
 
 msgid "_Select"
 msgstr "_Seç"
+
+msgid "Show All Downloads"
+msgstr "Bütün endirmələri göstər"
+
+msgid "Clear List"
+msgstr "Siyahını təmizlə"
+
+msgid "Remove from List"
+msgstr "Siyahıdan sil"
+
+msgid "Clear History"
+msgstr "Tarixçəni təmizlə"
+
+msgid "Search Downloads"
+msgstr "Endirmələrdə axtar"
+
+msgid "File Moved or Deleted"
+msgstr "Fayl köçürülüb və ya silinib"

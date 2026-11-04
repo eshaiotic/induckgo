@@ -749,3 +749,21 @@ msgstr "_Gem"
 
 msgid "_Select"
 msgstr "_Vælg"
+
+msgid "Show All Downloads"
+msgstr "Vis alle downloads"
+
+msgid "Clear List"
+msgstr "Ryd liste"
+
+msgid "Remove from List"
+msgstr "Fjern fra liste"
+
+msgid "Clear History"
+msgstr "Ryd historik"
+
+msgid "Search Downloads"
+msgstr "Søg i downloads"
+
+msgid "File Moved or Deleted"
+msgstr "Filen er flyttet eller slettet"

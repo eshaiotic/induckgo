@@ -749,3 +749,21 @@ msgstr "_Opslaan"
 
 msgid "_Select"
 msgstr "_Selecteren"
+
+msgid "Show All Downloads"
+msgstr "Alle downloads tonen"
+
+msgid "Clear List"
+msgstr "Lijst wissen"
+
+msgid "Remove from List"
+msgstr "Verwijderen uit lijst"
+
+msgid "Clear History"
+msgstr "Geschiedenis wissen"
+
+msgid "Search Downloads"
+msgstr "Downloads zoeken"
+
+msgid "File Moved or Deleted"
+msgstr "Bestand verplaatst of verwijderd"

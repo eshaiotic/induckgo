@@ -749,3 +749,21 @@ msgstr "_Sačuvaj"
 
 msgid "_Select"
 msgstr "_Izaberi"
+
+msgid "Show All Downloads"
+msgstr "Prikaži sva preuzimanja"
+
+msgid "Clear List"
+msgstr "Obriši listu"
+
+msgid "Remove from List"
+msgstr "Ukloni sa liste"
+
+msgid "Clear History"
+msgstr "Obriši istoriju"
+
+msgid "Search Downloads"
+msgstr "Pretraži preuzimanja"
+
+msgid "File Moved or Deleted"
+msgstr "Datoteka je premeštena ili obrisana"

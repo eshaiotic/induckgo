@@ -749,3 +749,21 @@ msgstr "_Lưu"
 
 msgid "_Select"
 msgstr "_Chọn"
+
+msgid "Show All Downloads"
+msgstr "Hiện tất cả tệp tải xuống"
+
+msgid "Clear List"
+msgstr "Xóa danh sách"
+
+msgid "Remove from List"
+msgstr "Xóa khỏi danh sách"
+
+msgid "Clear History"
+msgstr "Xóa lịch sử"
+
+msgid "Search Downloads"
+msgstr "Tìm kiếm tệp tải xuống"
+
+msgid "File Moved or Deleted"
+msgstr "Tệp đã bị di chuyển hoặc xóa"

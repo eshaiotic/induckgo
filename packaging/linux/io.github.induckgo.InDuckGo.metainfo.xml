@@ -32,6 +32,13 @@
   </provides>
   <content_rating type="oars-1.1"/>
   <releases>
+    <release version="1.1.1" date="2026-11-04">
+      <description>
+        <p>Interface language: choose among 68 languages in the preferences.</p>
+        <p>Downloads: a list in the toolbar, a choice of save folder, a clear-list button and a manager with the whole history.</p>
+        <p>Faster pages: drawing with GTK's OpenGL renderer instead of copying every frame through memory.</p>
+      </description>
+    </release>
     <release version="1.1.0" date="2026-11-03">
       <description>
         <p>Tor window: browsing through InDuckGo's own Tor, with bridges, onion services and New Identity.</p>

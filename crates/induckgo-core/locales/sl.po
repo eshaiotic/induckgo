@@ -749,3 +749,21 @@ msgstr "_Shrani"
 
 msgid "_Select"
 msgstr "_Izberi"
+
+msgid "Show All Downloads"
+msgstr "Pokaži vse prenose"
+
+msgid "Clear List"
+msgstr "Počisti seznam"
+
+msgid "Remove from List"
+msgstr "Odstrani s seznama"
+
+msgid "Clear History"
+msgstr "Počisti zgodovino"
+
+msgid "Search Downloads"
+msgstr "Išči po prenosih"
+
+msgid "File Moved or Deleted"
+msgstr "Datoteka je premaknjena ali izbrisana"

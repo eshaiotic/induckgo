@@ -749,3 +749,21 @@ msgstr "_Mentés"
 
 msgid "_Select"
 msgstr "_Kiválasztás"
+
+msgid "Show All Downloads"
+msgstr "Összes letöltés megjelenítése"
+
+msgid "Clear List"
+msgstr "Lista törlése"
+
+msgid "Remove from List"
+msgstr "Eltávolítás a listából"
+
+msgid "Clear History"
+msgstr "Előzmények törlése"
+
+msgid "Search Downloads"
+msgstr "Keresés a letöltések között"
+
+msgid "File Moved or Deleted"
+msgstr "A fájl áthelyezve vagy törölve"

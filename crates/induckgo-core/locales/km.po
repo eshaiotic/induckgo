@@ -749,3 +749,21 @@ msgstr "រក្សាទុក(_S)"
 
 msgid "_Select"
 msgstr "ជ្រើសរើស(_C)"
+
+msgid "Show All Downloads"
+msgstr "បង្ហាញការទាញយកទាំងអស់"
+
+msgid "Clear List"
+msgstr "សម្អាតបញ្ជី"
+
+msgid "Remove from List"
+msgstr "លុបចេញពីបញ្ជី"
+
+msgid "Clear History"
+msgstr "សម្អាតប្រវត្តិ"
+
+msgid "Search Downloads"
+msgstr "ស្វែងរកការទាញយក"
+
+msgid "File Moved or Deleted"
+msgstr "ឯកសារត្រូវបានផ្លាស់ទី ឬលុប"

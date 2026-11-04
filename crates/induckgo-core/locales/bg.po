@@ -749,3 +749,21 @@ msgstr "_Запазване"
 
 msgid "_Select"
 msgstr "_Избор"
+
+msgid "Show All Downloads"
+msgstr "Показване на всички изтегляния"
+
+msgid "Clear List"
+msgstr "Изчистване на списъка"
+
+msgid "Remove from List"
+msgstr "Премахване от списъка"
+
+msgid "Clear History"
+msgstr "Изчистване на историята"
+
+msgid "Search Downloads"
+msgstr "Търсене в изтеглените"
+
+msgid "File Moved or Deleted"
+msgstr "Файлът е преместен или изтрит"

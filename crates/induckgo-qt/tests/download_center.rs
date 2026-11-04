@@ -85,7 +85,7 @@ fn should_not_keep_a_download_that_was_still_running() {
     let id = center.begin(scenario.downloads_folder.path().join("big.iso"));
     center.progress(id, 10, Some(100));
     center.remove(id);
-    assert!(names(&scenario.center().rows_json(None, DownloadCenter::LIST_LENGTH)).is_empty());
+    assert_eq!(names(&scenario.center().rows_json(None, DownloadCenter::LIST_LENGTH)), Vec::<&str>::new());
 }
 
 #[test]
@@ -120,5 +120,5 @@ fn should_forget_everything_when_the_history_is_cleared() {
     let id = center.begin(scenario.file_in_downloads("x.bin"));
     center.finish(id);
     center.clear_history();
-    assert!(names(&scenario.center().rows_json(None, 10)).is_empty());
+    assert_eq!(names(&scenario.center().rows_json(None, 10)), Vec::<&str>::new());
 }

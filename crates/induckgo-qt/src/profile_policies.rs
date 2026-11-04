@@ -49,13 +49,6 @@ impl ProfilePolicies {
     ) -> Self {
         let sites = Arc::new(PublicSuffixLookup);
         let allow_list = Arc::new(RwLock::new(allow_list));
-        let user_unprotected_domains: Vec<String> = unprotected_sites
-            .read()
-            .unwrap_or_else(std::sync::PoisonError::into_inner)
-            .domains()
-            .into_iter()
-            .map(str::to_owned)
-            .collect();
         let is_strict = strictness == ProfileStrictness::Strict;
 
         let mut policies: Vec<Box<dyn RequestPolicy>> =
@@ -68,7 +61,7 @@ impl ProfilePolicies {
             let data_set = Arc::new(TrackerDataSet::from_json(&documents.tracker_data));
             excluded_from_https = configuration.exception_domains(Self::HTTPS_FEATURE);
             policies.push(Box::new(TrackerRequestPolicy::new(Arc::clone(&data_set), sites)));
-            policies.push(Box::new(LinkCleaningRequestPolicy::new(configuration, user_unprotected_domains)));
+            policies.push(Box::new(LinkCleaningRequestPolicy::new(configuration, Arc::clone(&unprotected_sites))));
             if !is_strict {
                 cookies = Arc::new(TrackerCookiePolicy::new(data_set));
             }

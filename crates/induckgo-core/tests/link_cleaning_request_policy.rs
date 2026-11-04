@@ -1,5 +1,7 @@
 //! Cleaning tracking parameters from the address of a navigation.
 
+use std::sync::Arc;
+
 use induckgo_core::network::link_cleaning_request_policy::LinkCleaningRequestPolicy;
 use induckgo_core::network::network_request::NetworkRequest;
 use induckgo_core::network::request_decision::RequestDecision;
@@ -23,7 +25,7 @@ impl LinkCleaningScenario {
             }}}),
             "1.214.0",
         );
-        Self { policy: LinkCleaningRequestPolicy::new(configuration, vec![]) }
+        Self { policy: LinkCleaningRequestPolicy::new(configuration, Arc::default()) }
     }
 
     fn when_navigating_to(&self, address: &str) -> RequestDecision {

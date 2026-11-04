@@ -21,7 +21,10 @@ pub struct BurnRestart {
 impl BurnRestart {
     const MARKER: &'static str = "burn-pending";
     /// Set by the AppImage runtime to the image's path: the mounted copy of the program disappears when it quits.
-    const RESTART_SCRIPT: &'static str = "sleep 2; exec \"$0\" \"$@\"";
+    /// Files of what the person did (not of what they chose), deleted together with the engine's storage.
+    const HISTORY_FILES: [&'static str; 2] = ["downloads.json", "site-zoom-levels.json"];
+    /// Waits (at most 30 s) for the process whose id is `$1` to exit, then starts the program.
+    const RESTART_SCRIPT: &'static str = "pid=$1; shift; n=0; while kill -0 \"$pid\" 2>/dev/null && [ $n -lt 150 ]; do sleep 0.2; n=$((n+1)); done; exec \"$@\"";
     const APPIMAGE_VARIABLE: &'static str = "APPIMAGE";
 
     #[must_use]
@@ -59,6 +62,12 @@ impl BurnRestart {
         }
         for directory in BurnPlanner::new(self.location.clone()).plan(&BurnScope::Everything).storage_directories {
             match fs::remove_dir_all(&directory) {
+                Err(error) if error.kind() != io::ErrorKind::NotFound => return Err(error),
+                _ => {}
+            }
+        }
+        for file in Self::HISTORY_FILES {
+            match fs::remove_file(self.location.data.join(file)) {
                 Err(error) if error.kind() != io::ErrorKind::NotFound => return Err(error),
                 _ => {}
             }

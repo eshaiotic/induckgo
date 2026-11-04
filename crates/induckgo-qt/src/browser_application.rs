@@ -80,14 +80,12 @@ impl BrowserApplication {
     /// profile's stored choices.
     fn open_session(directories: &InstallationDirectories, profile: &ProfileLocation) -> ProfileSession {
         let burned = BurnRestart::new(profile.clone()).complete_pending();
-        let mut downloads = DownloadCenter::open(&profile.data, directories.system_downloads_folder());
-        match burned {
-            Ok(true) => downloads.clear_history(),
-            Ok(false) => {}
-            Err(error) => StartupNotice::set(
+        let downloads = DownloadCenter::open(&profile.data, directories.system_downloads_folder());
+        if let Err(error) = burned {
+            StartupNotice::set(
                 InterfaceCatalogue::current()
                     .text_with("Some data could not be deleted: {error}", &[("error", &error.to_string())]),
-            ),
+            );
         }
         ProfileSession::new(profile, SiteProtection::open(&profile.data), downloads, SiteZoomStore::open(&profile.data))
     }

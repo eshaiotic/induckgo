@@ -35,6 +35,11 @@ for plugin in platforms imageformats tls platforminputcontexts xcbglintegrations
   wayland-decoration-client wayland-graphics-integration-client wayland-shell-integration; do
   if [ -d "$qt/plugins/$plugin" ]; then cp -a "$qt/plugins/$plugin" "$app/usr/lib/qt6/plugins/$plugin"; fi
 done
+# The desktop's own file chooser and colour scheme come through the portal; without it Qt draws its own dialog.
+mkdir -p "$app/usr/lib/qt6/plugins/platformthemes"
+if [ -e "$qt/plugins/platformthemes/libqxdgdesktopportal.so" ]; then
+  cp "$qt/plugins/platformthemes/libqxdgdesktopportal.so" "$app/usr/lib/qt6/plugins/platformthemes/"
+fi
 # QML modules: Qt Quick with Controls, Layouts, Window, Templates, QtQml and the web view.
 for module in QtQml QtQuick QtWebEngine QtCore Qt; do
   if [ -d "$qt/qml/$module" ]; then cp -a "$qt/qml/$module" "$app/usr/lib/qt6/qml/$module"; fi

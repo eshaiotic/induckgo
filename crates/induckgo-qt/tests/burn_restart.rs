@@ -55,6 +55,21 @@ fn should_keep_the_persons_settings() {
 }
 
 #[test]
+fn should_delete_the_download_list_and_the_site_zoom_but_not_the_download_choices() {
+    let scenario = BurnScenario::given_a_profile_with_browsing_data_and_settings();
+    for file in ["downloads.json", "site-zoom-levels.json", "download-settings.json"] {
+        fs::write(scenario.location.data.join(file), b"{}").expect("file");
+    }
+    scenario.burn().request().expect("request");
+    scenario.burn().complete_pending().expect("complete");
+    let remaining: Vec<bool> = ["downloads.json", "site-zoom-levels.json", "download-settings.json"]
+        .iter()
+        .map(|file| scenario.location.data.join(file).exists())
+        .collect();
+    assert_eq!(remaining, [false, false, true]);
+}
+
+#[test]
 fn should_burn_only_once_per_request() {
     let scenario = BurnScenario::given_a_profile_with_browsing_data_and_settings();
     scenario.burn().request().expect("request");

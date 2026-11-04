@@ -48,6 +48,8 @@ use crate::startup_notice::StartupNotice;
 #[derive(Default)]
 pub struct BrowserBridgeRust;
 
+// QML invokes these on the object, so they take `&self` even where they do not read it.
+#[allow(clippy::unused_self)]
 impl ffi::BrowserBridge {
     fn destination(&self, typed_text: &QString) -> QString {
         let address = AddressBarInput::new(&typed_text.to_string()).destination(SearchEngine::default());

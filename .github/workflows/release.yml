@@ -48,10 +48,12 @@ jobs:
     runs-on: ubuntu-24.04
     container: archlinux:latest
     steps:
+      # Every `depends` entry of the PKGBUILD must be installed here: makepkg runs as an unprivileged user
+      # that cannot install missing ones (exit code 8), which is how `tor` broke the 1.1.0 release.
       - name: Install build tools and InDuckGo's libraries
         run: >-
           pacman -Syu --noconfirm --needed base-devel git rust cargo-audit
-          gtk4 libadwaita libsoup3 webkitgtk-6.0 hicolor-icon-theme
+          gtk4 libadwaita libsoup3 webkitgtk-6.0 hicolor-icon-theme tor
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false

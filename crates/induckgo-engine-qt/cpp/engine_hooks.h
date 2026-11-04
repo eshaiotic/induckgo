@@ -1,12 +1,9 @@
 #pragma once
 #include "rust/cxx.h"
 
-struct HookDecision;
-class PolicyHooks;
-
 /// Must run before the QGuiApplication exists (a QtWebEngine requirement).
 void initialize_web_engine();
-/// Hands the default web profile its interceptor and cookie filter; the profile owns them from now on.
-void install_hooks(rust::Box<PolicyHooks> hooks);
-/// `Chromium/140.0.7339.207`-style version of the engine, without the prefix.
+/// Hands the default web profile its request interceptor and cookie filter.
+void install_hooks();
+/// Version of the Chromium inside QtWebEngine, such as `140.0.7339.207`.
 rust::String chromium_version();

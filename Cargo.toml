@@ -1,6 +1,20 @@
 [workspace]
 resolver = "3"
-members = ["crates/induckgo-core", "crates/induckgo", "crates/induckgo-test-report", "crates/induckgo-bench"]
+members = [
+    "crates/induckgo-core",
+    "crates/induckgo",
+    "crates/induckgo-test-report",
+    "crates/induckgo-bench",
+    "crates/induckgo-engine-qt",
+]
+# The Qt crates need Qt 6 with QtWebEngine; they are built on request (`-p induckgo-engine-qt`) until packaging
+# and CI install Qt (plan Task 13).
+default-members = [
+    "crates/induckgo-core",
+    "crates/induckgo",
+    "crates/induckgo-test-report",
+    "crates/induckgo-bench",
+]
 
 [workspace.package]
 version = "1.1.2"

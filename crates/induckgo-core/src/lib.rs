@@ -12,6 +12,7 @@ pub mod identity;
 pub mod language;
 pub mod launch;
 pub mod navigation;
+pub mod network;
 pub mod page_zoom;
 pub mod profile;
 pub mod protection;

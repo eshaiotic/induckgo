@@ -99,9 +99,10 @@ pub mod ffi {
         #[qinvokable]
         fn burn_and_restart(self: &BrowserBridge) -> QString;
 
-        /// Hands a file or folder to the desktop's default application; returns whether it was started.
+        /// Shows a folder in the desktop's file manager; returns whether it was started. Only an existing absolute
+        /// folder is opened, never a file: a downloaded file is not launched from here.
         #[qinvokable]
-        fn open_path(self: &BrowserBridge, path: &QString) -> bool;
+        fn open_folder(self: &BrowserBridge, folder: &QString) -> bool;
     }
 }
 
@@ -272,8 +273,9 @@ impl ffi::BrowserBridge {
         }
     }
 
-    fn open_path(&self, path: &QString) -> bool {
-        Command::new("xdg-open").arg(path.to_string()).spawn().is_ok()
+    fn open_folder(&self, folder: &QString) -> bool {
+        let folder = PathBuf::from(folder.to_string());
+        folder.is_absolute() && folder.is_dir() && Command::new("xdg-open").arg(folder).spawn().is_ok()
     }
 
     fn percent(level: ZoomLevel) -> i32 {

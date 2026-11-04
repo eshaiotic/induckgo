@@ -45,8 +45,8 @@ Item {
 
     function clearHistory() { bridge.download_clear_history(); clearedThrough = -1; reload() }
     function remove(id) { bridge.download_remove(id); reload() }
-    function showInFolder(path) { bridge.open_path(path.substring(0, path.lastIndexOf("/"))) }
-    function openFolder() { bridge.open_path(bridge.download_folder()) }
+    function showInFolder(path) { bridge.open_folder(path.substring(0, path.lastIndexOf("/"))) }
+    function openFolder() { bridge.open_folder(bridge.download_folder()) }
 
     function begin(download, path) {
         const slash = path.lastIndexOf("/")

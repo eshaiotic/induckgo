@@ -5,6 +5,7 @@
 //! window keeps both in memory only, like its other preferences.
 
 use std::cell::RefCell;
+use std::io;
 use std::path::Path;
 use std::path::PathBuf;
 use std::rc::Rc;
@@ -78,11 +79,13 @@ impl DownloadCenter {
         self.notify();
     }
 
-    /// Forgets the list of finished and failed downloads, for a profile whose browsing data was burned.
-    pub fn forget_all(&self) {
-        self.recent.borrow_mut().forget_finished();
-        self.save_history();
+    /// Forgets the whole list, for a profile whose browsing data was burned. The error says the emptied list
+    /// could not be written, so the old one is still on disk.
+    pub fn forget_all(&self) -> io::Result<()> {
+        self.recent.borrow_mut().forget_all();
+        let written = self.write_history();
         self.notify();
+        written
     }
 
     pub fn asks_where_to_save(&self) -> bool {
@@ -118,10 +121,13 @@ impl DownloadCenter {
     }
 
     fn save_history(&self) {
-        let document = self.recent.borrow().to_json();
-        if let Err(error) = self.history_file.write_json(&document) {
+        if let Err(error) = self.write_history() {
             glib::g_warning!(Self::LOG_DOMAIN, "cannot save the downloads list: {error}");
         }
+    }
+
+    fn write_history(&self) -> io::Result<()> {
+        self.history_file.write_json(&self.recent.borrow().to_json())
     }
 
     fn notify(&self) {

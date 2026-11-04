@@ -459,8 +459,9 @@ impl ProfileSession {
     /// zoom of this session; a profile keeps its HSTS list.
     pub async fn burn_website_data(&self) -> Result<(), glib::Error> {
         self.zoom.forget_all();
-        self.downloads.forget_all();
-        let Some(data_manager) = self.network_session.website_data_manager() else { return Ok(()) };
+        let downloads =
+            self.downloads.forget_all().map_err(|error| glib::Error::new(glib::FileError::Failed, &error.to_string()));
+        let Some(data_manager) = self.network_session.website_data_manager() else { return downloads };
         if let Some(favicons) = data_manager.favicon_database() {
             favicons.clear();
         }
@@ -468,7 +469,8 @@ impl ProfileSession {
         data_manager.clear(self.burned, glib::TimeSpan::from_seconds(0), None::<&gio::Cancellable>, |result| {
             let _ = finished.send(result);
         });
-        cleared.await.unwrap_or(Ok(()))
+        cleared.await.unwrap_or(Ok(()))?;
+        downloads
     }
 
     /// A profile's session, with cookies kept in the profile's own directory.

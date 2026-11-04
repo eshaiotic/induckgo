@@ -49,7 +49,7 @@ impl RecentDownloadsScenario {
     }
 
     fn when_browsing_data_is_burned(mut self) -> Self {
-        self.downloads.forget_finished();
+        self.downloads.forget_all();
         self
     }
 
@@ -143,7 +143,7 @@ fn should_ignore_stored_entries_without_an_absolute_path() {
 }
 
 #[test]
-fn should_forget_finished_and_failed_downloads_when_browsing_data_is_burned() {
+fn should_forget_every_download_when_browsing_data_is_burned() {
     RecentDownloadsScenario::given_nothing_downloaded()
         .when_started("/home/me/Downloads/done.pdf")
         .when_finished()
@@ -154,9 +154,10 @@ fn should_forget_finished_and_failed_downloads_when_browsing_data_is_burned() {
 }
 
 #[test]
-fn should_keep_a_download_that_is_still_running_when_browsing_data_is_burned() {
+fn should_forget_a_running_download_too_and_not_list_it_when_it_finishes() {
     RecentDownloadsScenario::given_nothing_downloaded()
         .when_started("/home/me/Downloads/big.iso")
         .when_browsing_data_is_burned()
-        .then_lists(&["big.iso"]);
+        .when_finished()
+        .then_lists(&[]);
 }

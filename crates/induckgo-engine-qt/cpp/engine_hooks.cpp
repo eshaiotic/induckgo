@@ -47,7 +47,7 @@ void install_hooks(rust::Str storage_path, rust::Str cache_path) {
     // The default profile of QtWebEngine Quick keeps nothing on disk until it is made persistent.
     profile->setStorageName(QStringLiteral("InDuckGo"));
     profile->setOffTheRecord(false);
-    profile->setPersistentCookiesPolicy(QQuickWebEngineProfile::ForcePersistentCookies);
+    profile->setPersistentCookiesPolicy(QQuickWebEngineProfile::AllowPersistentCookies);
     profile->setUrlRequestInterceptor(new DecidingInterceptor);
     profile->cookieStore()->setCookieFilter([](const QWebEngineCookieStore::FilterRequest &request) {
         const QByteArray domain = request.origin.host().toUtf8();

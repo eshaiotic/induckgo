@@ -9,6 +9,9 @@ WebEngineView {
 
     url: startAddress
     settings.javascriptCanOpenWindows: false
+    // A page loaded from file:// must not read other local files, and a local page must not reach the network.
+    settings.localContentCanAccessFileUrls: false
+    settings.localContentCanAccessRemoteUrls: false
 
     userScripts.collection: smoothWheelSource === "" ? [] : [ {
         name: "induckgo-smooth-wheel",

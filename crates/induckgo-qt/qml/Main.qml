@@ -108,6 +108,15 @@ ApplicationWindow {
             width: Math.min(240, implicitWidth)
             text: tab ? (tab.title || tab.address) : ""
             onClicked: tabs.currentIndex = TabBar.index
+            // The title comes from the page: show it as plain text, never as markup (rich text could load images).
+            contentItem: Text {
+                text: parent.text
+                textFormat: Text.PlainText
+                elide: Text.ElideRight
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                color: parent.palette.buttonText
+            }
         }
     }
 

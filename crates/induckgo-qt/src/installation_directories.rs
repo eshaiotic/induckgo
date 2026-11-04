@@ -8,6 +8,8 @@ use induckgo_core::profile::profile_directories::ProfileDirectories;
 use induckgo_core::profile::profile_directories::ProfileLocation;
 use induckgo_core::profile::profile_id::ProfileId;
 
+use crate::system_downloads_folder::SystemDownloadsFolder;
+
 pub struct InstallationDirectories {
     data_root: PathBuf,
     cache_root: PathBuf,
@@ -39,6 +41,14 @@ impl InstallationDirectories {
     #[must_use]
     pub fn interface_language_file(&self) -> PathBuf {
         self.data_root.join("interface.json")
+    }
+
+    /// The folder the desktop calls "Downloads".
+    #[must_use]
+    pub fn system_downloads_folder(&self) -> PathBuf {
+        let home = env::var_os("HOME").map(PathBuf::from).unwrap_or_default();
+        let config_home = Self::directory_from("XDG_CONFIG_HOME").unwrap_or_else(|| home.join(".config"));
+        SystemDownloadsFolder::locate(&home, &config_home)
     }
 
     /// Downloaded Tracker Data Set and privacy configuration, shared by every profile.

@@ -15,6 +15,20 @@ use serde_json::json;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct DownloadId(u64);
 
+impl DownloadId {
+    /// The number a user interface keeps to name this download.
+    #[must_use]
+    pub fn value(self) -> u64 {
+        self.0
+    }
+
+    /// The id a user interface got from [`Self::value`].
+    #[must_use]
+    pub fn from_value(value: u64) -> Self {
+        Self(value)
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DownloadState {
     /// `total` is `None` when the server did not say how large the file is.

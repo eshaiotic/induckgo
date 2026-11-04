@@ -43,15 +43,19 @@ impl ProfilePolicies {
     #[must_use]
     pub fn assemble(
         documents: Option<&ProtectionDocuments>,
-        unprotected_sites: UnprotectedSites,
+        unprotected_sites: Arc<RwLock<UnprotectedSites>>,
         allow_list: SiteAllowList,
         strictness: ProfileStrictness,
     ) -> Self {
         let sites = Arc::new(PublicSuffixLookup);
         let allow_list = Arc::new(RwLock::new(allow_list));
-        let user_unprotected_domains: Vec<String> =
-            unprotected_sites.domains().into_iter().map(str::to_owned).collect();
-        let unprotected_sites = Arc::new(RwLock::new(unprotected_sites));
+        let user_unprotected_domains: Vec<String> = unprotected_sites
+            .read()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+            .domains()
+            .into_iter()
+            .map(str::to_owned)
+            .collect();
         let is_strict = strictness == ProfileStrictness::Strict;
 
         let mut policies: Vec<Box<dyn RequestPolicy>> =

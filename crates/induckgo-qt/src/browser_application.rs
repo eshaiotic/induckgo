@@ -12,16 +12,21 @@ use induckgo_core::engine::engine_verdict::EngineVerdict;
 use induckgo_core::engine::minimum_engine_version::MinimumEngineVersion;
 use induckgo_core::engine::window_kind::WindowKind;
 use induckgo_core::network::site_allow_list::SiteAllowList;
+use induckgo_core::profile::profile_directories::ProfileLocation;
 use induckgo_core::profile::profile_id::ProfileId;
-use induckgo_core::profile::unprotected_sites::UnprotectedSites;
 use induckgo_engine_qt::qt_web_engine::QtWebEngine;
 use serde_json::Value;
 
+use crate::burn_restart::BurnRestart;
+use crate::download_center::DownloadCenter;
 use crate::installation_directories::InstallationDirectories;
 use crate::interface_catalogue::InterfaceCatalogue;
 use crate::profile_policies::ProfilePolicies;
 use crate::profile_policies::ProfileStrictness;
+use crate::profile_session::ProfileSession;
 use crate::protection_documents::ProtectionDocuments;
+use crate::site_protection::SiteProtection;
+use crate::site_zoom_store::SiteZoomStore;
 use crate::startup_notice::StartupNotice;
 
 pub struct BrowserApplication;
@@ -54,18 +59,37 @@ impl BrowserApplication {
 
     fn install_policies(directories: &InstallationDirectories) {
         let profile = directories.profile(&ProfileId::default_profile());
+        let session = Self::open_session(directories, &profile);
         let documents = ProtectionDocuments::from_cache(&directories.protection_cache());
-        let unprotected_sites = Self::read_json(&profile.data.join("unprotected-sites.json"))
-            .map(|document| UnprotectedSites::from_json(&document))
-            .unwrap_or_default();
         let allow_list = Self::read_json(&profile.data.join("site-allow-list.json"))
             .map(|document| SiteAllowList::from_json(&document))
             .unwrap_or_default();
-        let policies =
-            ProfilePolicies::assemble(documents.as_ref(), unprotected_sites, allow_list, ProfileStrictness::Standard);
+        let policies = ProfilePolicies::assemble(
+            documents.as_ref(),
+            session.protection.shared_list(),
+            allow_list,
+            ProfileStrictness::Standard,
+        );
+        session.install();
         let engine_directory = profile.data.join("engine");
         let engine_cache = profile.cache.join("engine");
         QtWebEngine::install_policies(policies.request, policies.cookies, &engine_directory, &engine_cache);
+    }
+
+    /// Finishes a burn the Fire button asked for before anything opens the profile's files, then reads the
+    /// profile's stored choices.
+    fn open_session(directories: &InstallationDirectories, profile: &ProfileLocation) -> ProfileSession {
+        let burned = BurnRestart::new(profile.clone()).complete_pending();
+        let mut downloads = DownloadCenter::open(&profile.data, directories.system_downloads_folder());
+        match burned {
+            Ok(true) => downloads.clear_history(),
+            Ok(false) => {}
+            Err(error) => StartupNotice::set(
+                InterfaceCatalogue::current()
+                    .text_with("Some data could not be deleted: {error}", &[("error", &error.to_string())]),
+            ),
+        }
+        ProfileSession::new(profile, SiteProtection::open(&profile.data), downloads, SiteZoomStore::open(&profile.data))
     }
 
     fn check_engine_version() {

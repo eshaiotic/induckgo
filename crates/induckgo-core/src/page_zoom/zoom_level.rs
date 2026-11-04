@@ -64,7 +64,9 @@ impl ZoomLevel {
         self == Self::ACTUAL_SIZE
     }
 
-    pub(crate) fn percent(self) -> u16 {
+    /// The size as a whole percentage, as a person reads it (`125`).
+    #[must_use]
+    pub fn percent(self) -> u16 {
         self.percent
     }
 }

@@ -19,7 +19,7 @@ impl ZoomControls {
         Self {
             badge: gtk::Button::builder()
                 .action_name("win.zoom-reset")
-                .tooltip_text("Reset Zoom")
+                .tooltip_text(tr!("Reset Zoom"))
                 .valign(gtk::Align::Center)
                 .visible(false)
                 .build(),
@@ -34,9 +34,9 @@ impl ZoomControls {
     pub fn menu_row(level: ZoomLevel) -> gio::MenuItem {
         let row = gio::Menu::new();
         for (label, action, icon) in [
-            ("Zoom Out", "win.zoom-out", Some("zoom-out-symbolic")),
+            (tr!("Zoom Out"), "win.zoom-out", Some("zoom-out-symbolic")),
             (level.to_string().as_str(), "win.zoom-reset", None),
-            ("Zoom In", "win.zoom-in", Some("zoom-in-symbolic")),
+            (tr!("Zoom In"), "win.zoom-in", Some("zoom-in-symbolic")),
         ] {
             let item = gio::MenuItem::new(Some(label), Some(action));
             if let Some(icon) = icon {

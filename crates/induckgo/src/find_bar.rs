@@ -19,7 +19,7 @@ impl FindBar {
     const MAX_MATCHES: u32 = 1000;
 
     pub fn new() -> Rc<Self> {
-        let entry = gtk::SearchEntry::builder().placeholder_text("Find in page").width_chars(32).build();
+        let entry = gtk::SearchEntry::builder().placeholder_text(tr!("Find in page")).width_chars(32).build();
         let bar = gtk::SearchBar::builder().child(&entry).show_close_button(true).build();
         bar.connect_entry(&entry);
         let find_bar = Rc::new(Self { bar, entry, target: RefCell::new(None) });

@@ -93,11 +93,11 @@ impl BrowserWindow {
             reload: gtk::Button::builder()
                 .icon_name("view-refresh-symbolic")
                 .action_name("win.reload")
-                .tooltip_text("Reload")
+                .tooltip_text(tr!("Reload"))
                 .build(),
             shield: gtk::ToggleButton::builder()
                 .icon_name("security-high-symbolic")
-                .tooltip_text("Tracker protection on this site")
+                .tooltip_text(tr!("Tracker protection on this site"))
                 .build(),
             tab_view,
             address,
@@ -142,7 +142,7 @@ impl BrowserWindow {
     /// Names the profile's search engine in the empty address bar.
     pub fn show_search_engine(&self) {
         let engine = self.context.session.search_engine();
-        self.address.set_placeholder_text(Some(&format!("Search {} or enter address", engine.name())));
+        self.address.set_placeholder_text(Some(&tr!("Search {engine} or enter address", engine = engine.name())));
     }
 
     /// Opens `address` in a new, selected tab.
@@ -185,12 +185,12 @@ impl BrowserWindow {
         let button = |icon: &str, action: &str, tooltip: &str| -> gtk::Widget {
             gtk::Button::builder().icon_name(icon).action_name(action).tooltip_text(tooltip).build().upcast()
         };
-        let back = button("go-previous-symbolic", "win.back", "Back");
-        let forward = button("go-next-symbolic", "win.forward", "Forward");
-        let tor_window = button(AppIcons::TOR_WINDOW, "app.new-tor-window", "New Tor Window");
-        let fire_tooltip = if self.context.tor.is_some() { "New Identity" } else { "Burn Browsing Data" };
+        let back = button("go-previous-symbolic", "win.back", tr!("Back"));
+        let forward = button("go-next-symbolic", "win.forward", tr!("Forward"));
+        let tor_window = button(AppIcons::TOR_WINDOW, "app.new-tor-window", tr!("New Tor Window"));
+        let fire_tooltip = if self.context.tor.is_some() { tr!("New Identity") } else { tr!("Burn Browsing Data") };
         let fire = button(AppIcons::FIRE, "win.fire", fire_tooltip);
-        let new_tab = button("tab-new-symbolic", "win.new-tab", "New Tab");
+        let new_tab = button("tab-new-symbolic", "win.new-tab", tr!("New Tab"));
         header.pack_start(&back);
         header.pack_start(&forward);
         header.pack_start(&self.reload);
@@ -200,7 +200,7 @@ impl BrowserWindow {
         header.set_title_widget(Some(
             &adw::Clamp::builder().maximum_size(860).tightening_threshold(560).child(&address_row).build(),
         ));
-        let menu = gtk::MenuButton::builder().icon_name("open-menu-symbolic").tooltip_text("Main Menu").build();
+        let menu = gtk::MenuButton::builder().icon_name("open-menu-symbolic").tooltip_text(tr!("Main Menu")).build();
         let browser = Rc::downgrade(self);
         menu.set_create_popup_func(move |button| {
             if let Some(browser) = browser.upgrade() {
@@ -240,29 +240,29 @@ impl BrowserWindow {
     fn menu_model(context: &AppContext, zoom: ZoomLevel) -> gio::Menu {
         let menu = gio::Menu::new();
         let tabs = gio::Menu::new();
-        tabs.append(Some("New Tab"), Some("win.new-tab"));
+        tabs.append(Some(tr!("New Tab")), Some("win.new-tab"));
         if context.tor.is_none() {
-            tabs.append(Some("New Window"), Some("app.new-window"));
+            tabs.append(Some(tr!("New Window")), Some("app.new-window"));
         }
-        tabs.append(Some("New Tor Window"), Some("app.new-tor-window"));
+        tabs.append(Some(tr!("New Tor Window")), Some("app.new-tor-window"));
         menu.append_section(None, &tabs);
         let page = gio::Menu::new();
-        page.append(Some("Find in Page…"), Some("win.find"));
+        page.append(Some(tr!("Find in Page…")), Some("win.find"));
         menu.append_section(None, &page);
         menu.append_item(&ZoomControls::menu_row(zoom));
         if context.tor.is_some() {
             let tor = gio::Menu::new();
-            tor.append(Some("New Identity"), Some("win.fire"));
-            tor.append(Some("Tor Connection…"), Some(TorConnectionPage::SETTINGS_ACTION));
+            tor.append(Some(tr!("New Identity")), Some("win.fire"));
+            tor.append(Some(tr!("Tor Connection…")), Some(TorConnectionPage::SETTINGS_ACTION));
             menu.append_section(None, &tor);
             let about = gio::Menu::new();
-            about.append(Some("About InDuckGo"), Some("app.about"));
+            about.append(Some(tr!("About InDuckGo")), Some("app.about"));
             menu.append_section(None, &about);
             return menu;
         }
         let apps = gio::Menu::new();
-        apps.append(Some("Install Site as App…"), Some("win.install-web-app"));
-        apps.append(Some("Installed Apps…"), Some("win.manage-web-apps"));
+        apps.append(Some(tr!("Install Site as App…")), Some("win.install-web-app"));
+        apps.append(Some(tr!("Installed Apps…")), Some("win.manage-web-apps"));
         menu.append_section(None, &apps);
         let profiles = gio::Menu::new();
         for profile in context.catalogs.profiles().profiles() {
@@ -270,8 +270,8 @@ impl BrowserWindow {
             item.set_action_and_target_value(Some("app.open-profile"), Some(&profile.id.as_str().to_variant()));
             profiles.append_item(&item);
         }
-        profiles.append(Some("Manage Profiles…"), Some("win.manage-profiles"));
-        menu.append_section(Some("Profiles"), &profiles);
+        profiles.append(Some(tr!("Manage Profiles…")), Some("win.manage-profiles"));
+        menu.append_section(Some(tr!("Profiles")), &profiles);
         let search_engines = gio::Menu::new();
         for engine in SearchEngine::ALL {
             let item = gio::MenuItem::new(Some(engine.name()), None);
@@ -279,9 +279,9 @@ impl BrowserWindow {
             search_engines.append_item(&item);
         }
         let about = gio::Menu::new();
-        about.append_submenu(Some("Search Engine"), &search_engines);
-        about.append(Some("Preferences…"), Some("win.preferences"));
-        about.append(Some("About InDuckGo"), Some("app.about"));
+        about.append_submenu(Some(tr!("Search Engine")), &search_engines);
+        about.append(Some(tr!("Preferences…")), Some("win.preferences"));
+        about.append(Some(tr!("About InDuckGo")), Some("app.about"));
         menu.append_section(None, &about);
         menu
     }
@@ -340,7 +340,7 @@ impl BrowserWindow {
     }
 
     fn connect_signals(self: &Rc<Self>) {
-        self.address.set_icon_tooltip_text(gtk::EntryIconPosition::Secondary, Some("Install Site as App"));
+        self.address.set_icon_tooltip_text(gtk::EntryIconPosition::Secondary, Some(tr!("Install Site as App")));
         self.address.connect_icon_press(|entry, position| {
             if position == gtk::EntryIconPosition::Secondary {
                 let _ = entry.activate_action("win.install-web-app", None);
@@ -390,7 +390,7 @@ impl BrowserWindow {
 
     fn add_page(self: &Rc<Self>, page: &Rc<PageView>) {
         let tab_page = self.tab_view.append(page.widget());
-        tab_page.set_title("New Tab");
+        tab_page.set_title(tr!("New Tab"));
         self.pages.borrow_mut().push(Rc::clone(page));
         let view = page.web_view();
         let browser = Rc::downgrade(self);
@@ -491,22 +491,22 @@ impl BrowserWindow {
     fn confirm_fire(self: &Rc<Self>) {
         let dialog = if self.context.tor.is_some() {
             let dialog = adw::AlertDialog::new(
-                Some("New Identity?"),
-                Some(
+                Some(tr!("New Identity?")),
+                Some(tr!(
                     "Closes all Tor tabs and windows, deletes their cookies, site data and cache, and switches to \
-                     new Tor circuits, so sites cannot link what you do next to what you did before.",
-                ),
+                     new Tor circuits, so sites cannot link what you do next to what you did before."
+                )),
             );
-            dialog.add_responses(&[("cancel", "_Cancel"), ("burn", "_New Identity")]);
+            dialog.add_responses(&[("cancel", tr!("_Cancel")), ("burn", tr!("_New Identity"))]);
             dialog
         } else {
             let dialog = adw::AlertDialog::new(
-                Some("Burn Browsing Data?"),
-                Some(
-                    "Closes all tabs and windows of this profile and deletes its cookies, site data, cache and history.",
-                ),
+                Some(tr!("Burn Browsing Data?")),
+                Some(tr!(
+                    "Closes all tabs and windows of this profile and deletes its cookies, site data, cache and history."
+                )),
             );
-            dialog.add_responses(&[("cancel", "_Cancel"), ("burn", "_Burn")]);
+            dialog.add_responses(&[("cancel", tr!("_Cancel")), ("burn", tr!("_Burn"))]);
             dialog
         };
         dialog.set_response_appearance("burn", adw::ResponseAppearance::Destructive);
@@ -529,10 +529,10 @@ impl BrowserWindow {
                 };
                 browser.start_over();
                 let message = match (result, identity) {
-                    (Ok(()), Ok(())) if browser.context.tor.is_some() => "New identity".to_owned(),
-                    (Ok(()), Ok(())) => "Browsing data burned".to_owned(),
-                    (Err(error), _) => format!("Some data could not be deleted: {error}"),
-                    (_, Err(error)) => format!("Tor could not switch circuits: {error}"),
+                    (Ok(()), Ok(())) if browser.context.tor.is_some() => tr!("New identity").to_owned(),
+                    (Ok(()), Ok(())) => tr!("Browsing data burned").to_owned(),
+                    (Err(error), _) => tr!("Some data could not be deleted: {error}", error = error),
+                    (_, Err(error)) => tr!("Tor could not switch circuits: {error}", error = error),
                 };
                 browser.toasts.add_toast(adw::Toast::new(&message));
             });

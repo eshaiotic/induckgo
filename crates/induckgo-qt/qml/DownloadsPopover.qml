@@ -14,6 +14,11 @@ Popup {
     modal: false
     focus: true
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+    background: Rectangle {
+        radius: 8
+        color: palette.window
+        border.color: Qt.alpha(palette.windowText, 0.25)
+    }
 
     ColumnLayout {
         anchors.fill: parent

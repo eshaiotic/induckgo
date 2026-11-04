@@ -79,3 +79,36 @@ fn should_burn_only_once_per_request() {
     assert!(scenario.location.data.join("engine").exists());
     drop(scenario.roots);
 }
+
+/// A program that records the arguments it was started with.
+fn recording_program(directory: &std::path::Path) -> (std::path::PathBuf, std::path::PathBuf) {
+    use std::os::unix::fs::PermissionsExt;
+    let record = directory.join("arguments.txt");
+    let program = directory.join("program.sh");
+    fs::write(&program, format!("#!/bin/sh\nprintf '%s|' \"$@\" > '{}'\n", record.display())).expect("program");
+    fs::set_permissions(&program, fs::Permissions::from_mode(0o755)).expect("executable");
+    (program, record)
+}
+
+#[test]
+fn should_start_the_program_with_its_arguments_once_the_old_process_is_gone() {
+    let directory = TempDir::new().expect("directory");
+    let (program, record) = recording_program(directory.path());
+    let mut finished = std::process::Command::new("true").spawn().expect("true");
+    finished.wait().expect("wait");
+    let status = BurnRestart::restart_command(finished.id(), 5, &program, &["--flag".to_owned(), "x y".to_owned()])
+        .status()
+        .expect("script");
+    assert!(status.success() && fs::read_to_string(record).expect("record") == "--flag|x y|");
+}
+
+#[test]
+fn should_start_nothing_while_the_old_process_is_still_running() {
+    let directory = TempDir::new().expect("directory");
+    let (program, record) = recording_program(directory.path());
+    let mut running = std::process::Command::new("sleep").arg("30").spawn().expect("sleep");
+    let status = BurnRestart::restart_command(running.id(), 2, &program, &[]).status().expect("script");
+    running.kill().expect("kill");
+    running.wait().expect("wait");
+    assert!(!status.success() && !record.exists());
+}

@@ -14,6 +14,17 @@ ApplicationWindow {
 
     BrowserBridge { id: bridge }
 
+    // Controls follow the desktop's colour scheme even where the style's own palette stays light.
+    readonly property bool isDark: Qt.styleHints.colorScheme === Qt.Dark
+    palette.window: isDark ? "#2b2b2b" : "#f2f2f2"
+    palette.windowText: isDark ? "#e8e8e8" : "#1c1c1c"
+    palette.base: isDark ? "#1e1e1e" : "#ffffff"
+    palette.text: isDark ? "#e8e8e8" : "#1c1c1c"
+    palette.button: isDark ? "#3a3a3a" : "#e6e6e6"
+    palette.buttonText: isDark ? "#e8e8e8" : "#1c1c1c"
+    palette.placeholderText: isDark ? "#9a9a9a" : "#707070"
+    palette.mid: isDark ? "#666666" : "#a0a0a0"
+
     property var tabList: []
     property int currentIndex: 0
     readonly property var currentTab: tabList.length > 0 ? tabList[currentIndex] : null
@@ -71,6 +82,7 @@ ApplicationWindow {
         id: newTab
         text: bridge.message("New Tab")
         icon.source: "qrc:/icons/add.svg"
+        icon.color: window.palette.windowText
         shortcut: "Ctrl+T"
         onTriggered: window.openTab("")
     }
@@ -83,6 +95,7 @@ ApplicationWindow {
         id: showDownloads
         text: bridge.message("Downloads")
         icon.source: "qrc:/icons/download.svg"
+        icon.color: window.palette.windowText
         shortcut: "Ctrl+J"
         onTriggered: downloadsPopover.opened ? downloadsPopover.close() : downloadsPopover.open()
     }
@@ -90,6 +103,7 @@ ApplicationWindow {
         id: findInPage
         text: bridge.message("Find in Page…")
         icon.source: "qrc:/icons/search.svg"
+        icon.color: window.palette.windowText
         shortcut: "Ctrl+F"
         onTriggered: findBar.open()
     }
@@ -110,6 +124,7 @@ ApplicationWindow {
         id: burnAction
         text: bridge.message("Burn Browsing Data")
         icon.source: "qrc:/icons/fire.svg"
+        icon.color: window.palette.windowText
         shortcut: "Ctrl+Shift+Delete"
         onTriggered: burnDialog.open()
     }
@@ -117,12 +132,14 @@ ApplicationWindow {
         id: aboutAction
         text: bridge.message("About InDuckGo")
         icon.source: "qrc:/icons/info.svg"
+        icon.color: window.palette.windowText
         onTriggered: aboutDialog.open()
     }
     Action {
         id: preferencesAction
         text: bridge.message("Preferences…")
         icon.source: "qrc:/icons/settings.svg"
+        icon.color: window.palette.windowText
         onTriggered: preferencesDialog.open()
     }
 
@@ -181,14 +198,13 @@ ApplicationWindow {
                         anchors.rightMargin: 6
                         spacing: 6
 
-                        Image {
+                        TintedIcon {
                             readonly property string scheme: window.currentTab ? window.currentTab.address.split(":")[0] : ""
                             Layout.preferredWidth: 16
                             Layout.preferredHeight: 16
-                            sourceSize: Qt.size(16, 16)
                             visible: scheme === "https" || scheme === "http"
-                            source: scheme === "https" ? "qrc:/icons/lock.svg" : "qrc:/icons/warning.svg"
-                            opacity: 0.7
+                            name: scheme === "https" ? "lock" : "warning"
+                            opacity: 0.75
                         }
                         TextField {
                             id: addressBar
@@ -269,6 +285,11 @@ ApplicationWindow {
                     Menu {
                         id: mainMenu
                         width: 300
+                        background: Rectangle {
+                            radius: 8
+                            color: palette.window
+                            border.color: Qt.alpha(palette.windowText, 0.25)
+                        }
                         MenuItem { action: newTab }
                         MenuItem { action: showDownloads }
                         MenuItem { action: findInPage }

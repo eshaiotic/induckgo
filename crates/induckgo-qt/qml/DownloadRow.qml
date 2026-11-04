@@ -26,11 +26,11 @@ ItemDelegate {
 
     contentItem: RowLayout {
         spacing: 10
-        Image {
+        TintedIcon {
             Layout.preferredWidth: 22
             Layout.preferredHeight: 22
-            sourceSize: Qt.size(22, 22)
-            source: "qrc:/icons/download.svg"
+            name: "download"
+            size: 22
             opacity: 0.7
         }
         ColumnLayout {

@@ -7,6 +7,7 @@
 
 use std::fs;
 use std::io;
+use std::path::Path;
 use std::path::PathBuf;
 use std::process::Command;
 
@@ -20,12 +21,16 @@ pub struct BurnRestart {
 
 impl BurnRestart {
     const MARKER: &'static str = "burn-pending";
-    /// Set by the AppImage runtime to the image's path: the mounted copy of the program disappears when it quits.
     /// Files of what the person did (not of what they chose), deleted together with the engine's storage.
     const HISTORY_FILES: [&'static str; 2] = ["downloads.json", "site-zoom-levels.json"];
-    /// Waits (at most 30 s) for the process whose id is `$1` to exit, then starts the program.
-    const RESTART_SCRIPT: &'static str = "pid=$1; shift; n=0; while kill -0 \"$pid\" 2>/dev/null && [ $n -lt 150 ]; do sleep 0.2; n=$((n+1)); done; exec \"$@\"";
+    /// Set by the AppImage runtime to the image's path: the mounted copy of the program disappears when it quits.
     const APPIMAGE_VARIABLE: &'static str = "APPIMAGE";
+    /// How often the restart script looks whether the old process has gone, and for how many looks (30 s).
+    const WAIT_LOOKS: u32 = 150;
+    /// Positional parameters: `$0` the script's name, `$1` the id of the process to wait for, `$2` how many
+    /// times to look (0.2 s apart), then the program and its arguments. Starts nothing while the old process
+    /// is still alive: two instances must not share one profile directory.
+    const RESTART_SCRIPT: &'static str = "pid=$1; looks=$2; shift 2; n=0; while kill -0 \"$pid\" 2>/dev/null; do [ \"$n\" -ge \"$looks\" ] && exit 1; sleep 0.2; n=$((n+1)); done; exec \"$@\"";
 
     #[must_use]
     pub fn new(location: ProfileLocation) -> Self {
@@ -41,15 +46,29 @@ impl BurnRestart {
         fs::write(self.marker(), b"")
     }
 
-    /// Starts the browser again, as the image or program that is running now, once this process has had time to
-    /// quit: two Chromium instances must not open one profile directory.
+    /// Starts the browser again, as the image or program that is running now, once this process has quit.
     ///
     /// # Errors
     /// Fails when the program cannot be started; the caller then keeps the running browser.
     pub fn start_new_instance(arguments: &[String]) -> io::Result<()> {
         let program = std::env::var_os(Self::APPIMAGE_VARIABLE)
             .map_or_else(std::env::current_exe, |image| Ok(PathBuf::from(image)))?;
-        Command::new("sh").arg("-c").arg(Self::RESTART_SCRIPT).arg(program).args(arguments).spawn().map(drop)
+        Self::restart_command(std::process::id(), Self::WAIT_LOOKS, &program, arguments).spawn().map(drop)
+    }
+
+    /// The command that waits for process `waiting_for` to exit (looking `looks` times) and then runs `program`.
+    #[must_use]
+    pub fn restart_command(waiting_for: u32, looks: u32, program: &Path, arguments: &[String]) -> Command {
+        let mut command = Command::new("sh");
+        command
+            .arg("-c")
+            .arg(Self::RESTART_SCRIPT)
+            .arg("induckgo-restart")
+            .arg(waiting_for.to_string())
+            .arg(looks.to_string())
+            .arg(program)
+            .args(arguments);
+        command
     }
 
     /// Deletes what a requested burn names. Call before the engine starts; returns whether a burn was pending.

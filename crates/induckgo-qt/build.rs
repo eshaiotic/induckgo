@@ -12,6 +12,7 @@ fn main() {
         "qml/FindBar.qml",
         "qml/IconButton.qml",
         "qml/TabStrip.qml",
+        "qml/TintedIcon.qml",
     ]))
     .qrc("icons.qrc")
     .files(["src/browser_bridge.rs"])

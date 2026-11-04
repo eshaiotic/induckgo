@@ -33,13 +33,17 @@ impl TrackerBlockingScenario {
                 "harmless.com": {"domain": "harmless.com", "owner": {"name": "Harmless"}, "default": "ignore", "rules": []}
             },
             "entities": {"Tracker Inc": {"domains": ["tracker.com", "tracker-sites.net"]}},
-            "cnames": {}
+            "cnames": {"metrics.example.org": "collector.tracker.com"}
         }));
         Self { policy: TrackerRequestPolicy::new(Arc::new(data_set), Arc::new(KnownSuffixes)) }
     }
 
     fn when_page_requests(&self, page: Option<&str>, address: &str) -> RequestDecision {
         self.policy.decide(&NetworkRequest::new(address, page, ResourceType::Image, 1))
+    }
+
+    fn when_navigating_to(&self, address: &str) -> RequestDecision {
+        self.policy.decide(&NetworkRequest::new(address, None, ResourceType::MainFrame, 1))
     }
 }
 
@@ -90,6 +94,41 @@ fn should_pass_a_request_to_an_unknown_site() {
 #[test]
 fn should_pass_a_navigation_to_a_tracker_domain_typed_in_the_address_bar() {
     let decision =
-        TrackerBlockingScenario::given_published_tracker_data_set().when_page_requests(None, "https://tracker.com/");
+        TrackerBlockingScenario::given_published_tracker_data_set().when_navigating_to("https://tracker.com/");
+    assert_eq!(decision, RequestDecision::Pass);
+}
+
+#[test]
+fn should_block_a_tracker_requested_by_a_page_without_a_host() {
+    let decision = TrackerBlockingScenario::given_published_tracker_data_set()
+        .when_page_requests(Some("data:text/html,x"), "https://tracker.com/pixel.gif");
+    assert_eq!(decision, RequestDecision::Block);
+}
+
+#[test]
+fn should_block_a_tracker_requested_by_an_unknown_page() {
+    let decision = TrackerBlockingScenario::given_published_tracker_data_set()
+        .when_page_requests(None, "https://tracker.com/pixel.gif");
+    assert_eq!(decision, RequestDecision::Block);
+}
+
+#[test]
+fn should_block_a_cname_cloaked_tracker_on_the_same_site() {
+    let decision = TrackerBlockingScenario::given_published_tracker_data_set()
+        .when_page_requests(Some(PAGE), "https://metrics.example.org/collect");
+    assert_eq!(decision, RequestDecision::Block);
+}
+
+#[test]
+fn should_block_a_subdomain_of_a_cloaked_name() {
+    let decision = TrackerBlockingScenario::given_published_tracker_data_set()
+        .when_page_requests(Some(PAGE), "https://eu.metrics.example.org/collect");
+    assert_eq!(decision, RequestDecision::Block);
+}
+
+#[test]
+fn should_pass_a_cloaked_tracker_on_a_site_of_the_trackers_own_company() {
+    let decision = TrackerBlockingScenario::given_published_tracker_data_set()
+        .when_page_requests(Some("https://www.tracker-sites.net/"), "https://metrics.example.org/collect");
     assert_eq!(decision, RequestDecision::Pass);
 }

@@ -47,6 +47,10 @@ impl StrictBrowsingScenario {
     fn when_page_requests(&self, page: Option<&str>, address: &str) -> RequestDecision {
         self.policy.decide(&NetworkRequest::new(address, page, ResourceType::Script, 1))
     }
+
+    fn when_navigating_to(&self, address: &str) -> RequestDecision {
+        self.policy.decide(&NetworkRequest::new(address, None, ResourceType::MainFrame, 1))
+    }
 }
 
 const PAGE: &str = "https://news.example.org/story";
@@ -79,8 +83,31 @@ fn should_pass_third_party_requests_in_the_default_profile() {
 }
 
 #[test]
-fn should_treat_a_request_without_a_page_as_first_party() {
-    let decision = StrictBrowsingScenario::given_strict_profile().when_page_requests(None, "https://cdn.other.com/");
+fn should_pass_a_navigation_typed_in_the_address_bar() {
+    assert_eq!(
+        StrictBrowsingScenario::given_strict_profile().when_navigating_to("https://cdn.other.com/"),
+        RequestDecision::Pass
+    );
+}
+
+#[test]
+fn should_block_a_sub_resource_whose_page_is_unknown() {
+    let decision =
+        StrictBrowsingScenario::given_strict_profile().when_page_requests(None, "https://cdn.other.com/a.js");
+    assert_eq!(decision, RequestDecision::Block);
+}
+
+#[test]
+fn should_block_a_sub_resource_requested_by_a_page_without_a_host() {
+    let decision = StrictBrowsingScenario::given_strict_profile()
+        .when_page_requests(Some("data:text/html,x"), "https://cdn.other.com/a.js");
+    assert_eq!(decision, RequestDecision::Block);
+}
+
+#[test]
+fn should_judge_a_blob_page_by_the_site_that_created_it() {
+    let decision = StrictBrowsingScenario::given_strict_profile()
+        .when_page_requests(Some("blob:https://news.example.org/6f1c"), "https://static.example.org/a.js");
     assert_eq!(decision, RequestDecision::Pass);
 }
 

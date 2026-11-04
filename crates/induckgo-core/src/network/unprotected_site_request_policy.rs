@@ -19,10 +19,10 @@ impl UnprotectedSiteRequestPolicy {
         Self { inner, unprotected_sites }
     }
 
-    /// The site the request belongs to for this purpose: the page it is made from, or the destination itself
-    /// for a navigation.
+    /// A navigation is judged by where it goes; a sub-resource by the page that makes it. A sub-resource of an
+    /// unknown page is never exempt.
     fn is_on_unprotected_site(&self, request: &NetworkRequest) -> bool {
-        let site = request.first_party_host().or_else(|| request.host());
+        let site = if request.is_navigation() { request.host() } else { request.first_party_host() };
         let sites = self.unprotected_sites.read().unwrap_or_else(std::sync::PoisonError::into_inner);
         site.is_some_and(|host| sites.is_unprotected(host))
     }

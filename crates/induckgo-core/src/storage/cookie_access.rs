@@ -30,9 +30,10 @@ impl CookieAccess {
         self.first_party_host.as_deref()
     }
 
-    /// A cookie without a page counts as first-party, whatever the engine says.
+    /// As the engine classified it. A cookie whose page is unknown stays third-party when the engine says so:
+    /// when in doubt, protections apply.
     #[must_use]
     pub fn is_third_party(&self) -> bool {
-        self.is_third_party && self.first_party_host.is_some()
+        self.is_third_party
     }
 }

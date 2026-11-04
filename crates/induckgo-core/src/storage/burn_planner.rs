@@ -9,7 +9,10 @@ pub struct BurnPlanner {
 }
 
 impl BurnPlanner {
-    const STORAGE_DIRECTORIES: [&'static str; 4] = ["Local Storage", "IndexedDB", "Service Worker", "Session Storage"];
+    /// Everything Chromium keeps for a profile lives in this one directory (the adapter points the engine at
+    /// it), so burning deletes the directory as a whole instead of naming what Chromium stores today.
+    /// A list of names would silently miss each new kind of storage a later engine version adds.
+    pub const ENGINE_DIRECTORY: &'static str = "engine";
 
     #[must_use]
     pub fn new(location: ProfileLocation) -> Self {
@@ -22,10 +25,7 @@ impl BurnPlanner {
             BurnScope::Everything => BurnPlan {
                 delete_all_cookies: true,
                 clear_cache: true,
-                storage_directories: Self::STORAGE_DIRECTORIES
-                    .iter()
-                    .map(|name| self.location.data.join(name))
-                    .collect(),
+                storage_directories: vec![self.location.data.join(Self::ENGINE_DIRECTORY), self.location.cache.clone()],
                 ..BurnPlan::default()
             },
             BurnScope::Site(site) => BurnPlan { cookie_sites: vec![site.to_ascii_lowercase()], ..BurnPlan::default() },

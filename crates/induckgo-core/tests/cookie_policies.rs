@@ -72,8 +72,14 @@ fn should_accept_a_third_party_cookie_on_a_site_the_person_allowed() {
 }
 
 #[test]
-fn should_treat_a_cookie_without_a_page_as_first_party() {
+fn should_refuse_a_third_party_cookie_when_the_page_is_unknown() {
     let access = CookieAccess::new("ads.example.com", None, true);
+    assert!(!CookieScenario::given_profiles().strict_allows(&access));
+}
+
+#[test]
+fn should_accept_a_cookie_the_engine_calls_first_party_even_without_a_known_page() {
+    let access = CookieAccess::new("example.org", None, false);
     assert!(CookieScenario::given_profiles().strict_allows(&access));
 }
 

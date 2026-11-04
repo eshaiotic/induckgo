@@ -7,8 +7,6 @@ pub mod chained_request_policy;
 pub mod https_upgrade_request_policy;
 pub mod link_cleaning_request_policy;
 pub mod network_request;
-pub mod redirect_budget;
-pub mod redirect_limited_request_policy;
 pub mod request_decision;
 pub mod request_policy;
 pub mod resource_type;

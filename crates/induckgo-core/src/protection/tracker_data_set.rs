@@ -146,6 +146,15 @@ impl TrackerDataSet {
         self.entity_domains.get(owner_name?).map(Vec::as_slice)
     }
 
+    /// The tracker hiding behind `host`: a first-party name whose CNAME points at a tracker. The alias may be
+    /// the host itself or one of its parent domains.
+    #[must_use]
+    pub fn tracker_cloaked_as(&self, host: &str) -> Option<&KnownTracker> {
+        let target =
+            DomainName::new(host).self_and_parent_domains().find_map(|candidate| self.cnames.get(candidate))?;
+        self.find_tracker_by_cname(target)
+    }
+
     /// The tracker a CNAME points at, matching the target or any of its parent domains.
     #[must_use]
     pub fn find_tracker_by_cname(&self, cname_target: &str) -> Option<&KnownTracker> {

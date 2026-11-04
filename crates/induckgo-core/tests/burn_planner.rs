@@ -31,10 +31,21 @@ fn should_delete_every_cookie_and_the_cache_when_burning_everything() {
 }
 
 #[test]
-fn should_delete_the_storage_directories_inside_the_profile_when_burning_everything() {
+fn should_delete_the_whole_engine_directory_and_the_cache_when_burning_everything() {
     let plan = BurnScenario::given_profile_work().when_burning(&BurnScope::Everything);
-    assert!(plan.storage_directories.contains(&Path::new("/data/induckgo/profiles/work/IndexedDB").to_path_buf()));
-    assert!(plan.storage_directories.iter().all(|directory| directory.starts_with("/data/induckgo/profiles/work")));
+    assert_eq!(
+        plan.storage_directories,
+        vec![
+            Path::new("/data/induckgo/profiles/work/engine").to_path_buf(),
+            Path::new("/cache/induckgo/profiles/work").to_path_buf()
+        ]
+    );
+}
+
+#[test]
+fn should_keep_the_profiles_own_settings_when_burning_everything() {
+    let plan = BurnScenario::given_profile_work().when_burning(&BurnScope::Everything);
+    assert!(plan.storage_directories.iter().all(|directory| directory != Path::new("/data/induckgo/profiles/work")));
 }
 
 #[test]

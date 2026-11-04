@@ -28,15 +28,15 @@
 ## Review Focus
 
 - A request whose URL has no host, uses `ws://`/`wss://`, `data:`, `blob:` or an IDN host: policy must decide without panicking (pass for non-network schemes).
-- A redirect loop (HTTPS upgrade answered by `http://` redirect, tracking-parameter cleaning that re-adds parameters): at most one redirect per request id, then pass.
-- Cookie filter called for a request with an empty first-party URL (address-bar navigation, popups): treated as first party.
+- A redirect loop (HTTPS upgrade answered by an `http://` redirect): no per-request budget exists (Qt gives no request id, and downgrading a refused redirect to a pass would weaken protection); policies are idempotent, Chromium's own 20-redirect limit ends a loop, and `HttpsUpgradePolicy::record_failed_upgrade` stops retrying that site.
+- Cookie filter or interceptor called with an empty or host-less first-party URL (workers, `data:` pages, sandboxed frames): sub-resources and third-party cookies are treated as third-party (fail closed); `blob:` pages count as their creating site; only main-frame navigations are first-party by definition.
 - The interceptor is called on the IO thread under load: the decision path allocates nothing per request after warm-up and never blocks on a lock held by the UI thread.
 - A profile directory removed while the browser runs (burn data): the next page load recreates storage instead of crashing.
 - Tor window started while Tor is not connected: shows the connection page, loads nothing.
 
 ## File Structure
 
-- `crates/induckgo-core/src/network/` (new): `request_policy.rs`, `request_decision.rs`, `network_request.rs`, `redirect_budget.rs`, `third_party_policy.rs`.
+- `crates/induckgo-core/src/network/` (new): `request_policy.rs`, `request_decision.rs`, `network_request.rs`, `third_party_policy.rs`.
 - `crates/induckgo-core/src/storage/` (new): `cookie_policy.rs`, `cookie_decision.rs`, `data_burner.rs`.
 - `crates/induckgo-core/src/engine/` (new): `engine_version.rs` (minimum-version rule), `page_script.rs`, `page_script_catalog.rs`.
 - `crates/induckgo-core/src/privacy/` (new): `fingerprint_profile.rs`, `strict_profile.rs`, `resolver_settings.rs`, `tor_circuit_isolation.rs`.
@@ -81,7 +81,7 @@
 
 ### Task 3: Core ports — network request policy
 
-**Files:** Create `network/{network_request,request_decision,request_policy,redirect_budget,third_party_policy}.rs`; tests `network_request.rs`, `request_policy.rs`, `redirect_budget.rs`, `third_party_policy.rs`; modify `lib.rs` (`pub mod network;`).
+**Files:** Create `network/{network_request,request_decision,request_policy,redirect_budget,third_party_policy}.rs`; tests `network_request.rs`, `request_policy.rs`, `third_party_policy.rs`; modify `lib.rs` (`pub mod network;`).
 
 **Interfaces:**
 - Consumes: `TrackerDataSet`, `PrivacyConfiguration`, `TrackingParameterRemover`, `UnprotectedSites`, `RegistrableDomainLookup`, Guard rule lists via the `adblock` engine.
@@ -90,10 +90,9 @@
   - `enum RequestDecision { Pass, Block, Redirect(String) }`
   - `trait RequestPolicy: Send + Sync { fn decide(&self, request: &NetworkRequest) -> RequestDecision; }`
   - `DuckDuckGoRequestPolicy` implementing it (tracker blocking, Guard network rules, HTTPS upgrade, link-parameter cleaning, GPC header names via `fn extra_headers(&self, &NetworkRequest) -> &[(&'static str, &'static str)]`)
-  - `RedirectBudget::allow(request_id) -> bool` (one redirect per id)
   - `ThirdPartyPolicy::new(strict: bool, allow_list: &SiteAllowList)`, `decide(&NetworkRequest) -> RequestDecision` (default-deny when strict).
 
-- [ ] **Step 1: Failing tests** (scenario structs): `should_block_known_tracker_request`, `should_redirect_http_to_https_when_upgrade_list_matches`, `should_pass_when_site_is_unprotected`, `should_redirect_once_then_pass_on_redirect_loop`, `should_pass_non_network_schemes`, `should_block_third_party_in_strict_mode`, `should_pass_third_party_on_site_allow_list`, `should_treat_missing_first_party_as_first_party`.
+- [ ] **Step 1: Failing tests** (scenario structs): `should_block_known_tracker_request`, `should_redirect_http_to_https_when_upgrade_list_matches`, `should_pass_when_site_is_unprotected`, `should_block_cname_cloaked_tracker_on_the_same_site`, `should_block_sub_resource_of_unknown_page_in_strict_mode`, `should_protect_navigation_from_unprotected_page_to_other_site`, `should_pass_non_network_schemes`, `should_block_third_party_in_strict_mode`, `should_pass_third_party_on_site_allow_list`, `should_treat_missing_first_party_as_first_party`.
 - [ ] **Step 2: Run** `cargo test -p induckgo-core --test request_policy` — Expected: FAIL.
 - [ ] **Step 3: Implement** the types; decision order: unprotected site → pass; non-network scheme → pass; strict third-party; tracker/Guard block; HTTPS upgrade; parameter cleaning. Allocation-free fast path (borrowed `&str`, pre-built lookup tables).
 - [ ] **Step 4: Run** same command — Expected: PASS; also `cargo clippy -p induckgo-core --all-targets`.
@@ -153,7 +152,7 @@ Separate process `induckgo-qt --tor` launching Chromium with the flags in Global
 
 ### Task 11: Web apps, profiles, burn data
 
-Port `web_app_*` and profile launching; `DataBurner` executes a `BurnPlan` (cookie store delete, cache clear, remove storage directories while the profile is closed or via a fresh profile restart). Tests: `should_recreate_storage_after_burn`, `should_open_web_app_without_toolbar`.
+Port `web_app_*` and profile launching; `BurnPlanner` plans and the adapter executes a `BurnPlan`: cookie store delete, then removal of the profile's whole `engine/` directory (the engine is pointed at `<data>/engine` by `ProfileFactory`, deny-by-default) and its cache while the profile is closed or via a fresh profile restart. Tests: `should_recreate_storage_after_burn`, `should_open_web_app_without_toolbar`.
 
 ### Task 12: Engine version check
 

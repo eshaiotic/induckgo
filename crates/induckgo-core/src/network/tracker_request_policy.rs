@@ -40,16 +40,19 @@ impl TrackerRequestPolicy {
 
 impl RequestPolicy for TrackerRequestPolicy {
     fn decide(&self, request: &NetworkRequest) -> RequestDecision {
-        let (Some(host), Some(page_host)) = (request.host(), request.first_party_host()) else {
+        let Some(host) = request.host().filter(|_| request.goes_over_the_network() && !request.is_navigation()) else {
             return RequestDecision::Pass;
         };
-        if !request.goes_over_the_network() || self.sites.site_of(host) == self.sites.site_of(page_host) {
-            return RequestDecision::Pass;
-        }
-        match self.tracker_serving(host) {
+        let tracker = if request.is_third_party(self.sites.as_ref()) {
+            self.tracker_serving(host)
+        } else {
+            // A first-party name that points at a tracker is cloaking (the tracker pretends to be the site).
+            self.data_set.tracker_cloaked_as(host)
+        };
+        match tracker {
             Some(tracker)
                 if tracker.default_action == Some(TrackerAction::Block)
-                    && !self.is_owned_by_page_company(tracker, page_host) =>
+                    && !request.first_party_host().is_some_and(|page| self.is_owned_by_page_company(tracker, page)) =>
             {
                 RequestDecision::Block
             }

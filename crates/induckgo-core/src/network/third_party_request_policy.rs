@@ -25,21 +25,11 @@ impl ThirdPartyRequestPolicy {
     ) -> Self {
         Self { is_strict, allow_list, sites }
     }
-
-    /// A request is third-party when its site differs from the page's. Without a page (address-bar
-    /// navigation) it is first-party.
-    #[must_use]
-    pub fn is_third_party(&self, request: &NetworkRequest) -> bool {
-        match (request.host(), request.first_party_host()) {
-            (Some(host), Some(page)) => self.sites.site_of(host) != self.sites.site_of(page),
-            _ => false,
-        }
-    }
 }
 
 impl RequestPolicy for ThirdPartyRequestPolicy {
     fn decide(&self, request: &NetworkRequest) -> RequestDecision {
-        if !self.is_strict || !request.goes_over_the_network() || !self.is_third_party(request) {
+        if !self.is_strict || !request.goes_over_the_network() || !request.is_third_party(self.sites.as_ref()) {
             return RequestDecision::Pass;
         }
         let page_is_allowed = request.first_party_host().is_some_and(|page| {

@@ -53,3 +53,14 @@ fn should_not_treat_data_and_blob_requests_as_network_requests() {
     RequestScenario::given_request("data:text/plain,hi", None).then_goes_over_the_network(false);
     RequestScenario::given_request("blob:https://example.org/uuid", None).then_goes_over_the_network(false);
 }
+
+#[test]
+fn should_read_the_creating_site_of_a_blob_page() {
+    RequestScenario::given_request("https://cdn.example.org/a.js", Some("blob:https://News.Example.org/6f1c"))
+        .then_page_host_is(Some("news.example.org"));
+}
+
+#[test]
+fn should_have_no_page_host_for_a_page_without_a_host() {
+    RequestScenario::given_request("https://cdn.example.org/a.js", Some("data:text/html,x")).then_page_host_is(None);
+}

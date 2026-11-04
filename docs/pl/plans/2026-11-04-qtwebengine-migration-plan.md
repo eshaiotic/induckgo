@@ -28,15 +28,15 @@
 ## Fokus przeglądu
 
 - Żądanie bez hosta, ze schematem `ws://`/`wss://`, `data:`, `blob:` lub z hostem IDN: polityka decyduje bez paniki (przepuszcza schematy nie-sieciowe).
-- Pętla przekierowań (podniesienie do HTTPS odpowiedziane przekierowaniem na `http://`, czyszczenie parametrów dodające je z powrotem): najwyżej jedno przekierowanie na identyfikator żądania, potem przepuszczenie.
-- Filtr cookies wywołany dla żądania z pustym adresem pierwszej strony (nawigacja z paska adresu, popupy): traktowany jako pierwsza strona.
+- Pętla przekierowań (podniesienie do HTTPS odpowiedziane przekierowaniem na `http://`): nie ma budżetu na żądanie (Qt nie daje identyfikatora żądania, a zamiana odrzuconego przekierowania na przepuszczenie osłabiałaby ochronę); polityki są idempotentne, własny limit 20 przekierowań w Chromium kończy pętlę, a `HttpsUpgradePolicy::record_failed_upgrade` przestaje ponawiać dla tej witryny.
+- Filtr cookies lub interceptor wywołany z pustym lub bezhostowym adresem pierwszej strony (workery, strony `data:`, ramki w piaskownicy): podzasoby i cookies stron trzecich traktowane jako strona trzecia (fail closed); strona `blob:` liczy się jako witryna, która ją utworzyła; tylko nawigacje głównej ramki są z definicji pierwszą stroną.
 - Interceptor jest wołany w wątku IO pod obciążeniem: ścieżka decyzji nie alokuje nic na żądanie po rozgrzaniu i nigdy nie czeka na blokadę trzymaną przez wątek UI.
 - Katalog profilu usunięty podczas działania przeglądarki (wypalanie): następne ładowanie odtwarza pamięć zamiast się wywrócić.
 - Okno Tor uruchomione, gdy Tor nie jest połączony: pokazuje stronę połączenia i niczego nie ładuje.
 
 ## Struktura plików
 
-- `crates/induckgo-core/src/network/` (nowy): `request_policy.rs`, `request_decision.rs`, `network_request.rs`, `redirect_budget.rs`, `third_party_policy.rs`.
+- `crates/induckgo-core/src/network/` (nowy): `request_policy.rs`, `request_decision.rs`, `network_request.rs`, `third_party_policy.rs`.
 - `crates/induckgo-core/src/storage/` (nowy): `cookie_policy.rs`, `cookie_decision.rs`, `data_burner.rs`.
 - `crates/induckgo-core/src/engine/` (nowy): `engine_version.rs` (reguła minimalnej wersji), `page_script.rs`, `page_script_catalog.rs`.
 - `crates/induckgo-core/src/privacy/` (nowy): `fingerprint_profile.rs`, `strict_profile.rs`, `resolver_settings.rs`, `tor_circuit_isolation.rs`.
@@ -77,7 +77,7 @@
 
 ### Zadanie 3: Porty rdzenia — polityka żądań sieciowych
 
-**Pliki:** utwórz `network/{network_request,request_decision,request_policy,redirect_budget,third_party_policy}.rs`; testy `network_request.rs`, `request_policy.rs`, `redirect_budget.rs`, `third_party_policy.rs`; zmodyfikuj `lib.rs` (`pub mod network;`).
+**Pliki:** utwórz `network/{network_request,request_decision,request_policy,redirect_budget,third_party_policy}.rs`; testy `network_request.rs`, `request_policy.rs`, `third_party_policy.rs`; zmodyfikuj `lib.rs` (`pub mod network;`).
 
 **Interfejsy:**
 - Konsumuje: `TrackerDataSet`, `PrivacyConfiguration`, `TrackingParameterRemover`, `UnprotectedSites`, `RegistrableDomainLookup`, listy reguł Guard przez silnik `adblock`.
@@ -86,10 +86,9 @@
   - `enum RequestDecision { Pass, Block, Redirect(String) }`
   - `trait RequestPolicy: Send + Sync { fn decide(&self, request: &NetworkRequest) -> RequestDecision; }`
   - `DuckDuckGoRequestPolicy` implementujący go (blokowanie trackerów, reguły sieciowe Guard, podniesienie do HTTPS, czyszczenie parametrów, nagłówki GPC przez `fn extra_headers(&self, &NetworkRequest) -> &[(&'static str, &'static str)]`)
-  - `RedirectBudget::allow(request_id) -> bool` (jedno przekierowanie na id)
   - `ThirdPartyPolicy::new(strict: bool, allow_list: &SiteAllowList)`, `decide(&NetworkRequest) -> RequestDecision` (domyślna odmowa w trybie ścisłym).
 
-- [ ] **Krok 1:** testy scenariuszowe: `should_block_known_tracker_request`, `should_redirect_http_to_https_when_upgrade_list_matches`, `should_pass_when_site_is_unprotected`, `should_redirect_once_then_pass_on_redirect_loop`, `should_pass_non_network_schemes`, `should_block_third_party_in_strict_mode`, `should_pass_third_party_on_site_allow_list`, `should_treat_missing_first_party_as_first_party`.
+- [ ] **Krok 1:** testy scenariuszowe: `should_block_known_tracker_request`, `should_redirect_http_to_https_when_upgrade_list_matches`, `should_pass_when_site_is_unprotected`, `should_block_cname_cloaked_tracker_on_the_same_site`, `should_block_sub_resource_of_unknown_page_in_strict_mode`, `should_protect_navigation_from_unprotected_page_to_other_site`, `should_pass_non_network_schemes`, `should_block_third_party_in_strict_mode`, `should_pass_third_party_on_site_allow_list`, `should_treat_missing_first_party_as_first_party`.
 - [ ] **Krok 2:** `cargo test -p induckgo-core --test request_policy` — oczekiwane: FAIL.
 - [ ] **Krok 3:** implementacja; kolejność decyzji: strona bez ochrony → pass; schemat nie-sieciowy → pass; strona trzecia w trybie ścisłym; blokada trackera/Guard; podniesienie do HTTPS; czyszczenie parametrów. Szybka ścieżka bez alokacji (pożyczone `&str`, tablice wyszukiwania zbudowane wcześniej).
 - [ ] **Krok 4:** to samo polecenie — oczekiwane: PASS; oraz `cargo clippy -p induckgo-core --all-targets`.
@@ -148,7 +147,7 @@ Osobny proces `induckgo-qt --tor` uruchamiający Chromium z flagami z ogranicze�
 
 ### Zadanie 11: Aplikacje webowe, profile, wypalanie danych
 
-Przenieś `web_app_*` i uruchamianie profili; `DataBurner` wykonuje `BurnPlan` (usunięcie cookies, czyszczenie cache, usunięcie katalogów pamięci przy zamkniętym profilu lub przez restart na świeżym profilu). Testy: `should_recreate_storage_after_burn`, `should_open_web_app_without_toolbar`.
+Przenieś `web_app_*` i uruchamianie profili; `BurnPlanner` planuje, a adapter wykonuje `BurnPlan`: usunięcie cookies, potem usunięcie całego katalogu `engine/` profilu (silnik jest kierowany do `<data>/engine` przez `ProfileFactory`, deny-by-default) i jego cache przy zamkniętym profilu lub przez restart na świeżym profilu. Testy: `should_recreate_storage_after_burn`, `should_open_web_app_without_toolbar`.
 
 ### Zadanie 12: Kontrola wersji silnika
 

@@ -767,3 +767,12 @@ msgstr "Meklēt lejupielādēs"
 
 msgid "File Moved or Deleted"
 msgstr "Fails pārvietots vai izdzēsts"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "Animē katru peles ritenīša soli. Jau atvērtās lapas ir jāielādē atkārtoti."
+
+msgid "Scrolling"
+msgstr "Ritināšana"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "Vienmērīga ritināšana ar peles ritenīti"

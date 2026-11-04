@@ -767,3 +767,12 @@ msgstr "Otsi allalaadimistest"
 
 msgid "File Moved or Deleted"
 msgstr "Fail on teisaldatud või kustutatud"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "Animeerib hiirerattal iga sammu. Juba avatud lehti tuleb uuesti laadida."
+
+msgid "Scrolling"
+msgstr "Kerimine"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "Sujuv kerimine hiirerattaga"

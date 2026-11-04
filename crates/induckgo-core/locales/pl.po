@@ -767,3 +767,12 @@ msgstr "Szukaj w pobranych"
 
 msgid "File Moved or Deleted"
 msgstr "Plik został przeniesiony lub usunięty"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "Animuje każdy krok kółka myszy. Strony, które są już otwarte, wymagają ponownego załadowania."
+
+msgid "Scrolling"
+msgstr "Przewijanie"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "Płynne przewijanie kółkiem myszy"

@@ -767,3 +767,12 @@ msgstr "ダウンロードを検索"
 
 msgid "File Moved or Deleted"
 msgstr "ファイルが移動または削除されました"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "マウスホイールの 1 目盛りごとにアニメーションを表示します。すでに開いているページは再読み込みが必要です。"
+
+msgid "Scrolling"
+msgstr "スクロール"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "マウスホイールのスムーズスクロール"

@@ -1,0 +1,35 @@
+//! The page script that animates each step of the mouse wheel (`assets/smooth-wheel/smooth-wheel.js`).
+//!
+//! The animation's numbers come from the domain type [`SmoothWheelScroll`]; this type only fills them into the
+//! script and wraps it as a user script for WebKit. It runs in a script world of its own, so a page cannot see
+//! it, and in every frame, so a scrollable frame is smoothed as well.
+
+use induckgo_core::scrolling::smooth_wheel_scroll::SmoothWheelScroll;
+use webkit6::UserContentInjectedFrames;
+use webkit6::UserScript;
+use webkit6::UserScriptInjectionTime;
+
+pub struct SmoothWheelScript {
+    source: String,
+}
+
+impl SmoothWheelScript {
+    const TEMPLATE: &'static str = include_str!("../../../assets/smooth-wheel/smooth-wheel.js");
+    const WORLD: &'static str = "induckgo-smooth-wheel";
+
+    pub fn new(scroll: &SmoothWheelScroll) -> Self {
+        let configuration = scroll.script_configuration().to_string();
+        Self { source: Self::TEMPLATE.replace("/*SMOOTH_WHEEL_CONFIGURATION*/{}", &configuration) }
+    }
+
+    pub fn user_script(&self) -> UserScript {
+        UserScript::for_world(
+            &self.source,
+            UserContentInjectedFrames::AllFrames,
+            UserScriptInjectionTime::Start,
+            Self::WORLD,
+            &[],
+            &[],
+        )
+    }
+}

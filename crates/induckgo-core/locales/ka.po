@@ -767,3 +767,12 @@ msgstr "ჩამოტვირთვებში ძებნა"
 
 msgid "File Moved or Deleted"
 msgstr "ფაილი გადატანილია ან წაშლილია"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "ანიმაციით ასახავს თაგვის ბორბლის ყოველ ბიჯს. უკვე გახსნილ გვერდებს გადატვირთვა სჭირდება."
+
+msgid "Scrolling"
+msgstr "გადახვევა"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "თაგვის ბორბლით გლუვი გადახვევა"

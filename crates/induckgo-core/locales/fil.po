@@ -767,3 +767,12 @@ msgstr "Maghanap sa Mga Download"
 
 msgid "File Moved or Deleted"
 msgstr "Inilipat o Binura ang File"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "Ina-animate ang bawat hakbang ng gulong ng mouse. Kailangang i-reload ang mga pahinang bukas na."
+
+msgid "Scrolling"
+msgstr "Pag-scroll"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "Maayos na pag-scroll gamit ang gulong ng mouse"

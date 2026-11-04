@@ -767,3 +767,12 @@ msgstr "Търсене в изтеглените"
 
 msgid "File Moved or Deleted"
 msgstr "Файлът е преместен или изтрит"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "Анимира всяка стъпка на колелцето на мишката. Вече отворените страници трябва да бъдат презаредени."
+
+msgid "Scrolling"
+msgstr "Превъртане"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "Плавно превъртане с колелцето на мишката"

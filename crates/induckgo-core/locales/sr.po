@@ -767,3 +767,12 @@ msgstr "Претражи преузимања"
 
 msgid "File Moved or Deleted"
 msgstr "Датотека је премештена или обрисана"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "Анимира сваки корак точкића миша. Странице које су већ отворене треба поново учитати."
+
+msgid "Scrolling"
+msgstr "Скроловање"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "Глатко скроловање точкићем миша"

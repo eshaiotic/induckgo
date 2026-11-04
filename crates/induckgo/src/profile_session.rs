@@ -46,6 +46,7 @@ use induckgo_core::protection::content_blocker_rules_builder::RuleExceptions;
 use induckgo_core::protection::privacy_configuration::PrivacyConfiguration;
 use induckgo_core::protection::tracker_data_set::TrackerDataSet;
 use induckgo_core::protection::tracking_parameter_remover::TrackingParameterRemover;
+use induckgo_core::scrolling::scrolling_preferences::ScrollingPreferences;
 use webkit6::CookieAcceptPolicy;
 use webkit6::CookiePersistentStorage;
 use webkit6::NetworkProxyMode;
@@ -100,6 +101,7 @@ struct SessionStorage {
     unprotected_sites: StoredFile,
     search_engine: StoredFile,
     site_zoom: StoredFile,
+    scrolling: StoredFile,
     downloads: Rc<DownloadCenter>,
     default_search_engine: SearchEngine,
     burned: WebsiteDataTypes,
@@ -160,6 +162,8 @@ pub struct ProfileSession {
     http: Rc<HttpClient>,
     unprotected_sites_file: StoredFile,
     zoom: SiteZoom,
+    scrolling_file: StoredFile,
+    scrolling: RefCell<ScrollingPreferences>,
     search_engine_file: StoredFile,
     search_engine: Cell<SearchEngine>,
     burned: WebsiteDataTypes,
@@ -195,6 +199,7 @@ impl ProfileSession {
             unprotected_sites: StoredFile::new(location.data.join("unprotected-sites.json")),
             search_engine: StoredFile::new(location.data.join("search-engine.json")),
             site_zoom: StoredFile::new(location.data.join("site-zoom-levels.json")),
+            scrolling: StoredFile::new(location.data.join("scrolling.json")),
             downloads: DownloadCenter::load(
                 StoredFile::new(location.data.join(DownloadCenter::HISTORY_FILE_NAME)),
                 StoredFile::new(location.data.join(DownloadCenter::SETTINGS_FILE_NAME)),
@@ -240,6 +245,7 @@ impl ProfileSession {
             unprotected_sites: StoredFile::discarded(),
             search_engine: StoredFile::discarded(),
             site_zoom: StoredFile::discarded(),
+            scrolling: StoredFile::discarded(),
             downloads: DownloadCenter::load(StoredFile::discarded(), StoredFile::discarded(), paths.downloads()),
             default_search_engine: SearchEngine::DUCKDUCKGO_ONION,
             burned: WebsiteDataTypes::all(),
@@ -283,6 +289,13 @@ impl ProfileSession {
             .read_json()
             .map(|document| UnprotectedSites::from_json(&document))
             .unwrap_or_default();
+        let scrolling = storage
+            .scrolling
+            .read_json()
+            .map(|document| ScrollingPreferences::from_json(&document))
+            .unwrap_or_default();
+        let protections = PageProtections::new(&storage.content_filters);
+        protections.set_wheel_smoothed(scrolling.smooth_wheel());
         let filter_list_feed = FilterListFeed::new(&storage.feed);
         let session = Rc::new(Self {
             profile: storage.profile,
@@ -290,11 +303,13 @@ impl ProfileSession {
             downloads: storage.downloads,
             network_session: storage.network_session,
             settings: storage.settings,
-            protections: PageProtections::new(&storage.content_filters),
+            protections,
             feed: ProtectionFeed::new(&storage.feed),
             http,
             unprotected_sites_file: storage.unprotected_sites,
             zoom: SiteZoom::load(storage.site_zoom),
+            scrolling_file: storage.scrolling,
+            scrolling: RefCell::new(scrolling),
             search_engine_file: storage.search_engine,
             search_engine: Cell::new(search_engine.unwrap_or(storage.default_search_engine)),
             burned: storage.burned,
@@ -322,6 +337,25 @@ impl ProfileSession {
         }
         Self::keep_refreshing(Rc::downgrade(&session));
         session
+    }
+
+    /// Whether pages animate each step of the mouse wheel (smooth scrolling).
+    pub fn smooth_wheel(&self) -> bool {
+        self.scrolling.borrow().smooth_wheel()
+    }
+
+    /// Turns smooth wheel scrolling on or off and saves the choice; pages loaded afterwards follow it.
+    pub fn set_smooth_wheel(&self, is_enabled: bool) {
+        let document = {
+            let mut scrolling = self.scrolling.borrow_mut();
+            scrolling.set_smooth_wheel(is_enabled);
+            scrolling.to_json()
+        };
+        if let Err(error) = self.scrolling_file.write_json(&document) {
+            glib::g_warning!(Self::LOG_DOMAIN, "cannot save the scrolling preferences: {error}");
+        }
+        self.protections.set_wheel_smoothed(is_enabled);
+        self.install_content_scope_script();
     }
 
     /// The recent downloads and download settings of this session.

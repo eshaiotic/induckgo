@@ -767,3 +767,12 @@ msgstr "ডাউনলোড অনুসন্ধান করুন"
 
 msgid "File Moved or Deleted"
 msgstr "ফাইল সরানো হয়েছে বা মুছে ফেলা হয়েছে"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "মাউস হুইলের প্রতিটি ধাপ অ্যানিমেট করে। ইতিমধ্যে খোলা পেজগুলো রিলোড করতে হবে।"
+
+msgid "Scrolling"
+msgstr "স্ক্রল করা"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "মসৃণ মাউস হুইল স্ক্রল"

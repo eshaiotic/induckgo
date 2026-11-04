@@ -767,3 +767,12 @@ msgstr "Endirmələrdə axtar"
 
 msgid "File Moved or Deleted"
 msgstr "Fayl köçürülüb və ya silinib"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "Siçan çarxının hər addımını animasiya edir. Artıq açıq olan səhifələri yenidən yükləmək lazımdır."
+
+msgid "Scrolling"
+msgstr "Sürüşdürmə"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "Siçan çarxı ilə hamar sürüşdürmə"

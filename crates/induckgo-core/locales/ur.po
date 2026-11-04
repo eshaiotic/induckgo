@@ -767,3 +767,12 @@ msgstr "ڈاؤن لوڈز تلاش کریں"
 
 msgid "File Moved or Deleted"
 msgstr "فائل منتقل یا حذف کر دی گئی"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "ماؤس وہیل کے ہر قدم کو اینیمیٹ کرتا ہے۔ پہلے سے کھلے ہوئے صفحات کو دوبارہ لوڈ کرنا ہوگا۔"
+
+msgid "Scrolling"
+msgstr "اسکرولنگ"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "ماؤس وہیل کے ساتھ ہموار اسکرولنگ"

@@ -767,3 +767,12 @@ msgstr "බාගැනීම් සොයන්න"
 
 msgid "File Moved or Deleted"
 msgstr "ගොනුව ගෙන ගොස් හෝ මකා දමා ඇත"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "මූසික රෝදයේ සෑම පියවරක්ම සජීවීකරණය කරයි. දැනටමත් විවෘතව ඇති පිටු නැවත පූරණය කළ යුතුය."
+
+msgid "Scrolling"
+msgstr "අනුචලනය"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "සුමට මූසික රෝද අනුචලනය"

@@ -767,3 +767,12 @@ msgstr "ຄົ້ນຫາການດາວໂຫຼດ"
 
 msgid "File Moved or Deleted"
 msgstr "ໄຟລ໌ຖືກຍ້າຍ ຫຼື ຖືກລຶບ"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "ເຮັດໃຫ້ທຸກຂັ້ນຂອງລໍ້ເມົ້າມີພາບເຄື່ອນໄຫວ. ໜ້າທີ່ເປີດຢູ່ແລ້ວຕ້ອງໂຫຼດໃໝ່."
+
+msgid "Scrolling"
+msgstr "ການເລື່ອນ"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "ການເລື່ອນດ້ວຍລໍ້ເມົ້າແບບລຽບ"

@@ -16,5 +16,6 @@ pub mod page_zoom;
 pub mod profile;
 pub mod protection;
 pub mod rendering;
+pub mod scrolling;
 pub mod tor;
 pub mod web_app;

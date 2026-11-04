@@ -767,3 +767,12 @@ msgstr "Cari Muat Turun"
 
 msgid "File Moved or Deleted"
 msgstr "Fail Dialih atau Dipadam"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "Menganimasikan setiap langkah roda tetikus. Halaman yang sudah dibuka perlu dimuat semula."
+
+msgid "Scrolling"
+msgstr "Penatalan"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "Penatalan roda tetikus yang lancar"

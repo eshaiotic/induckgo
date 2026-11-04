@@ -767,3 +767,12 @@ msgstr "Αναζήτηση στις λήψεις"
 
 msgid "File Moved or Deleted"
 msgstr "Το αρχείο μετακινήθηκε ή διαγράφηκε"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "Κινεί κάθε βήμα της ροδέλας του ποντικιού. Οι σελίδες που είναι ήδη ανοιχτές χρειάζονται επαναφόρτωση."
+
+msgid "Scrolling"
+msgstr "Κύλιση"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "Ομαλή κύλιση με τη ροδέλα του ποντικιού"

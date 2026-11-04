@@ -767,3 +767,12 @@ msgstr "Татаж авсан файл хайх"
 
 msgid "File Moved or Deleted"
 msgstr "Файл зөөгдсөн эсвэл устгагдсан"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "Хулганы дугуйны алхам бүрийг хөдөлгөөнтэй болгоно. Аль хэдийн нээлттэй байгаа хуудсуудыг дахин ачаалах шаардлагатай."
+
+msgid "Scrolling"
+msgstr "Гүйлгэх"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "Хулганы дугуйгаар жигд гүйлгэх"

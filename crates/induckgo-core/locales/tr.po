@@ -767,3 +767,12 @@ msgstr "İndirmelerde ara"
 
 msgid "File Moved or Deleted"
 msgstr "Dosya taşındı veya silindi"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "Fare tekerleğinin her adımını canlandırır. Zaten açık olan sayfaların yeniden yüklenmesi gerekir."
+
+msgid "Scrolling"
+msgstr "Kaydırma"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "Düzgün fare tekerleği kaydırma"

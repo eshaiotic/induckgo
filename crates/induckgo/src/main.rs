@@ -34,6 +34,7 @@ mod protection_feed;
 mod public_suffix_list;
 mod running_instances;
 mod site_zoom;
+mod smooth_wheel_script;
 mod stored_file;
 mod toolbar_preferences;
 mod tor_connection;

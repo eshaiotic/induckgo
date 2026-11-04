@@ -767,3 +767,12 @@ msgstr "جستجو در بارگیری‌ها"
 
 msgid "File Moved or Deleted"
 msgstr "پرونده جابه‌جا یا حذف شده است"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "هر گام چرخ ماوس را متحرک می‌کند. صفحه‌هایی که از قبل باز هستند نیاز به بارگذاری مجدد دارند."
+
+msgid "Scrolling"
+msgstr "پیمایش"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "پیمایش نرم با چرخ ماوس"

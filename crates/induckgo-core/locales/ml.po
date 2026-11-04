@@ -767,3 +767,12 @@ msgstr "ഡൗൺലോഡുകൾ തിരയുക"
 
 msgid "File Moved or Deleted"
 msgstr "ഫയൽ നീക്കി അല്ലെങ്കിൽ ഇല്ലാതാക്കി"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "മൗസ് വീലിന്റെ ഓരോ ചുവടും ആനിമേറ്റ് ചെയ്യുന്നു. ഇതിനകം തുറന്നിരിക്കുന്ന പേജുകൾ വീണ്ടും ലോഡ് ചെയ്യണം."
+
+msgid "Scrolling"
+msgstr "സ്ക്രോളിംഗ്"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "സുഗമമായ മൗസ് വീൽ സ്ക്രോളിംഗ്"

@@ -767,3 +767,12 @@ msgstr "Hae latauksista"
 
 msgid "File Moved or Deleted"
 msgstr "Tiedosto siirretty tai poistettu"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "Animoi hiiren rullan jokaisen askeleen. Jo avoinna olevat sivut on ladattava uudelleen."
+
+msgid "Scrolling"
+msgstr "Vieritys"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "Pehmeä vieritys hiiren rullalla"

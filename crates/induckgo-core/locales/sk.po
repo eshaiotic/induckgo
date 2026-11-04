@@ -767,3 +767,12 @@ msgstr "Hľadať v stiahnutých súboroch"
 
 msgid "File Moved or Deleted"
 msgstr "Súbor bol presunutý alebo odstránený"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "Animuje každý krok kolieska myši. Stránky, ktoré sú už otvorené, je potrebné znova načítať."
+
+msgid "Scrolling"
+msgstr "Posúvanie"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "Plynulé posúvanie kolieskom myši"

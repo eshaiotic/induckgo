@@ -767,3 +767,12 @@ msgstr "Kërko te shkarkimet"
 
 msgid "File Moved or Deleted"
 msgstr "Skedari u zhvendos ose u fshi"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "Animon çdo hap të rrotëzës së miut. Faqet që janë tashmë të hapura kanë nevojë për ringarkim."
+
+msgid "Scrolling"
+msgstr "Rrëshqitje"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "Rrëshqitje e butë me rrotëzën e miut"

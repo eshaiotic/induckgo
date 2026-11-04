@@ -767,3 +767,12 @@ msgstr "搜索下载内容"
 
 msgid "File Moved or Deleted"
 msgstr "文件已移动或删除"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "为鼠标滚轮的每一步添加动画效果。已打开的页面需要重新加载。"
+
+msgid "Scrolling"
+msgstr "滚动"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "平滑鼠标滚轮滚动"

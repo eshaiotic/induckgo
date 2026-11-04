@@ -34,6 +34,9 @@ msgstr ""
 msgid "Allow {site} to use your screen?"
 msgstr ""
 
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr ""
+
 msgid "App data cleared"
 msgstr ""
 
@@ -478,6 +481,9 @@ msgstr ""
 msgid "Save File"
 msgstr ""
 
+msgid "Scrolling"
+msgstr ""
+
 msgid "Search Downloads"
 msgstr ""
 
@@ -497,6 +503,9 @@ msgid "Show in Folder"
 msgstr ""
 
 msgid "Signs you out and deletes this app's cookies, site data and cache. Nothing else is affected."
+msgstr ""
+
+msgid "Smooth mouse wheel scrolling"
 msgstr ""
 
 msgid "Some data could not be deleted: {error}"

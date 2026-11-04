@@ -767,3 +767,12 @@ msgstr "Tìm kiếm tệp tải xuống"
 
 msgid "File Moved or Deleted"
 msgstr "Tệp đã bị di chuyển hoặc xóa"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "Tạo hiệu ứng cho từng bước của con lăn chuột. Các trang đã mở cần được tải lại."
+
+msgid "Scrolling"
+msgstr "Cuộn"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "Cuộn mượt bằng con lăn chuột"

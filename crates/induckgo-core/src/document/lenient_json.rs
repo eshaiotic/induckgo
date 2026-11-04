@@ -33,6 +33,11 @@ impl<'document> LenientJson<'document> {
     }
 
     #[must_use]
+    pub fn as_bool(self) -> Option<bool> {
+        self.node?.as_bool()
+    }
+
+    #[must_use]
     pub fn as_u64(self) -> Option<u64> {
         self.node?.as_u64()
     }

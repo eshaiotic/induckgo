@@ -767,3 +767,12 @@ msgstr "Keresés a letöltések között"
 
 msgid "File Moved or Deleted"
 msgstr "A fájl áthelyezve vagy törölve"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "Animálja az egérgörgő minden lépését. A már megnyitott oldalakat újra kell tölteni."
+
+msgid "Scrolling"
+msgstr "Görgetés"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "Egyenletes görgetés az egérgörgővel"

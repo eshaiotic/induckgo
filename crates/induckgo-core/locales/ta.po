@@ -767,3 +767,12 @@ msgstr "பதிவிறக்கங்களைத் தேடு"
 
 msgid "File Moved or Deleted"
 msgstr "கோப்பு நகர்த்தப்பட்டது அல்லது நீக்கப்பட்டது"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "மவுஸ் சக்கரத்தின் ஒவ்வொரு படியையும் அனிமேட் செய்கிறது. ஏற்கெனவே திறந்துள்ள பக்கங்களை மீண்டும் ஏற்ற வேண்டும்."
+
+msgid "Scrolling"
+msgstr "உருட்டல்"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "சீரான மவுஸ் சக்கர உருட்டல்"

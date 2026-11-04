@@ -767,3 +767,12 @@ msgstr "חיפוש בהורדות"
 
 msgid "File Moved or Deleted"
 msgstr "הקובץ הועבר או נמחק"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "מנפיש כל צעד של גלגלת העכבר. דפים שכבר פתוחים צריכים טעינה מחדש."
+
+msgid "Scrolling"
+msgstr "גלילה"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "גלילה חלקה בגלגלת העכבר"

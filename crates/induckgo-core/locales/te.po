@@ -767,3 +767,12 @@ msgstr "డౌన్‌లోడ్‌లను శోధించు"
 
 msgid "File Moved or Deleted"
 msgstr "ఫైల్ తరలించబడింది లేదా తొలగించబడింది"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "మౌస్ వీల్ ప్రతి అడుగును యానిమేట్ చేస్తుంది. ఇప్పటికే తెరిచి ఉన్న పేజీలను మళ్లీ లోడ్ చేయాలి."
+
+msgid "Scrolling"
+msgstr "స్క్రోలింగ్"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "మౌస్ వీల్‌తో సున్నితమైన స్క్రోలింగ్"

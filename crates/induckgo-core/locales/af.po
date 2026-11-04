@@ -767,3 +767,12 @@ msgstr "Soek aflaaie"
 
 msgid "File Moved or Deleted"
 msgstr "Lêer geskuif of uitgevee"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "Animeer elke stap van die muiswiel. Bladsye wat reeds oop is, moet herlaai word."
+
+msgid "Scrolling"
+msgstr "Rol"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "Gladde rol met die muiswiel"

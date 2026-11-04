@@ -767,3 +767,12 @@ msgstr "ဒေါင်းလုဒ်များ ရှာရန်"
 
 msgid "File Moved or Deleted"
 msgstr "ဖိုင်ကို ရွှေ့ထားသည် သို့မဟုတ် ဖျက်ထားသည်"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "မောက်စ်ဘီး၏ အဆင့်တိုင်းကို လှုပ်ရှားမှုဖြင့် ပြသသည်။ ဖွင့်ထားပြီးသော စာမျက်နှာများကို ပြန်လည်ဖွင့်ရန် လိုအပ်သည်။"
+
+msgid "Scrolling"
+msgstr "လှိမ့်ခြင်း"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "မောက်စ်ဘီးဖြင့် ချောမွေ့စွာ လှိမ့်ခြင်း"

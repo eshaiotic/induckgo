@@ -767,3 +767,12 @@ msgstr "Cerca a les baixades"
 
 msgid "File Moved or Deleted"
 msgstr "Fitxer mogut o suprimit"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "Anima cada pas de la roda del ratolí. Les pàgines que ja són obertes s'han de tornar a carregar."
+
+msgid "Scrolling"
+msgstr "Desplaçament"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "Desplaçament suau amb la roda del ratolí"

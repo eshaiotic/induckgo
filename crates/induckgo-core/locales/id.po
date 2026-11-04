@@ -767,3 +767,12 @@ msgstr "Cari Unduhan"
 
 msgid "File Moved or Deleted"
 msgstr "File Dipindahkan atau Dihapus"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "Menganimasikan setiap langkah roda mouse. Laman yang sudah terbuka perlu dimuat ulang."
+
+msgid "Scrolling"
+msgstr "Pengguliran"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "Pengguliran roda mouse yang halus"

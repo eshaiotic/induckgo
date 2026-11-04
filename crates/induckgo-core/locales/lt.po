@@ -767,3 +767,12 @@ msgstr "Ieškoti atsisiuntimų"
 
 msgid "File Moved or Deleted"
 msgstr "Failas perkeltas arba ištrintas"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "Animuoja kiekvieną pelės ratuko žingsnį. Jau atidarytus puslapius reikia įkelti iš naujo."
+
+msgid "Scrolling"
+msgstr "Slinkimas"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "Sklandus slinkimas pelės ratuku"

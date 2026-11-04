@@ -767,3 +767,12 @@ msgstr "Yuklab olishlardan qidirish"
 
 msgid "File Moved or Deleted"
 msgstr "Fayl ko‘chirilgan yoki o‘chirilgan"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "Sichqoncha g‘ildiragining har bir qadamini animatsiya qiladi. Allaqachon ochilgan sahifalarni qayta yuklash kerak."
+
+msgid "Scrolling"
+msgstr "Aylantirish"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "Sichqoncha g‘ildiragi bilan silliq aylantirish"

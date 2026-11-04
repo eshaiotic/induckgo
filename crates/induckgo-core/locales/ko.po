@@ -767,3 +767,12 @@ msgstr "다운로드 검색"
 
 msgid "File Moved or Deleted"
 msgstr "파일이 이동되었거나 삭제됨"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "마우스 휠의 모든 단계에 애니메이션을 적용합니다. 이미 열려 있는 페이지는 새로고침해야 합니다."
+
+msgid "Scrolling"
+msgstr "스크롤"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "부드러운 마우스 휠 스크롤"

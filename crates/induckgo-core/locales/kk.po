@@ -767,3 +767,12 @@ msgstr "Жүктеп алуларды іздеу"
 
 msgid "File Moved or Deleted"
 msgstr "Файл жылжытылған немесе жойылған"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "Тінтуір дөңгелегінің әр қадамын анимациялайды. Қазірдің өзінде ашық беттерді қайта жүктеу қажет."
+
+msgid "Scrolling"
+msgstr "Айналдыру"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "Тінтуір дөңгелегімен тегіс айналдыру"

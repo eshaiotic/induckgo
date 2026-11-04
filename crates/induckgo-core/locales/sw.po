@@ -767,3 +767,12 @@ msgstr "Tafuta vipakuliwa"
 
 msgid "File Moved or Deleted"
 msgstr "Faili imehamishwa au imefutwa"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "Huweka mwendo kwenye kila hatua ya gurudumu la kipanya. Kurasa ambazo tayari zimefunguliwa zinahitaji kupakiwa upya."
+
+msgid "Scrolling"
+msgstr "Kusogeza"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "Kusogeza laini kwa gurudumu la kipanya"

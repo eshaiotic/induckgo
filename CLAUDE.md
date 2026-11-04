@@ -16,6 +16,8 @@ This file is an index; the content lives in the linked documents.
 - [Język interfejsu (PL)](docs/pl/architecture/interface-language.md) — polish mirror of the interface-language document.
 - [Downloads](docs/en/architecture/downloads.md) — save-folder choice, recent-downloads list, toolbar button and menu entry.
 - [Pobieranie plików (PL)](docs/pl/architecture/downloads.md) — polish mirror of the downloads document.
+- [Smooth wheel scrolling](docs/en/architecture/smooth-wheel-scrolling.md) — Chromium-like animation of each mouse-wheel step: page script, core curves, preference, measurements.
+- [Płynne przewijanie kółkiem (PL)](docs/pl/architecture/smooth-wheel-scrolling.md) — polish mirror of the smooth-wheel-scrolling document.
 - `docs/assets/diagrams/` — SVG + PNG diagrams, one file per language (`.en` / `.pl`).
 
 ## Reports

@@ -31,6 +31,7 @@ use induckgo_core::protection::content_scope_message::ContentScopeMessage;
 use induckgo_core::protection::content_scope_preferences::ContentScopePreferences;
 use induckgo_core::protection::content_scope_script::ContentScopeScript;
 use induckgo_core::protection::privacy_configuration::PrivacyConfiguration;
+use induckgo_core::scrolling::smooth_wheel_scroll::SmoothWheelScroll;
 use serde_json::Value;
 use serde_json::json;
 use webkit6::UserContentFilter;
@@ -40,6 +41,7 @@ use webkit6::UserContentManager;
 use webkit6::UserScript;
 use webkit6::UserScriptInjectionTime;
 
+use crate::smooth_wheel_script::SmoothWheelScript;
 use crate::stored_file::StoredFile;
 
 /// One named rule list, e.g. `trackers`.
@@ -105,6 +107,8 @@ pub struct PageProtections {
     filter_store_path: PathBuf,
     preferences: ContentScopePreferences,
     guard_script: String,
+    smooth_wheel: SmoothWheelScript,
+    is_wheel_smoothed: Cell<bool>,
     /// The generic hiding of the active Guard lists, by list name, which the page script's requests read.
     generic_hiding: Rc<RefCell<HashMap<String, GenericHiding>>>,
     /// Bumped by every activation, so that a slower read of an older one never lands.
@@ -141,6 +145,8 @@ impl PageProtections {
             filter_store: UserContentFilterStore::new(&filter_store_path.to_string_lossy()),
             filter_store_path: filter_store_path.to_owned(),
             guard_script: Self::guard_script(),
+            smooth_wheel: SmoothWheelScript::new(&SmoothWheelScroll::chromium_like()),
+            is_wheel_smoothed: Cell::new(true),
             generic_hiding,
             activations: Rc::new(Cell::new(0)),
             preferences: ContentScopePreferences {
@@ -178,6 +184,14 @@ impl PageProtections {
         self.content_manager.remove_all_scripts();
         self.content_manager.add_script(&script);
         self.content_manager.add_script(&guard);
+        if self.is_wheel_smoothed.get() {
+            self.content_manager.add_script(&self.smooth_wheel.user_script());
+        }
+    }
+
+    /// Whether pages loaded from now on get the smooth wheel script; [`Self::install_script`] applies it.
+    pub fn set_wheel_smoothed(&self, is_smoothed: bool) {
+        self.is_wheel_smoothed.set(is_smoothed);
     }
 
     /// The list compiled last time, if WebKit still has it. The store belongs to this profile alone, so this

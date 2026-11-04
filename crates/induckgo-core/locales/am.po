@@ -767,3 +767,12 @@ msgstr "ውርዶችን ፈልግ"
 
 msgid "File Moved or Deleted"
 msgstr "ፋይሉ ተወስዷል ወይም ተሰርዟል"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "እያንዳንዱን የመዳፊት ጎማ እርምጃ በእንቅስቃሴ ያሳያል። አስቀድመው የተከፈቱ ገጾች እንደገና መጫን ያስፈልጋቸዋል።"
+
+msgid "Scrolling"
+msgstr "ማሸብለል"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "ለስላሳ የመዳፊት ጎማ ማሸብለል"

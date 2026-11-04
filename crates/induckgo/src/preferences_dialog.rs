@@ -117,7 +117,26 @@ impl PreferencesDialog {
             .icon_name("preferences-desktop-appearance-symbolic")
             .build();
         page.add(&group);
+        page.add(&Self::scrolling_group(context));
         page
+    }
+
+    /// The Scrolling group: whether each step of the mouse wheel is animated like in other browsers.
+    fn scrolling_group(context: &Rc<AppContext>) -> adw::PreferencesGroup {
+        let row = adw::SwitchRow::builder()
+            .title(tr!("Smooth mouse wheel scrolling"))
+            .subtitle(tr!("Animates every step of the mouse wheel. Pages that are already open need a reload."))
+            .active(context.session.smooth_wheel())
+            .build();
+        let session = Rc::downgrade(&context.session);
+        row.connect_active_notify(move |row| {
+            if let Some(session) = session.upgrade() {
+                session.set_smooth_wheel(row.is_active());
+            }
+        });
+        let group = adw::PreferencesGroup::builder().title(tr!("Scrolling")).build();
+        group.add(&row);
+        group
     }
 
     /// The Downloads page: whether each download asks where to go, and the folder it goes to otherwise.

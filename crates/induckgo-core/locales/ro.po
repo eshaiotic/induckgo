@@ -767,3 +767,12 @@ msgstr "Caută în descărcări"
 
 msgid "File Moved or Deleted"
 msgstr "Fișier mutat sau șters"
+
+msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
+msgstr "Animă fiecare pas al rotiței mouse-ului. Paginile deja deschise trebuie reîncărcate."
+
+msgid "Scrolling"
+msgstr "Derulare"
+
+msgid "Smooth mouse wheel scrolling"
+msgstr "Derulare lină cu rotița mouse-ului"

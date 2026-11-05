@@ -121,6 +121,60 @@ separately in every profile.
 
 ---
 
+## How tracking is cut, and what proves it
+
+A site, an advertiser or the browser's own maker can follow you in seven ways. This table names each way, the
+mechanism InDuckGo uses against it, where that mechanism lives in the code, and the check that exercises it. The
+mechanisms are those of the WebKitGTK edition (1.1.x); the 1.2 edition on QtWebEngine is being rebuilt to
+match them (see the [migration plan](docs/en/plans/2026-11-04-qtwebengine-migration-implementation.md)) and
+does not carry all of them yet.
+
+| Way of following you | What InDuckGo does | Code (`crates/induckgo-core/src`) | Checked by |
+|---|---|---|---|
+| The browser reports to its maker | There is no telemetry code at all: no usage ping, crash reporter, experiment seed or account. The only connections the program makes on its own are plain `GET`s for protection data, with no cookie jar and no identifier. | `protection/`, `guard/` (downloads only) | Idle traffic measured at host level: 8 hosts, none of them InDuckGo's own ([report §4.1](docs/en/reports/tracking-comparison.md)) |
+| Third-party trackers | DuckDuckGo's Tracker Data Set becomes WebKit content-blocking rules, with DuckDuckGo's per-site exceptions so pages keep working. | `protection/tracker_data_set.rs`, `protection/content_blocker_rules_builder.rs`, `network/tracker_request_policy.rs` | Scenario tests `tracker_data_set`, `content_blocker_rules_builder`, `rule_exceptions` |
+| Ads and trackers the first list misses | Guard downloads nine community lists (EasyList, EasyPrivacy, uBlock Origin, Peter Lowe's, Polish and cookie-notice lists), compiles them and applies them to a site's own requests too. Cookie notices are hidden. | `guard/guard_engine.rs`, `guard/guard_rule_list.rs`, `network/guard_request_policy.rs` | Tests `guard_engine`, `guard_rule_list`, `guard_request_policy`; 94 → 2 trackers on 12 sites (below) |
+| Cookies and stored identifiers | Third-party cookies are refused, WebKit's Intelligent Tracking Prevention is on, every profile and web app is its own process with its own storage, and Fire erases a profile in one click. | `storage/cookie_policy.rs`, `storage/tracker_cookie_policy.rs`, `storage/burn_planner.rs` | Tests `cookie_policies`, `burn_planner` |
+| Identifiers in links | `utm_*`, `fbclid`, `gclid` and DuckDuckGo's other parameters are stripped from every top-level navigation before the request leaves the machine. | `protection/tracking_parameter_remover.rs`, `network/link_cleaning_request_policy.rs` | Tests `tracking_parameter_remover`, `link_cleaning_request_policy` |
+| Fingerprinting | DuckDuckGo's Content Scope Scripts run in every frame, and Guard switches on the canvas, audio, screen and referrer defences that DuckDuckGo's macOS configuration leaves off. The noise changes per site and per session. | `guard/fingerprint_hardening.rs`, `protection/content_scope_script.rs` | Tests `fingerprint_hardening`, `content_scope_script`; probe page in the report (§4.3) |
+| What the network and the site's server see | Navigations are upgraded to HTTPS and a banner asks before a site without HTTPS loads; `Sec-GPC: 1` goes to every site. For the IP address, the Tor window routes everything through InDuckGo's own Tor, never falls back to a direct connection, keeps nothing on disk, turns WebRTC off and asks for English like Tor Browser. | `navigation/https_upgrade_policy.rs`, `network/https_upgrade_request_policy.rs`, `tor/` | Tests `https_upgrade_policy`, `https_upgrade_request_policy`, `tor_configuration`, `tor_endpoint`; [architecture §4.1](docs/en/architecture/overview.md) |
+
+Every list and data set is downloaded, never bundled, and size-limited and validated before use. A filter list
+can only block or hide: the conversion keeps no scriptlets, so a hostile list could break a site but never run
+code in it. The whole suite (`./run-tests`, 426 tests plus clippy and `cargo audit` in CI) runs on every push.
+
+### The evidence
+
+The measurement behind the [first table](#measured-against-chrome-and-brave-compared-with-duckduckgo) ran
+Chrome 156, Brave 1.98 and InDuckGo side by side on 2026-11-02, with fresh profiles, a window each, and a
+proxy that logs host names only. Its numbers, repeated here so they sit next to the mechanisms:
+
+- **Trackers reached on 12 sites:** Chrome 94, Brave 5, InDuckGo 2, judged by Disconnect's list, which none of
+  the three uses.
+- **Sent to the browser's own maker in 5 idle minutes:** Chrome contacted only Google (15 hosts), Brave mostly
+  its own servers (daily usage ping, P3A), InDuckGo nothing of its own.
+- **Fingerprint:** the same canvas and audio values on every site in Chrome; different per site, but equal after
+  a restart, in Brave; different per site *and* per session in InDuckGo.
+- **Method, limits and a script-level recipe to repeat it:** [tracking comparison](docs/en/reports/tracking-comparison.md), §3 and §8.
+
+### What this does not prove
+
+The measurement supports "InDuckGo gives trackers and its own maker less to work with". It does not support
+"InDuckGo is more anonymous than Brave or DuckDuckGo" without qualification, and the project does not claim it.
+
+- **2 trackers against Brave's 5 is one run on 12 sites.** The report itself calls a difference of one or two
+  hosts within what pages change between loads. Read it as "at least as good as Brave here", not as a ranking.
+- **DuckDuckGo's browser was not measured**, because it does not exist for Linux. The
+  [feature table](#compared-with-duckduckgos-own-browser) compares documented behaviour, not traffic.
+- **Blocking is not anonymity.** InDuckGo's engine, WebKitGTK on Linux, is used by few people, so it is easier
+  to single out than Brave (which looks like Chrome) or DuckDuckGo for macOS (which looks like Safari). Noise
+  changes the values a site reads, not the engine. Installed fonts stay visible, as in Brave and Chrome.
+- **No phishing or malware warnings** (no Safe Browsing), no email-alias service and no VPN. The Tor window
+  hides your address, not that you use InDuckGo; where being indistinguishable matters, use Tor Browser.
+- **Independent verification is missing:** [privacytests.org](https://privacytests.org/) does not test InDuckGo.
+
+---
+
 ## Status
 
 Usable work in progress: browsing with tabs, all protections above, profiles, web apps, the Tor window,

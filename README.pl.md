@@ -122,6 +122,64 @@ osobno w każdym profilu.
 
 ---
 
+## Jak wycinamy śledzenie i co to potwierdza
+
+Strona, reklamodawca albo sam producent przeglądarki mogą Cię śledzić na siedem sposobów. Tabela nazywa każdy
+z nich, mechanizm użyty przeciwko niemu przez InDuckGo, miejsce tego mechanizmu w kodzie i test lub pomiar,
+który go sprawdza. Mechanizmy dotyczą edycji na WebKitGTK (1.1.x); edycja 1.2 na QtWebEngine jest odtwarzana
+tak, by je powtórzyć (zob. [plan migracji](docs/pl/plans/2026-11-04-qtwebengine-migration-implementation.md)),
+i jeszcze nie ma ich wszystkich.
+
+| Sposób śledzenia | Co robi InDuckGo | Kod (`crates/induckgo-core/src`) | Sprawdza to |
+|---|---|---|---|
+| Przeglądarka raportuje do producenta | W ogóle nie ma kodu telemetrii: żadnego pingu użycia, raportów awarii, ziarna eksperymentów ani konta. Jedyne połączenia, jakie program sam nawiązuje, to zwykłe `GET` po dane ochronne, bez ciasteczek i bez identyfikatora. | `protection/`, `guard/` (tylko pobieranie) | Ruch bezczynności zmierzony na poziomie nazw hostów: 8 hostów, żaden nie należy do InDuckGo ([raport §4.1](docs/pl/reports/tracking-comparison.md)) |
+| Trackery stron trzecich | Tracker Data Set DuckDuckGo zamieniany jest na reguły blokowania treści WebKit, razem z wyjątkami DuckDuckGo dla poszczególnych witryn, by strony działały. | `protection/tracker_data_set.rs`, `protection/content_blocker_rules_builder.rs`, `network/tracker_request_policy.rs` | Testy scenariuszowe `tracker_data_set`, `content_blocker_rules_builder`, `rule_exceptions` |
+| Reklamy i trackery, których pierwsza lista nie zna | Guard pobiera dziewięć list społeczności (EasyList, EasyPrivacy, uBlock Origin, Petera Lowe'a, polskie i listy komunikatów o ciasteczkach), kompiluje je i stosuje także do żądań własnej witryny. Komunikaty o ciasteczkach są ukrywane. | `guard/guard_engine.rs`, `guard/guard_rule_list.rs`, `network/guard_request_policy.rs` | Testy `guard_engine`, `guard_rule_list`, `guard_request_policy`; 94 → 2 trackery na 12 stronach (niżej) |
+| Ciasteczka i zapisane identyfikatory | Ciasteczka stron trzecich są odrzucane, włączona jest Intelligent Tracking Prevention z WebKit, każdy profil i aplikacja internetowa to osobny proces z własnym magazynem, a Ogień kasuje profil jednym kliknięciem. | `storage/cookie_policy.rs`, `storage/tracker_cookie_policy.rs`, `storage/burn_planner.rs` | Testy `cookie_policies`, `burn_planner` |
+| Identyfikatory w linkach | `utm_*`, `fbclid`, `gclid` i inne parametry z listy DuckDuckGo są usuwane z każdej nawigacji najwyższego poziomu, zanim żądanie opuści komputer. | `protection/tracking_parameter_remover.rs`, `network/link_cleaning_request_policy.rs` | Testy `tracking_parameter_remover`, `link_cleaning_request_policy` |
+| Odciski przeglądarki | Content Scope Scripts DuckDuckGo działają w każdej ramce, a Guard włącza zabezpieczenia canvas, dźwięku, ekranu i referera, które konfiguracja DuckDuckGo na macOS zostawia wyłączone. Szum zmienia się z witryną i z sesją. | `guard/fingerprint_hardening.rs`, `protection/content_scope_script.rs` | Testy `fingerprint_hardening`, `content_scope_script`; strona próbkująca w raporcie (§4.3) |
+| Co widzi sieć i serwer strony | Nawigacje są podnoszone do HTTPS, a baner pyta, zanim wczyta się strona bez HTTPS; `Sec-GPC: 1` trafia do każdej witryny. Dla adresu IP okno Tor kieruje wszystko przez własny Tor InDuckGo, nigdy nie wraca do połączenia bezpośredniego, nic nie zapisuje na dysku, wyłącza WebRTC i prosi o angielski jak Tor Browser. | `navigation/https_upgrade_policy.rs`, `network/https_upgrade_request_policy.rs`, `tor/` | Testy `https_upgrade_policy`, `https_upgrade_request_policy`, `tor_configuration`, `tor_endpoint`; [architektura §4.1](docs/pl/architecture/overview.md) |
+
+Każda lista i zestaw danych jest pobierany, nigdy dołączany, a przed użyciem ograniczany rozmiarem i
+walidowany. Lista filtrów może tylko blokować albo ukrywać: konwersja nie zachowuje skryptletów, więc złośliwa
+lista mogłaby zepsuć stronę, ale nigdy nie uruchomi w niej kodu. Cały zestaw (`./run-tests`, 426 testów oraz
+clippy i `cargo audit` w CI) uruchamia się przy każdym wypchnięciu.
+
+### Dowody
+
+Pomiar stojący za [pierwszą tabelą](#zmierzone-wobec-chrome-i-brave-porównane-z-duckduckgo) uruchomił
+2026-11-02 obok siebie Chrome 156, Brave 1.98 i InDuckGo, na świeżych profilach, każdy we własnym oknie, przez
+proxy zapisujące wyłącznie nazwy hostów. Liczby, powtórzone tu obok mechanizmów:
+
+- **Trackery osiągnięte na 12 stronach:** Chrome 94, Brave 5, InDuckGo 2, według listy Disconnect, której
+  żadna z trzech przeglądarek nie używa.
+- **Wysłane do producenta w 5 minut bezczynności:** Chrome łączył się wyłącznie z Google (15 hostów), Brave
+  głównie z własnymi serwerami (dzienny ping użycia, P3A), InDuckGo z niczym własnym.
+- **Odcisk przeglądarki:** te same wartości canvas i dźwięku na każdej stronie w Chrome; różne dla witryn, ale
+  takie same po restarcie w Brave; różne dla witryny *i* sesji w InDuckGo.
+- **Metoda, ograniczenia i przepis na powtórzenie pomiaru:** [porównanie śledzenia](docs/pl/reports/tracking-comparison.md), §3 i §8.
+
+### Czego to nie dowodzi
+
+Pomiar potwierdza, że „InDuckGo daje trackerom i własnemu producentowi mniej materiału”. Nie potwierdza
+bez zastrzeżeń, że „InDuckGo jest bardziej anonimowy niż Brave lub DuckDuckGo”, i projekt tego nie twierdzi.
+
+- **2 trackery wobec 5 w Brave to jedno uruchomienie na 12 stronach.** Sam raport uznaje różnicę jednego–dwóch
+  hostów za mieszczącą się w zmianach, jakie strony wprowadzają między wczytaniami. Czytaj to jako „co najmniej
+  tak dobrze jak Brave”, a nie jako ranking.
+- **Przeglądarki DuckDuckGo nie zmierzono**, bo nie istnieje na Linuksa.
+  [Tabela funkcji](#porównanie-z-przeglądarką-duckduckgo) porównuje udokumentowane zachowanie, nie ruch.
+- **Blokowanie to nie anonimowość.** Silnik InDuckGo, WebKitGTK na Linuksie, ma niewielu użytkowników, więc
+  łatwiej go wyróżnić niż Brave (wygląda jak Chrome) albo DuckDuckGo na macOS (wygląda jak Safari). Szum zmienia
+  wartości, które widzi strona, ale nie silnik. Zainstalowane czcionki pozostają widoczne, tak jak w Brave i
+  Chrome.
+- **Brak ostrzeżeń przed phishingiem i złośliwym oprogramowaniem** (brak Safe Browsing), brak aliasów
+  e-mail i VPN. Okno Tor ukrywa Twój adres, nie fakt używania InDuckGo; gdy liczy się nieodróżnialność, użyj
+  Tor Browser.
+- **Brakuje niezależnej weryfikacji:** [privacytests.org](https://privacytests.org/) nie testuje InDuckGo.
+
+---
+
 ## Stan
 
 Projekt w toku, ale używalny: działają karty, wszystkie powyższe zabezpieczenia, profile, aplikacje webowe,

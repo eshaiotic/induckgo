@@ -52,6 +52,12 @@ impl FileManagerRequest {
         &self.fallback_folder
     }
 
+    /// The URI with the two characters that mean something inside a quoted `GVariant` text string written as percent
+    /// escapes. `url` leaves `'` alone in a path, and a file name chosen by a web server must not close the string.
+    fn gvariant_safe_uri(&self) -> String {
+        self.uri.replace('\\', "%5C").replace('\'', "%27")
+    }
+
     /// The arguments of `gdbus call` that make the file manager show the item.
     #[must_use]
     pub fn gdbus_arguments(&self) -> Vec<String> {
@@ -68,7 +74,7 @@ impl FileManagerRequest {
         ]
         .iter()
         .map(|argument| (*argument).to_owned())
-        .chain([format!("{SERVICE}.{}", self.method), format!("['{}']", self.uri), "''".to_owned()])
+        .chain([format!("{SERVICE}.{}", self.method), format!("['{}']", self.gvariant_safe_uri()), "''".to_owned()])
         .collect()
     }
 

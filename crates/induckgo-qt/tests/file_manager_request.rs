@@ -62,3 +62,16 @@ fn should_pass_the_startup_id_as_a_quoted_empty_string() {
 
     assert_eq!(request.gdbus_arguments().last().map(String::as_str), Some("''"));
 }
+
+#[test]
+fn should_not_let_a_file_name_close_the_quoted_uri_list() {
+    let directory = TempDir::new().expect("tempdir");
+    let path = directory.path().join("it's'], 'x\\.pdf");
+    std::fs::write(&path, b"pdf").expect("write");
+
+    let request = FileManagerRequest::showing_file(&path).expect("file exists");
+
+    let list = &request.gdbus_arguments()[10];
+    assert_eq!(list.matches('\'').count(), 2, "only the two delimiters may be quotes: {list}");
+    assert!(!list.contains('\\'));
+}

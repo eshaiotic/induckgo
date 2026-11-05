@@ -776,3 +776,24 @@ msgstr "Κύλιση"
 
 msgid "Smooth mouse wheel scrolling"
 msgstr "Ομαλή κύλιση με τη ροδέλα του ποντικιού"
+
+msgid "Details"
+msgstr "Λεπτομέριες"
+
+msgid "Legal"
+msgstr "Νομικά"
+
+msgid "This application comes with absolutely no warranty. See the {license} for details."
+msgstr "Αυτή η εφαρμογή έρχεται με καμία απολύτως εγγύηση. Δείτε το {license} για λεπτομέρειες."
+
+msgid "GNU General Public License, version 3 or later"
+msgstr "Γενική δημόσια άδεια GNU, έκδοση 3 ή νεότερη"
+
+msgid "Apache License, Version 2.0"
+msgstr "Άδεια Apache, Έκδοση 2.0"
+
+msgid "Mozilla Public License 2.0"
+msgstr "Δημόσια άδεια Mozilla 2.0"
+
+msgid "BSD 3-Clause License"
+msgstr "BSD 3-Άδεια ρήτρας"

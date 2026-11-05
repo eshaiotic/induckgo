@@ -776,3 +776,24 @@ msgstr "Kaydırma"
 
 msgid "Smooth mouse wheel scrolling"
 msgstr "Düzgün fare tekerleği kaydırma"
+
+msgid "Details"
+msgstr "Ayrıntılar"
+
+msgid "Legal"
+msgstr "Yasal"
+
+msgid "This application comes with absolutely no warranty. See the {license} for details."
+msgstr "Bu uygulama kesinlikle hiçbir garanti vermiyor. Ayrıntılar için {license} bağlantısına bakın."
+
+msgid "GNU General Public License, version 3 or later"
+msgstr "GNU Genel Kamu Lisansı, sürüm 3 ya da sonrası"
+
+msgid "Apache License, Version 2.0"
+msgstr "Apache Lisansı, Sürüm 2.0"
+
+msgid "Mozilla Public License 2.0"
+msgstr "Mozilla Kamu Lisansı 2.0"
+
+msgid "BSD 3-Clause License"
+msgstr "BSD 3-Clause Lisansı"

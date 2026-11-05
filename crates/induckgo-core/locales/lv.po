@@ -776,3 +776,24 @@ msgstr "Ritināšana"
 
 msgid "Smooth mouse wheel scrolling"
 msgstr "Vienmērīga ritināšana ar peles ritenīti"
+
+msgid "Details"
+msgstr "Sīkāka informācija"
+
+msgid "Legal"
+msgstr "Legāls"
+
+msgid "This application comes with absolutely no warranty. See the {license} for details."
+msgstr "Šī lietotne nāk bez jebkādas garantijas. Lai uzzinātu vairāk, apmeklējiet {license}."
+
+msgid "GNU General Public License, version 3 or later"
+msgstr "GNU Vispārīgā Publiskā Licence 3. versija vai jaunāka"
+
+msgid "Apache License, Version 2.0"
+msgstr "Apache license, 2.0 versija"
+
+msgid "Mozilla Public License 2.0"
+msgstr "Mozilla publiskā licence 2.0"
+
+msgid "BSD 3-Clause License"
+msgstr "BSD trīs klauzulu licence"

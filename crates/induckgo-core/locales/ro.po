@@ -776,3 +776,24 @@ msgstr "Derulare"
 
 msgid "Smooth mouse wheel scrolling"
 msgstr "Derulare lină cu rotița mouse-ului"
+
+msgid "Details"
+msgstr "Detalii"
+
+msgid "Legal"
+msgstr "Legal"
+
+msgid "This application comes with absolutely no warranty. See the {license} for details."
+msgstr "Această aplicație nu vine cu niciun fel de garanție. A se vedea {license} pentru detalii."
+
+msgid "GNU General Public License, version 3 or later"
+msgstr "Licența Publică Generală GNU, versiunea 3 sau mai nouă"
+
+msgid "Apache License, Version 2.0"
+msgstr "Licența Apache, versiunea 2.0"
+
+msgid "Mozilla Public License 2.0"
+msgstr "Licența Publică Mozilla 2.0"
+
+msgid "BSD 3-Clause License"
+msgstr "Licența BSD clauza-3"

@@ -776,3 +776,24 @@ msgstr "Vieritys"
 
 msgid "Smooth mouse wheel scrolling"
 msgstr "Pehmeä vieritys hiiren rullalla"
+
+msgid "Details"
+msgstr "Tiedot"
+
+msgid "Legal"
+msgstr "Lainopillinen"
+
+msgid "This application comes with absolutely no warranty. See the {license} for details."
+msgstr "Tämä sovellus ei sisällä minkäänlaista takuuta. Lisätietoja {license}."
+
+msgid "GNU General Public License, version 3 or later"
+msgstr "GNU General Public -lisenssi (GPL), versio 3 tai myöhempi"
+
+msgid "Apache License, Version 2.0"
+msgstr "Apache-lisenssi, versio 2.0"
+
+msgid "Mozilla Public License 2.0"
+msgstr "Mozilla Public -lisenssi 2.0"
+
+msgid "BSD 3-Clause License"
+msgstr "3-lausekkeinen BSD-lisenssi"

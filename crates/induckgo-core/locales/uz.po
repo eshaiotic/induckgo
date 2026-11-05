@@ -776,3 +776,24 @@ msgstr "Aylantirish"
 
 msgid "Smooth mouse wheel scrolling"
 msgstr "Sichqoncha g‘ildiragi bilan silliq aylantirish"
+
+msgid "Details"
+msgstr "Tafsilotlar"
+
+msgid "Legal"
+msgstr "Huquqiy"
+
+msgid "This application comes with absolutely no warranty. See the {license} for details."
+msgstr "Ushbu dastur mutlaqo kafolatsiz keladi. Tafsilotlar uchun {license}ga qarang."
+
+msgid "GNU General Public License, version 3 or later"
+msgstr "GNU General Public License, versiya 3 yoki undan keyingisi"
+
+msgid "Apache License, Version 2.0"
+msgstr "Apache License, versiya 2.0"
+
+msgid "Mozilla Public License 2.0"
+msgstr "Mozilla Public License 2.0"
+
+msgid "BSD 3-Clause License"
+msgstr "BSD 3-Clause License"

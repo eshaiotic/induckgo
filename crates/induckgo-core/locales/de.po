@@ -776,3 +776,24 @@ msgstr "Scrollen"
 
 msgid "Smooth mouse wheel scrolling"
 msgstr "Sanftes Scrollen mit dem Mausrad"
+
+msgid "Details"
+msgstr "Details"
+
+msgid "Legal"
+msgstr "Rechtshinweis"
+
+msgid "This application comes with absolutely no warranty. See the {license} for details."
+msgstr "Dieses Programm kommt OHNE JEDWEDE GARANTIE.\nBesuchen Sie {license} für weitere Informationen."
+
+msgid "GNU General Public License, version 3 or later"
+msgstr "GNU General Public License, Version 3 oder neuer"
+
+msgid "Apache License, Version 2.0"
+msgstr "Apache Lizenz, Version 2.0"
+
+msgid "Mozilla Public License 2.0"
+msgstr "Mozilla Public Lizenz 2.0"
+
+msgid "BSD 3-Clause License"
+msgstr "BSD 3-Klausel-Lizenz"

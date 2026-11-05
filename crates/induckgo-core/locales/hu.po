@@ -776,3 +776,24 @@ msgstr "Görgetés"
 
 msgid "Smooth mouse wheel scrolling"
 msgstr "Egyenletes görgetés az egérgörgővel"
+
+msgid "Details"
+msgstr "Részletek"
+
+msgid "Legal"
+msgstr "Jogi információk"
+
+msgid "This application comes with absolutely no warranty. See the {license} for details."
+msgstr "Erre az alkalmazásra egyáltalán nem vonatkozik garancia. További részletek a(z) {license} szövegében."
+
+msgid "GNU General Public License, version 3 or later"
+msgstr "GNU General Public License, 3-as vagy későbbi verzió"
+
+msgid "Apache License, Version 2.0"
+msgstr "Apache License, 2.0-s verzió"
+
+msgid "Mozilla Public License 2.0"
+msgstr "Mozilla Public License 2.0"
+
+msgid "BSD 3-Clause License"
+msgstr "BSD 3 cikkelyes licenc"

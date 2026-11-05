@@ -776,3 +776,24 @@ msgstr "Desplazamiento"
 
 msgid "Smooth mouse wheel scrolling"
 msgstr "Desplazamiento suave con la rueda del mouse"
+
+msgid "Details"
+msgstr "Detalles"
+
+msgid "Legal"
+msgstr "Legal"
+
+msgid "This application comes with absolutely no warranty. See the {license} for details."
+msgstr "Este programa viene SIN NINGUNA GARANTÍA. Consulte la {license} para obtener más detalles."
+
+msgid "GNU General Public License, version 3 or later"
+msgstr "Licencia Pública General de GNU, versión 3 o posterior"
+
+msgid "Apache License, Version 2.0"
+msgstr "Licencia Apache, versión 2.0"
+
+msgid "Mozilla Public License 2.0"
+msgstr "Licencia pública de Mozilla 2.0"
+
+msgid "BSD 3-Clause License"
+msgstr "Licencia BSD modificada (de 3 cláusulas)"

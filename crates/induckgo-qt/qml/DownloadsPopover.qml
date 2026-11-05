@@ -2,61 +2,104 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-// The toolbar's downloads list: the five latest, then the manager, "Clear List" and the download folder.
+// The toolbar's downloads list, drawn as the GTK edition's popover: the five latest downloads, then the manager,
+// "Clear List" and the download folder as centred rows. It hangs under the header bar against the window's right edge.
 Popup {
     id: popover
     required property var hub
     required property var bridge
     signal managerRequested()
 
-    width: 380
-    padding: 6
+    /// When the popover last closed: the toolbar button ignores the click that closed it by pressing outside.
+    property double closedAt: 0
+
+    parent: Overlay.overlay
+    x: parent.width - width - 8
+    y: 54
+    width: 377
+    padding: 8
     modal: false
     focus: true
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+    onClosed: closedAt = Date.now()
+
+    enter: Transition {
+        NumberAnimation { property: "opacity"; from: 0; to: 1; duration: 110; easing.type: Easing.OutCubic }
+        NumberAnimation { property: "scale"; from: 0.96; to: 1; duration: 140; easing.type: Easing.OutCubic }
+    }
+    exit: Transition {
+        NumberAnimation { property: "opacity"; to: 0; duration: 80 }
+    }
+    transformOrigin: Popup.TopRight
+
     background: Rectangle {
-        radius: 8
-        color: palette.window
-        border.color: Qt.alpha(palette.windowText, 0.25)
+        radius: 12
+        color: palette.base
+        border.width: 1
+        border.color: Qt.alpha(palette.windowText, 0.16)
     }
 
-    ColumnLayout {
-        anchors.fill: parent
+    // One of the closing rows: a centred title that is lit while the pointer is over it.
+    component CloseRow: AbstractButton {
+        id: entry
+        Layout.fillWidth: true
+        implicitHeight: 36
+        background: Rectangle {
+            radius: 8
+            color: !entry.enabled ? "transparent"
+                 : entry.down ? Qt.alpha(palette.windowText, 0.14)
+                 : entry.hovered || entry.visualFocus ? Qt.alpha(palette.windowText, 0.08) : "transparent"
+        }
+        contentItem: Label {
+            text: entry.text
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            elide: Text.ElideRight
+            opacity: entry.enabled ? 1 : 0.4
+        }
+    }
+
+    contentItem: ColumnLayout {
         spacing: 2
 
         Label {
             visible: popover.hub.latest.count === 0
             Layout.fillWidth: true
-            Layout.margins: 16
+            Layout.topMargin: 18
+            Layout.bottomMargin: 18
             horizontalAlignment: Text.AlignHCenter
             text: popover.bridge.message("No downloads yet")
-            color: palette.placeholderText
+            color: Qt.alpha(palette.windowText, 0.6)
         }
         ListView {
             Layout.fillWidth: true
             Layout.preferredHeight: contentHeight
             visible: popover.hub.latest.count > 0
             interactive: false
+            spacing: 2
             model: popover.hub.latest
             delegate: DownloadRow {
                 bridge: popover.bridge
                 onShowInFolder: function(path) { popover.hub.showInFolder(path); popover.close() }
             }
         }
-        MenuSeparator { Layout.fillWidth: true }
-        ItemDelegate {
+        Rectangle {
             Layout.fillWidth: true
+            Layout.topMargin: 4
+            Layout.bottomMargin: 4
+            Layout.preferredHeight: 1
+            color: Qt.alpha(palette.windowText, 0.12)
+        }
+        CloseRow {
             text: popover.bridge.message("Show All Downloads")
             onClicked: { popover.close(); popover.managerRequested() }
         }
-        ItemDelegate {
-            Layout.fillWidth: true
+        CloseRow {
             text: popover.bridge.message("Clear List")
             enabled: popover.hub.latest.count > 0
             onClicked: popover.hub.clearList()
         }
-        ItemDelegate {
-            Layout.fillWidth: true
+        CloseRow {
             text: popover.bridge.message("Go to Download Folder")
             onClicked: { popover.hub.openFolder(); popover.close() }
         }

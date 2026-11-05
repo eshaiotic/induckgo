@@ -776,3 +776,24 @@ msgstr "滚动"
 
 msgid "Smooth mouse wheel scrolling"
 msgstr "平滑鼠标滚轮滚动"
+
+msgid "Details"
+msgstr "详细信息"
+
+msgid "Legal"
+msgstr "法律信息"
+
+msgid "This application comes with absolutely no warranty. See the {license} for details."
+msgstr "本程序不作任何担保。详情请见 {license}。"
+
+msgid "GNU General Public License, version 3 or later"
+msgstr "GNU 通用公共许可证，第 3 版及以上"
+
+msgid "Apache License, Version 2.0"
+msgstr "Apache 许可证第 2.0 版"
+
+msgid "Mozilla Public License 2.0"
+msgstr "Mozilla 公用许可证第 2.0 版"
+
+msgid "BSD 3-Clause License"
+msgstr "BSD 3-Clause 许可证"

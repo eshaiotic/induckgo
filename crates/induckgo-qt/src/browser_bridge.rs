@@ -44,6 +44,10 @@ pub mod ffi {
         #[qinvokable]
         fn set_smooth_wheel(self: &BrowserBridge, is_enabled: bool);
 
+        /// What the About dialog shows, as JSON: the name, version, page titles, comments and the legal sections.
+        #[qinvokable]
+        fn about_json(self: &BrowserBridge) -> QString;
+
         /// The interface languages as a JSON array of names; the first is the system's language.
         #[qinvokable]
         fn language_names_json(self: &BrowserBridge) -> QString;
@@ -157,6 +161,8 @@ use induckgo_core::scrolling::smooth_wheel_scroll::SmoothWheelScroll;
 use induckgo_engine_qt::qt_web_engine::QtWebEngine;
 use url::Url;
 
+use induckgo_core::about::about_content::AboutContent;
+
 use crate::burn_restart::BurnRestart;
 use crate::interface_catalogue::InterfaceCatalogue;
 use crate::interface_language_setting::InterfaceLanguageSetting;
@@ -206,6 +212,11 @@ impl ffi::BrowserBridge {
         if let Some(session) = ProfileSession::current() {
             session.preferences().set_smooth_wheel(is_enabled);
         }
+    }
+
+    fn about_json(&self) -> QString {
+        let content = AboutContent::build(InterfaceCatalogue::current(), env!("CARGO_PKG_VERSION"));
+        QString::from(content.to_string().as_str())
     }
 
     fn language_names_json(&self) -> QString {

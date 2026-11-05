@@ -776,3 +776,24 @@ msgstr "Défilement"
 
 msgid "Smooth mouse wheel scrolling"
 msgstr "Défilement fluide à la molette de la souris"
+
+msgid "Details"
+msgstr "Détails"
+
+msgid "Legal"
+msgstr "Mentions légales"
+
+msgid "This application comes with absolutely no warranty. See the {license} for details."
+msgstr "Ce programme est fourni sans aucune garantie. Pour plus de détails, visitez {license}."
+
+msgid "GNU General Public License, version 3 or later"
+msgstr "Licence publique générale GNU, version 3 ou ultérieure"
+
+msgid "Apache License, Version 2.0"
+msgstr "Licence Apache, version 2.0"
+
+msgid "Mozilla Public License 2.0"
+msgstr "Licence Publique Mozilla 2.0"
+
+msgid "BSD 3-Clause License"
+msgstr "Licence BSD à 3 clauses"

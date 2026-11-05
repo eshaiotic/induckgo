@@ -776,3 +776,24 @@ msgstr "Pengguliran"
 
 msgid "Smooth mouse wheel scrolling"
 msgstr "Pengguliran roda mouse yang halus"
+
+msgid "Details"
+msgstr "Detail"
+
+msgid "Legal"
+msgstr "Hukum"
+
+msgid "This application comes with absolutely no warranty. See the {license} for details."
+msgstr "Aplikasi ini hadir tanpa jaminan sama sekali. Lihat {license} untuk detailnya ."
+
+msgid "GNU General Public License, version 3 or later"
+msgstr "GNU General Public License, versi 3 atau setelahnya"
+
+msgid "Apache License, Version 2.0"
+msgstr "Lisensi Apache, Versi 2.0"
+
+msgid "Mozilla Public License 2.0"
+msgstr "Mozilla Public License 2.0"
+
+msgid "BSD 3-Clause License"
+msgstr "Lisensi BSD 3-Clause"

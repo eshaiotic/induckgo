@@ -5,6 +5,7 @@
 //! values the `induckgo` application hands to WebKitGTK. That keeps the rules fast to test and easy to
 //! audit.
 
+pub mod about;
 pub mod document;
 pub mod download;
 pub mod engine;

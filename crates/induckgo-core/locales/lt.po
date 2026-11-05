@@ -776,3 +776,24 @@ msgstr "Slinkimas"
 
 msgid "Smooth mouse wheel scrolling"
 msgstr "Sklandus slinkimas pelės ratuku"
+
+msgid "Details"
+msgstr "Detali informacija"
+
+msgid "Legal"
+msgstr "Teisinė informacija"
+
+msgid "This application comes with absolutely no warranty. See the {license} for details."
+msgstr "Ši programa pateikiama be jokios garantijos. Daugiau informacijos adresu {license}."
+
+msgid "GNU General Public License, version 3 or later"
+msgstr "GNU bendroji vieša licencija, 3 arba vėlesnė versija"
+
+msgid "Apache License, Version 2.0"
+msgstr "Apache licencija, 2.0 versija"
+
+msgid "Mozilla Public License 2.0"
+msgstr "Mozilla viešoji licencija 2.0"
+
+msgid "BSD 3-Clause License"
+msgstr "BSD 3 dalių licencija"

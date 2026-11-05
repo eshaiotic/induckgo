@@ -14,7 +14,7 @@ Item {
     property bool managerOpen: false
     property var waiting: null
 
-    signal finished(string name)
+    signal finished(string name, string path)
     signal failed(string message)
 
     ListModel { id: latestRows }
@@ -61,7 +61,7 @@ Item {
             switch (download.state) {
             case WebEngineDownloadRequest.DownloadCompleted:
                 bridge.download_finish(id)
-                hub.finished(path.substring(slash + 1))
+                hub.finished(path.substring(slash + 1), path)
                 break
             case WebEngineDownloadRequest.DownloadInterrupted:
                 bridge.download_fail(id)

@@ -7,6 +7,8 @@ ToolButton {
     id: control
     property string iconName
     property string tip
+    /// A button whose popover is open shows no tooltip over it.
+    property bool tipHidden: false
 
     flat: true
     padding: 0
@@ -19,7 +21,7 @@ ToolButton {
     implicitWidth: 34
     implicitHeight: 34
     Accessible.name: tip
-    ToolTip.visible: hovered && tip !== ""
+    ToolTip.visible: hovered && tip !== "" && !tipHidden
     ToolTip.delay: 500
     ToolTip.text: tip
 

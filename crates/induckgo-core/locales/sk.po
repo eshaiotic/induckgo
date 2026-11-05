@@ -776,3 +776,24 @@ msgstr "Posúvanie"
 
 msgid "Smooth mouse wheel scrolling"
 msgstr "Plynulé posúvanie kolieskom myši"
+
+msgid "Details"
+msgstr "Podrobnosti"
+
+msgid "Legal"
+msgstr "Právne informácie"
+
+msgid "This application comes with absolutely no warranty. See the {license} for details."
+msgstr "Táto aplikácia je vydaná absolútne bez záruky. Podrobnosti nájdete na {license}."
+
+msgid "GNU General Public License, version 3 or later"
+msgstr "GNU General Public License (všeobecná zverejňovacia licencia GNU), verzia 3 alebo novšia"
+
+msgid "Apache License, Version 2.0"
+msgstr "Licencia Apache, verzia 2.0"
+
+msgid "Mozilla Public License 2.0"
+msgstr "Licencia Mozilla Public License 2.0"
+
+msgid "BSD 3-Clause License"
+msgstr "Licencia BSD 3-Clause"

@@ -37,6 +37,9 @@ msgstr ""
 msgid "Animates every step of the mouse wheel. Pages that are already open need a reload."
 msgstr ""
 
+msgid "Apache License, Version 2.0"
+msgstr ""
+
 msgid "App data cleared"
 msgstr ""
 
@@ -53,6 +56,9 @@ msgid "Asking for relay descriptors"
 msgstr ""
 
 msgid "Asking for the network status"
+msgstr ""
+
+msgid "BSD 3-Clause License"
 msgstr ""
 
 msgid "Back"
@@ -217,6 +223,9 @@ msgstr ""
 msgid "Delete this profile's cookies, site data and cache"
 msgstr ""
 
+msgid "Details"
+msgstr ""
+
 msgid "Disguised connections to Tor Browser's built-in bridges."
 msgstr ""
 
@@ -290,6 +299,9 @@ msgid "Forward"
 msgstr ""
 
 msgid "From bridges.torproject.org, by e-mail or from a friend."
+msgstr ""
+
+msgid "GNU General Public License, version 3 or later"
 msgstr ""
 
 msgid "Go to Download Folder"
@@ -367,6 +379,9 @@ msgstr ""
 msgid "Language"
 msgstr ""
 
+msgid "Legal"
+msgstr ""
+
 msgid "Load Insecure Page"
 msgstr ""
 
@@ -389,6 +404,9 @@ msgid "Main Menu"
 msgstr ""
 
 msgid "Manage Profiles…"
+msgstr ""
+
+msgid "Mozilla Public License 2.0"
 msgstr ""
 
 msgid "New Identity"
@@ -578,6 +596,9 @@ msgid "There is no file at {path}."
 msgstr ""
 
 msgid "This address is blocked"
+msgstr ""
+
+msgid "This application comes with absolutely no warranty. See the {license} for details."
 msgstr ""
 
 msgid "This connection isn’t private"

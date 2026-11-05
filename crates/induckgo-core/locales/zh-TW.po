@@ -776,3 +776,24 @@ msgstr "捲動"
 
 msgid "Smooth mouse wheel scrolling"
 msgstr "平滑滑鼠滾輪捲動"
+
+msgid "Details"
+msgstr "詳細資訊"
+
+msgid "Legal"
+msgstr "法律聲明"
+
+msgid "This application comes with absolutely no warranty. See the {license} for details."
+msgstr "這個程式沒有任何擔保責任。如需更多資訊，請參閱{license}。"
+
+msgid "GNU General Public License, version 3 or later"
+msgstr "《GNU 通用公眾授權條款 3.0》或更新版本"
+
+msgid "Apache License, Version 2.0"
+msgstr "《Apache 授權條款 2.0》"
+
+msgid "Mozilla Public License 2.0"
+msgstr "《Mozilla 公眾授權條款 2.0》"
+
+msgid "BSD 3-Clause License"
+msgstr "《BSD 3-Clause 授權條款》"

@@ -776,3 +776,24 @@ msgstr "Скроловање"
 
 msgid "Smooth mouse wheel scrolling"
 msgstr "Глатко скроловање точкићем миша"
+
+msgid "Details"
+msgstr "Појединости"
+
+msgid "Legal"
+msgstr "Права"
+
+msgid "This application comes with absolutely no warranty. See the {license} for details."
+msgstr "Овај програм се испоручује без икакве гаранције. Видите {license} за појединости."
+
+msgid "GNU General Public License, version 3 or later"
+msgstr "ГНУ Општа јавна дозвола, издање 3 или новије"
+
+msgid "Apache License, Version 2.0"
+msgstr "Апачева дозвола, издање 2.0"
+
+msgid "Mozilla Public License 2.0"
+msgstr "Мозилина јавна дозвола 2.0"
+
+msgid "BSD 3-Clause License"
+msgstr "БСД дозвола 3-услова"

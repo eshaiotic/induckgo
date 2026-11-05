@@ -776,3 +776,24 @@ msgstr "Pomicanje"
 
 msgid "Smooth mouse wheel scrolling"
 msgstr "Glatko pomicanje kotačićem miša"
+
+msgid "Details"
+msgstr "Pojedinosti"
+
+msgid "Legal"
+msgstr "Pravilnik"
+
+msgid "This application comes with absolutely no warranty. See the {license} for details."
+msgstr "Ova aplikacija dolazi bez ikakvog jamstva. Pogledajte {license} za više pojedinosti."
+
+msgid "GNU General Public License, version 3 or later"
+msgstr "GNU Opća Javna Licenca, inačice 3 ili novija"
+
+msgid "Apache License, Version 2.0"
+msgstr "Apache licenca, inačica 2.0"
+
+msgid "Mozilla Public License 2.0"
+msgstr "Mozilla javna licenca 2.0"
+
+msgid "BSD 3-Clause License"
+msgstr "BSD 3-klauzula licence"

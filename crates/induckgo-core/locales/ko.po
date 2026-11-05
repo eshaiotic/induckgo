@@ -776,3 +776,24 @@ msgstr "스크롤"
 
 msgid "Smooth mouse wheel scrolling"
 msgstr "부드러운 마우스 휠 스크롤"
+
+msgid "Details"
+msgstr "자세히"
+
+msgid "Legal"
+msgstr "법적 정보"
+
+msgid "This application comes with absolutely no warranty. See the {license} for details."
+msgstr "이 프로그램은 분명하게 어떤 보증도 하지 않습니다. 자세한 내용은 {license} 조항을 살펴보십시오."
+
+msgid "GNU General Public License, version 3 or later"
+msgstr "GNU 일반 공중 사용 허가서 버전 3 이상"
+
+msgid "Apache License, Version 2.0"
+msgstr "아파치 라이선스 버전 2.0"
+
+msgid "Mozilla Public License 2.0"
+msgstr "모질라 공중 라이선스 2.0"
+
+msgid "BSD 3-Clause License"
+msgstr "BSD 3조항 라이선스"

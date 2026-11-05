@@ -776,3 +776,24 @@ msgstr "גלילה"
 
 msgid "Smooth mouse wheel scrolling"
 msgstr "גלילה חלקה בגלגלת העכבר"
+
+msgid "Details"
+msgstr "פרטים"
+
+msgid "Legal"
+msgstr "משפטי"
+
+msgid "This application comes with absolutely no warranty. See the {license} for details."
+msgstr "תכנית זו מופצת ללא שום אחריות. ניתן לבקר בכתובת {license} לפרטים."
+
+msgid "GNU General Public License, version 3 or later"
+msgstr "הרישיון הציבורי הכללי של גנו, גרסה 3 או כל גרסה מאוחרת יותר"
+
+msgid "Apache License, Version 2.0"
+msgstr "רישיון אפאצ'י, גרסה 2.0"
+
+msgid "Mozilla Public License 2.0"
+msgstr "הרישיון הציבורי של מוזילה, גרסה 2.0"
+
+msgid "BSD 3-Clause License"
+msgstr "רישיון BSD תלת־סעיפי"

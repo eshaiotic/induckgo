@@ -776,3 +776,24 @@ msgstr "Прокручування"
 
 msgid "Smooth mouse wheel scrolling"
 msgstr "Плавне прокручування колесом миші"
+
+msgid "Details"
+msgstr "Подробиці"
+
+msgid "Legal"
+msgstr "Юридичні відомості"
+
+msgid "This application comes with absolutely no warranty. See the {license} for details."
+msgstr "Ця програма постачається БЕЗ БУДЬ-ЯКИХ ГАРАНТІЙ. Щоб дізнатися більше, відвідайте {license}."
+
+msgid "GNU General Public License, version 3 or later"
+msgstr "Загальна громадська ліцензія GNU (GNU GPL), версія 3 або новіша"
+
+msgid "Apache License, Version 2.0"
+msgstr "Ліцензія Apache, версія 2.0"
+
+msgid "Mozilla Public License 2.0"
+msgstr "Громадська ліцензія Mozilla 2.0"
+
+msgid "BSD 3-Clause License"
+msgstr "Спрощена (3-Clause) ліцензія BSD"

@@ -776,3 +776,24 @@ msgstr "Rulling"
 
 msgid "Smooth mouse wheel scrolling"
 msgstr "Jevn rulling med musehjul"
+
+msgid "Details"
+msgstr "Informasjon"
+
+msgid "Legal"
+msgstr "Juridisk"
+
+msgid "This application comes with absolutely no warranty. See the {license} for details."
+msgstr "Denne appen kommer uten noen som helst garanti. Se {license} for mer informasjon."
+
+msgid "GNU General Public License, version 3 or later"
+msgstr "GNU General Public License, versjon 3 eller nyere"
+
+msgid "Apache License, Version 2.0"
+msgstr "Apache-lisensen, versjon 2.0"
+
+msgid "Mozilla Public License 2.0"
+msgstr "Mozilla Public License 2.0"
+
+msgid "BSD 3-Clause License"
+msgstr "BSD 3-klausulslisensen"

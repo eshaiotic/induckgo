@@ -94,7 +94,13 @@ ApplicationWindow {
     }
     property int zoomVersion: 0
 
-    function toast(text) { toastLabel.text = text; toastPopup.open(); toastTimer.restart() }
+    function toast(text, actionText, action) {
+        toastLabel.text = text
+        toastPopup.actionText = actionText || ""
+        toastPopup.action = action || null
+        toastPopup.open()
+        toastTimer.restart()
+    }
 
     function navigate(typed) {
         const destination = bridge.destination(typed)
@@ -136,7 +142,10 @@ ApplicationWindow {
         icon.source: "qrc:/icons/download.svg"
         icon.color: window.palette.windowText
         shortcut: "Ctrl+J"
-        onTriggered: downloadsPopover.opened ? downloadsPopover.close() : downloadsPopover.open()
+        onTriggered: {
+            if (downloadsPopover.opened) downloadsPopover.close()
+            else if (Date.now() - downloadsPopover.closedAt > 250) downloadsPopover.open()
+        }
     }
     Action {
         id: findInPage
@@ -335,24 +344,22 @@ ApplicationWindow {
                 }
                 IconButton {
                     id: downloadsButton
+                    checked: downloadsPopover.opened
+                    tipHidden: downloadsPopover.opened
                     visible: window.shows("downloads")
                     iconName: "download"
                     tip: bridge.message("Downloads")
                     onClicked: showDownloads.trigger()
-
-                    DownloadsPopover {
-                        id: downloadsPopover
-                        hub: downloads
-                        bridge: bridge
-                        y: parent.height + 4
-                        x: parent.width - width
-                        onManagerRequested: downloadsManager.open()
-                    }
                 }
                 IconButton {
                     iconName: "menu"
                     tip: bridge.message("Main Menu")
-                    onClicked: mainMenu.opened ? mainMenu.close() : mainMenu.open()
+                    checked: mainMenu.opened
+                    tipHidden: mainMenu.opened
+                    onClicked: {
+                        if (mainMenu.opened) mainMenu.close()
+                        else if (Date.now() - mainMenu.closedAt > 250) mainMenu.open()
+                    }
 
                     MainMenu {
                         id: mainMenu
@@ -442,7 +449,10 @@ ApplicationWindow {
     DownloadsHub {
         id: downloads
         bridge: bridge
-        onFinished: function(name) { window.toast(bridge.message("Downloaded {name}").replace("{name}", name)) }
+        onFinished: function(name, path) {
+            window.toast(bridge.message("Downloaded {name}").replace("{name}", name),
+                         bridge.message("Show in Folder"), function() { downloads.showInFolder(path) })
+        }
         onFailed: function(message) { window.toast(message) }
     }
     DownloadsManager { id: downloadsManager; hub: downloads; bridge: bridge }
@@ -466,18 +476,9 @@ ApplicationWindow {
         }
     }
 
-    Dialog {
+    AboutDialog {
         id: aboutDialog
-        title: bridge.message("About InDuckGo")
-        modal: true
-        padding: 20
-        anchors.centerIn: parent
-        standardButtons: Dialog.Close
-        ColumnLayout {
-            spacing: 6
-            Label { text: "InDuckGo " + Qt.application.version; font.bold: true; font.pixelSize: 18 }
-            Label { text: "GPL-3.0-or-later"; color: palette.placeholderText }
-        }
+        bridge: bridge
     }
 
     PreferencesDialog {
@@ -498,14 +499,54 @@ ApplicationWindow {
         }
     }
 
+    DownloadsPopover {
+        id: downloadsPopover
+        hub: downloads
+        bridge: bridge
+        onManagerRequested: downloadsManager.open()
+    }
+
+    // A short message at the window's foot, dark in both colour schemes, with the action that goes with it.
     Popup {
         id: toastPopup
-        x: (window.width - width) / 2
-        y: window.height - height - 24
-        padding: 12
+        property string actionText
+        property var action: null
+        parent: Overlay.overlay
+        x: (parent.width - width) / 2
+        y: parent.height - height - 24
+        padding: 6
+        leftPadding: 16
         closePolicy: Popup.NoAutoClose
-        background: Rectangle { radius: 8; color: "#323232" }
-        Label { id: toastLabel; color: "white"; textFormat: Text.PlainText }
+        enter: Transition { NumberAnimation { property: "opacity"; from: 0; to: 1; duration: 140 } }
+        exit: Transition { NumberAnimation { property: "opacity"; to: 0; duration: 120 } }
+        background: Rectangle { radius: height / 2; color: "#3d3d41" }
+        contentItem: RowLayout {
+            spacing: 8
+            Label {
+                id: toastLabel
+                Layout.maximumWidth: Math.max(160, window.width - 240)
+                color: "white"
+                font.bold: true
+                elide: Text.ElideMiddle
+                textFormat: Text.PlainText
+            }
+            AbstractButton {
+                visible: toastPopup.actionText !== ""
+                implicitHeight: 34
+                implicitWidth: actionLabel.implicitWidth + 32
+                onClicked: { if (toastPopup.action) toastPopup.action(); toastPopup.close() }
+                background: Rectangle { radius: 17; color: parent.down ? "#6a6a6e" : parent.hovered ? "#5c5c60" : "#4e4e52" }
+                contentItem: Label { id: actionLabel; text: toastPopup.actionText; color: "white"; font.bold: true; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter }
+            }
+            AbstractButton {
+                implicitWidth: 30
+                implicitHeight: 34
+                onClicked: toastPopup.close()
+                Accessible.name: "×"
+                contentItem: Label { text: "×"; color: "white"; font.bold: true; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter }
+                background: Item { }
+            }
+        }
     }
     Timer { id: toastTimer; interval: 4000; onTriggered: toastPopup.close() }
 

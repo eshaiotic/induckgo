@@ -776,3 +776,24 @@ msgstr "స్క్రోలింగ్"
 
 msgid "Smooth mouse wheel scrolling"
 msgstr "మౌస్ వీల్‌తో సున్నితమైన స్క్రోలింగ్"
+
+msgid "Details"
+msgstr "Details"
+
+msgid "Legal"
+msgstr "Legal"
+
+msgid "This application comes with absolutely no warranty. See the {license} for details."
+msgstr "This application comes with absolutely no warranty. See the {license} for details."
+
+msgid "GNU General Public License, version 3 or later"
+msgstr "GNU జనరల్ పబ్లిక్ లైసెన్స్, వర్షన్ 3 లేదా తరువాతది"
+
+msgid "Apache License, Version 2.0"
+msgstr "Apache License, Version 2.0"
+
+msgid "Mozilla Public License 2.0"
+msgstr "Mozilla Public License 2.0"
+
+msgid "BSD 3-Clause License"
+msgstr "BSD 3-Clause License"

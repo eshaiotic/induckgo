@@ -16,7 +16,10 @@ Popup {
 
     padding: 8
     width: 343
-    closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
+    /// When the menu last closed: its button ignores the click that closed it by pressing outside.
+    property double closedAt: 0
+    onClosed: closedAt = Date.now()
+    closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
     // Below the header bar, against the window's right edge, wherever the button that opened it sits.
     parent: Overlay.overlay
     x: window.width - width - 8

@@ -776,3 +776,24 @@ msgstr "Przewijanie"
 
 msgid "Smooth mouse wheel scrolling"
 msgstr "Płynne przewijanie kółkiem myszy"
+
+msgid "Details"
+msgstr "Szczegóły"
+
+msgid "Legal"
+msgstr "Kwestie prawne"
+
+msgid "This application comes with absolutely no warranty. See the {license} for details."
+msgstr "Niniejsza aplikacja rozpowszechniana jest bez jakiejkolwiek gwarancji. Więcej informacji: {license}."
+
+msgid "GNU General Public License, version 3 or later"
+msgstr "Licencja GNU GPL, wersja 3 lub późniejsza"
+
+msgid "Apache License, Version 2.0"
+msgstr "Licencja Apache w wersji 2.0"
+
+msgid "Mozilla Public License 2.0"
+msgstr "Licencja publiczna Mozilli 2.0"
+
+msgid "BSD 3-Clause License"
+msgstr "3-klauzulowa licencja BSD"

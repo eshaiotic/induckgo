@@ -776,3 +776,24 @@ msgstr "پیمایش"
 
 msgid "Smooth mouse wheel scrolling"
 msgstr "پیمایش نرم با چرخ ماوس"
+
+msgid "Details"
+msgstr "جزییات"
+
+msgid "Legal"
+msgstr "حقوقی"
+
+msgid "This application comes with absolutely no warranty. See the {license} for details."
+msgstr "این برنامه بی هیچ ضمانتی می‌آید. برای جزییات {license} را ببینید."
+
+msgid "GNU General Public License, version 3 or later"
+msgstr "نگارش ۳ یا بالاتر پروانهٔ جامع همگانی گنو"
+
+msgid "Apache License, Version 2.0"
+msgstr "نگارش ۲٫۰ پروانهٔ آپاچی"
+
+msgid "Mozilla Public License 2.0"
+msgstr "نگارش ۲٫۰ پروانهٔ همگانی موزیلا"
+
+msgid "BSD 3-Clause License"
+msgstr "پروانهٔ سه بندی بی‌اس‌دی"

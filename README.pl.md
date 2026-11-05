@@ -243,30 +243,32 @@ Pobierz paczkę z [najnowszego wydania](https://github.com/eshaiotic/induckgo/re
 
 | Plik | Dla |
 |---|---|
-| `induckgo_*_amd64.deb` | Debian 13 i nowsze |
 | `induckgo-*.fc44.x86_64.rpm` | Fedora 44 |
 | `induckgo-*-x86_64.pkg.tar.zst` | Arch Linux, CachyOS, EndeavourOS, Manjaro |
-| `InDuckGo-*-x86_64.AppImage` | każda inna dystrybucja z glibc 2.41 lub nowszą (około 150 MB: zawiera Chromium) |
+| `InDuckGo-*-x86_64.AppImage` | każda inna dystrybucja z glibc 2.43 lub nowszą (około 230 MB: zawiera Chromium 140) |
 
 Każde wydanie ma `SHA256SUMS` i atestację pochodzenia (build provenance), która dowodzi, że plik zbudował
 GitHub Actions tego repozytorium:
 
 ```sh
 sha256sum --check --ignore-missing SHA256SUMS
-gh attestation verify induckgo_*_amd64.deb --repo eshaiotic/induckgo
+gh attestation verify InDuckGo-*-x86_64.AppImage --repo eshaiotic/induckgo
 ```
 
-Paczki deb, rpm i pacmana korzystają z systemowych Qt i QtWebEngine, więc silnik przeglądarki dostaje aktualizacje
+Paczki rpm i pacmana korzystają z systemowych Qt i QtWebEngine, więc silnik przeglądarki dostaje aktualizacje
 bezpieczeństwa Twojej dystrybucji; zależą od pakietów Qt Quick, QtWebChannel, QtWebEngine i SVG, które menedżer
 pakietów doinstaluje. AppImage niesie własne Qt i QtWebEngine (Chromium), grafikę bierze z hosta, a aktualizacje
 silnika dostaje tylko z nowym wydaniem InDuckGo. Nie wymaga instalacji:
-`chmod +x InDuckGo-*-x86_64.AppImage && ./InDuckGo-*-x86_64.AppImage`. Edycja Qt nie ma jeszcze okna Tor, więc
-żadna paczka nie dociąga Tora.
+`chmod +x InDuckGo-*-x86_64.AppImage && ./InDuckGo-*-x86_64.AppImage`. Pulpity z Waylandem biorą ikonę okna z
+zainstalowanego pliku `.desktop`, którego AppImage nie ma, więc przy starcie zapisuje go sobie sam
+(`~/.local/share/applications/io.github.induckgo.InDuckGo.desktop` i ikonę obok, wskazujące plik AppImage; po
+przeniesieniu pliku uruchom go jeszcze raz). Przy zainstalowanej paczce nic nie robi. Edycja Qt nie ma jeszcze okna
+Tor, więc żadna paczka nie dociąga Tora.
 
 Z kopii tego repozytorium:
 
 ```sh
-./install                 # Arch: buduje paczkę pacmana i ją instaluje; Debian/Ubuntu/Fedora: instaluje dist/
+./install                 # Arch: buduje paczkę pacmana i ją instaluje; Fedora: instaluje dist/
 ./uninstall               # usuwa paczkę; profile i aplikacje webowe zostają
 ./uninstall --purge       # kasuje też wszystkie dane InDuckGo i skróty aplikacji webowych
 ```
@@ -277,12 +279,13 @@ Z kopii tego repozytorium:
 
 ```sh
 packaging/release.sh                # wszystkie formaty do dist/, z SHA256SUMS
-packaging/release.sh deb appimage   # albo tylko wybrane: arch, deb, appimage, rpm
+packaging/release.sh appimage rpm   # albo tylko wybrane: arch, appimage, rpm
 ```
 
-`.deb` i AppImage powstają w kontenerze Debiana 13 (Qt 6.8), a `.rpm` w kontenerze Fedory 44 (rootless podman
-albo `CONTAINER_ENGINE=docker`, który zostawia pliki należące do roota), więc linkują się z bibliotekami systemów,
-na które są przeznaczone. Paczkę dla Archa buduje `makepkg` na hoście, z flagami jego `makepkg.conf` (bez
+AppImage i `.rpm` powstają w kontenerze Fedory 44 (rootless podman albo `CONTAINER_ENGINE=docker`), więc linkują
+się z bibliotekami systemów, na które są przeznaczone, i niosą albo używają Chromium 140. Nie ma `.deb`: Qt
+WebEngine Debiana 13 (Qt 6.8, Chromium 122) jest starszy niż próg silnika InDuckGo, a żaden stabilny Debian ani
+Ubuntu nie ma nowszego. Paczkę dla Archa buduje `makepkg` na hoście, z flagami jego `makepkg.conf` (bez
 optymalizacji w czasie łączenia, której linker Rusta nie czyta w części C++). Runtime AppImage jest przypięty do
 wydania i sprawdzany po SHA-256.
 
@@ -363,7 +366,7 @@ crates/induckgo-test-report/
                          narzędzie deweloperskie za ./run-tests: raport testów HTML (nie trafia do paczek)
 assets/                  dołączone Content Scope Scripts (Apache-2.0), skrypt strony Guarda, ikony,
                          szablon strony błędu; nigdy Tracker Data Set ani listy filtrów
-packaging/               PKGBUILD, spec rpm, składanie deb/AppImage, plik .desktop, metadane AppStream
+packaging/               PKGBUILD, spec rpm, budowa i składanie AppImage, plik .desktop, metadane AppStream
 docs/en, docs/pl         architektura, zasady inżynierskie i raporty (kanoniczny angielski, polskie lustro)
 ```
 

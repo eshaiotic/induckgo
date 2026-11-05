@@ -42,7 +42,7 @@ This file is an index; the content lives in the linked documents.
 - `crates/induckgo-test-report` — dev tool behind `./run-tests`: nextest JUnit + llvm-cov → HTML test report (not packaged).
 - `crates/induckgo` — GTK 4 + libadwaita app: adapters that carry out core decisions in WebKitGTK/libsoup/GIO.
 - `assets/` — vendored Content Scope Scripts (Apache-2.0), Guard's page script, app icons and the error page template; never the TDS or filter lists.
-- `packaging/` — PKGBUILD, rpm spec, deb/AppImage assembly, desktop entry and AppStream metadata.
+- `packaging/` — PKGBUILD, rpm spec, AppImage build and assembly (Fedora container), desktop entry and AppStream metadata.
 
 ## Commands
 
@@ -51,7 +51,7 @@ This file is an index; the content lives in the linked documents.
 - `cargo clippy --all-targets` — lints (pedantic, `unsafe_code` forbidden).
 - `cargo audit` — dependency vulnerability check (zero-vulnerability policy).
 - `cargo run -p induckgo -- [--profile NAME | --web-app ID | --tor] [URL…]` — run the browser, a web app or the Tor window.
-- `packaging/release.sh [arch] [deb] [appimage] [rpm]` — release packages into `dist/` (deb/AppImage/rpm in podman).
+- `packaging/release.sh [arch] [appimage] [rpm]` — release packages into `dist/` (AppImage/rpm in a Fedora container; no deb: Debian's Qt is below the engine floor).
 - `./install` / `./uninstall [--purge]` — install or remove the system package (Arch: built with makepkg).
 - `git tag vX.Y.Z && git push origin vX.Y.Z` — `.github/workflows/release.yml` publishes the GitHub release (tag = Cargo version).
 - `.github/workflows/tests.yml` — fmt, clippy, tests and `cargo audit` on pushes to main and on pull requests.

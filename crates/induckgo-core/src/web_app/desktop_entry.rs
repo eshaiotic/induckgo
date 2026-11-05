@@ -78,7 +78,7 @@ impl<'app> DesktopEntry<'app> {
     }
 
     /// Quotes an `Exec` argument when needed; `%` is doubled because it introduces field codes.
-    fn exec_argument(argument: &str) -> String {
+    pub(crate) fn exec_argument(argument: &str) -> String {
         let argument = argument.replace('%', "%%");
         if !argument.contains(Self::RESERVED_IN_EXEC) {
             return argument;
@@ -95,7 +95,7 @@ impl<'app> DesktopEntry<'app> {
     }
 
     /// Escapes for `string`/`localestring` values; other control characters are dropped.
-    fn escaped_value(value: &str) -> String {
+    pub(crate) fn escaped_value(value: &str) -> String {
         let mut escaped = String::with_capacity(value.len());
         for character in value.chars() {
             match character {

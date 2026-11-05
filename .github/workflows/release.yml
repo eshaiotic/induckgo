@@ -1,7 +1,7 @@
 # Publishes a GitHub release with every InDuckGo package when a version tag (v1.2.3) is pushed.
 #
-# The packages are built by the same scripts as a local `packaging/release.sh`: the .deb and the AppImage in a
-# Debian 13 container, the .rpm in a Fedora 44 container, the pacman package with makepkg in an Arch Linux
+# The packages are built by the same scripts as a local `packaging/release.sh`: the AppImage and the .rpm in a
+# Fedora 44 container, the pacman package with makepkg in an Arch Linux
 # container. All of them carry the Qt edition (QtWebEngine); the AppImage brings its own Qt. The release job adds SHA256SUMS and signed build provenance attestations, so anyone can check
 # that a download was built here from this repository (`gh attestation verify FILE --repo OWNER/REPO`).
 #
@@ -22,10 +22,8 @@ jobs:
     strategy:
       matrix:
         include:
-          - name: debian
-            formats: deb appimage
           - name: fedora
-            formats: rpm
+            formats: rpm appimage
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

@@ -241,30 +241,32 @@ WebKitGTK edition.
 
 | File | For |
 |---|---|
-| `induckgo_*_amd64.deb` | Debian 13 and newer |
 | `induckgo-*.fc44.x86_64.rpm` | Fedora 44 |
 | `induckgo-*-x86_64.pkg.tar.zst` | Arch Linux, CachyOS, EndeavourOS, Manjaro |
-| `InDuckGo-*-x86_64.AppImage` | any other distribution with glibc 2.41 or newer (about 150 MB: it contains Chromium) |
+| `InDuckGo-*-x86_64.AppImage` | any other distribution with glibc 2.43 or newer (about 230 MB: it contains Chromium 140) |
 
 Every release carries `SHA256SUMS` and a build provenance attestation, which proves the file was built by
 this repository's GitHub Actions:
 
 ```sh
 sha256sum --check --ignore-missing SHA256SUMS
-gh attestation verify induckgo_*_amd64.deb --repo eshaiotic/induckgo
+gh attestation verify InDuckGo-*-x86_64.AppImage --repo eshaiotic/induckgo
 ```
 
-The deb, rpm and pacman packages use your distribution's Qt and QtWebEngine, so the browser engine keeps
+The rpm and pacman packages use your distribution's Qt and QtWebEngine, so the browser engine keeps
 receiving its security updates; they depend on the Qt Quick, QtWebChannel, QtWebEngine and SVG packages, which
 the package manager installs. The AppImage carries its own Qt and QtWebEngine (Chromium), takes the graphics
 stack from the host, and gets engine updates only with a new InDuckGo release. It needs no installation:
-`chmod +x InDuckGo-*-x86_64.AppImage && ./InDuckGo-*-x86_64.AppImage`. The Qt edition has no Tor window yet, so no
-package brings Tor.
+`chmod +x InDuckGo-*-x86_64.AppImage && ./InDuckGo-*-x86_64.AppImage`. Wayland desktops take a window's icon from an
+installed `.desktop` file, which an AppImage does not have, so on start it writes one for itself
+(`~/.local/share/applications/io.github.induckgo.InDuckGo.desktop` and the icon beside it, pointing at the AppImage
+file; start it again after moving the file). It does nothing when the package is installed. The Qt edition has no Tor
+window yet, so no package brings Tor.
 
 From a checkout of this repository:
 
 ```sh
-./install                 # Arch: builds the pacman package and installs it; Debian/Ubuntu/Fedora: installs dist/
+./install                 # Arch: builds the pacman package and installs it; Fedora: installs dist/
 ./uninstall               # removes the package; profiles and web apps are kept
 ./uninstall --purge       # also deletes all InDuckGo data and web app launchers
 ```
@@ -275,12 +277,13 @@ From a checkout of this repository:
 
 ```sh
 packaging/release.sh                # all formats into dist/, with SHA256SUMS
-packaging/release.sh deb appimage   # or only some: arch, deb, appimage, rpm
+packaging/release.sh appimage rpm   # or only some: arch, appimage, rpm
 ```
 
-The `.deb` and the AppImage are built in a Debian 13 container (Qt 6.8) and the `.rpm` in a Fedora 44
-container (rootless podman, or `CONTAINER_ENGINE=docker`, which leaves root-owned files), so they link against
-the libraries of the systems they target. The Arch package is built on the host with `makepkg` and its
+The AppImage and the `.rpm` are built in a Fedora 44 container (rootless podman, or `CONTAINER_ENGINE=docker`),
+so they link against the libraries of the systems they target and carry or use Chromium 140. There is no `.deb`:
+the Qt WebEngine of Debian 13 (Qt 6.8, Chromium 122) is older than InDuckGo's engine floor, and no stable Debian
+or Ubuntu ships a newer one. The Arch package is built on the host with `makepkg` and its
 `makepkg.conf` flags (without link-time optimisation, which Rust's linker cannot read in the C++ part). The
 AppImage runtime is pinned to a release and checked against its SHA-256.
 
@@ -359,7 +362,7 @@ crates/induckgo-test-report/
                          developer tool behind ./run-tests: the HTML test report (never packaged)
 assets/                  vendored Content Scope Scripts (Apache-2.0), Guard's page script, icons,
                          error page template; never the Tracker Data Set or filter lists
-packaging/               PKGBUILD, rpm spec, deb/AppImage assembly, desktop entry, AppStream metadata
+packaging/               PKGBUILD, rpm spec, AppImage build and assembly, desktop entry, AppStream metadata
 docs/en, docs/pl         architecture, engineering rules and reports (English canonical, Polish mirror)
 ```
 

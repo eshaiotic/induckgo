@@ -2,6 +2,7 @@
 
 use std::fs;
 use std::path::Path;
+use std::path::PathBuf;
 use std::process::ExitCode;
 use std::sync::Arc;
 
@@ -14,12 +15,14 @@ use induckgo_core::engine::engine_verdict::EngineVerdict;
 use induckgo_core::engine::minimum_engine_version::MinimumEngineVersion;
 use induckgo_core::engine::window_kind::WindowKind;
 use induckgo_core::guard::shared_guard_engine::SharedGuardEngine;
+use induckgo_core::launch::program_location::ProgramLocation;
 use induckgo_core::network::site_allow_list::SiteAllowList;
 use induckgo_core::profile::profile_directories::ProfileLocation;
 use induckgo_engine_qt::qt_document_fetcher::QtDocumentFetcher;
 use induckgo_engine_qt::qt_web_engine::QtWebEngine;
 use serde_json::Value;
 
+use crate::appimage_integration::AppImageIntegration;
 use crate::burn_restart::BurnRestart;
 use crate::desktop_font::DesktopFont;
 use crate::download_center::DownloadCenter;
@@ -64,6 +67,9 @@ impl BrowserApplication {
             Ok(Instance::Primary(primary)) => LaunchContext::hold(primary),
             Err(error) => eprintln!("induckgo: cannot listen for later launches: {error}"),
         }
+        if launch.web_app().is_none() {
+            Self::integrate_appimage(&directories);
+        }
         InterfaceCatalogue::choose(&directories);
         QtWebEngine::initialize();
 
@@ -92,6 +98,15 @@ impl BrowserApplication {
         match application.as_mut() {
             Some(application) => ExitCode::from(u8::try_from(application.exec()).unwrap_or(1)),
             None => ExitCode::FAILURE,
+        }
+    }
+
+    /// An AppImage installs no `.desktop` file, so the desktop could not show its icon; it gets an entry of its own.
+    fn integrate_appimage(directories: &InstallationDirectories) {
+        let appimage = std::env::var_os(ProgramLocation::APPIMAGE_VARIABLE).map(PathBuf::from);
+        let Some(appimage) = appimage.filter(|path| path.is_absolute()) else { return };
+        if let Err(error) = AppImageIntegration::for_environment(directories).install(&appimage) {
+            eprintln!("induckgo: cannot add the application menu entry: {error}");
         }
     }
 

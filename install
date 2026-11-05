@@ -3,7 +3,8 @@
 #
 #   Arch and its derivatives (CachyOS, EndeavourOS, Manjaro, ...): builds the pacman package from this
 #   checkout and installs it with pacman.
-#   Debian, Ubuntu / Fedora: installs the newest .deb / .rpm from dist/ (built by packaging/release.sh).
+#   Fedora: installs the newest .rpm from dist/ (built by packaging/release.sh).
+#   Anything else, Debian and Ubuntu included: no package (their Qt WebEngine is too old); use the AppImage.
 #
 # Usage: ./install
 set -eu
@@ -31,11 +32,6 @@ case " ${ID:-} ${ID_LIKE:-} " in
     package=$(newest_package 'induckgo-*.pkg.tar.*')
     require_package "$package" arch
     sudo pacman -U "$package"
-    ;;
-  *" debian "* | *" ubuntu "*)
-    package=$(newest_package 'induckgo_*.deb')
-    require_package "$package" deb
-    sudo apt-get install -y "$package"
     ;;
   *" fedora "*)
     package=$(newest_package 'induckgo-*.rpm')

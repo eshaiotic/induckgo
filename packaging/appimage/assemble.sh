@@ -1,13 +1,14 @@
 #!/bin/sh
 # Assembles InDuckGo-<version>-x86_64.AppImage in /dist from the binary given as the only argument.
-# Runs inside the Debian build container (packaging/debian/build.sh); VERSION comes from packaging/release.sh.
+# Runs inside the Fedora build container (packaging/appimage/build.sh); VERSION comes from packaging/release.sh.
 #
 # An AppImage is a small runtime program followed by a SquashFS image of the application directory; the
 # runtime mounts the image and starts its AppRun. The runtime is pinned to a release and verified by hash.
 #
 # Unlike the packages, this one carries its engine: Qt 6, QtWebEngine (Chromium) and the QML modules the
 # window uses are copied from the build container. The image therefore runs on any x86_64 Linux whose glibc is
-# at least as new as Debian 13's (2.41), with only the graphics stack (Mesa, X11/Wayland) taken from the host.
+# at least as new as the container's (see the README for the number), with only the graphics stack (Mesa,
+# X11/Wayland) taken from the host.
 # The price is that the engine's security updates arrive with a new InDuckGo release, not with the distribution.
 set -eu
 
@@ -23,8 +24,9 @@ binary=$1
 work=$(mktemp -d)
 image="/dist/InDuckGo-${VERSION}-x86_64.AppImage"
 
-# Where this distribution keeps Qt: the layout differs between Arch and Debian, qmake knows.
-qt_query() { qmake6 -query "$1"; }
+# Where this distribution keeps Qt: the layout differs between distributions, qmake knows (Fedora also calls it
+# qmake-qt6).
+qt_query() { if command -v qmake6 >/dev/null; then qmake6 -query "$1"; else qmake-qt6 -query "$1"; fi; }
 plugins=$(qt_query QT_INSTALL_PLUGINS)
 qml=$(qt_query QT_INSTALL_QML)
 libexec=$(qt_query QT_INSTALL_LIBEXECS)

@@ -18,6 +18,8 @@ pub struct InstallationDirectories {
     cache_root: PathBuf,
     /// Where the desktop looks for `.desktop` files of the person's own applications.
     applications: PathBuf,
+    /// Where the desktop looks for the icons of the person's own applications.
+    application_icons: PathBuf,
 }
 
 impl InstallationDirectories {
@@ -40,6 +42,7 @@ impl InstallationDirectories {
             data_root: data_home.join(Self::DIRECTORY),
             cache_root: cache_home.join(Self::DIRECTORY),
             applications: data_home.join("applications"),
+            application_icons: data_home.join("icons/hicolor/scalable/apps"),
         }
     }
 
@@ -88,6 +91,12 @@ impl InstallationDirectories {
     #[must_use]
     pub fn applications_directory(&self) -> &Path {
         &self.applications
+    }
+
+    /// Where the icon of the `.desktop` file of an AppImage goes (the icon theme's scalable application icons).
+    #[must_use]
+    pub fn application_icons_directory(&self) -> PathBuf {
+        self.application_icons.clone()
     }
 
     /// The folder the desktop calls "Downloads".

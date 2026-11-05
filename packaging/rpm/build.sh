@@ -3,6 +3,11 @@
 # dependencies and builds the RPM from /work/induckgo-<version>.tar.gz into /dist.
 set -eu
 
+# Containers started with docker leave root-owned files behind; hand them back to the person who ran the build.
+if [ -n "${HOST_OWNER:-}" ]; then
+  trap 'chown -R "$HOST_OWNER" /dist /work' EXIT
+fi
+
 dnf -y -q builddep /src/packaging/rpm/induckgo.spec >/dev/null
 dnf -y -q install rpm-build >/dev/null
 

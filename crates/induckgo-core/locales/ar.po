@@ -812,3 +812,27 @@ msgstr "هل تريد إزالة {name}؟"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "يحذف التطبيق مع ملفات تعريف الارتباط وتسجيلات الدخول والبيانات الخاصة به. لا يمكن التراجع عن ذلك."
+
+msgid "Tab Position"
+msgstr "موضع علامات التبويب"
+
+msgid "Top"
+msgstr "أعلى"
+
+msgid "Bottom"
+msgstr "أسفل"
+
+msgid "Left"
+msgstr "يسار"
+
+msgid "Right"
+msgstr "يمين"
+
+msgid "Window Buttons"
+msgstr "أزرار النافذة"
+
+msgid "Default"
+msgstr "الافتراضي"
+
+msgid "macOS"
+msgstr "macOS"

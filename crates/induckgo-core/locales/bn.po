@@ -812,3 +812,27 @@ msgstr "{name} আনইনস্টল করবেন?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "অ্যাপটি তার কুকি, লগইন ও ডেটাসহ মুছে ফেলা হবে। এটি আর ফেরানো যাবে না।"
+
+msgid "Tab Position"
+msgstr "ট্যাবের অবস্থান"
+
+msgid "Top"
+msgstr "উপরে"
+
+msgid "Bottom"
+msgstr "নিচে"
+
+msgid "Left"
+msgstr "বামে"
+
+msgid "Right"
+msgstr "ডানে"
+
+msgid "Window Buttons"
+msgstr "উইন্ডো বোতাম"
+
+msgid "Default"
+msgstr "ডিফল্ট"
+
+msgid "macOS"
+msgstr "macOS"

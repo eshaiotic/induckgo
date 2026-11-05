@@ -29,6 +29,12 @@ Dialog {
 
     function say(text) { return bridge.message(text) }
 
+    // Where the tabs can sit, and the messages that name the places.
+    readonly property var tabPlacements: ["top", "bottom", "left", "right"]
+    readonly property var placementLabels: { "top": "Top", "bottom": "Bottom", "left": "Left", "right": "Right" }
+    property string tabPlacement: bridge.tab_placement()
+    property string windowButtons: bridge.window_controls_style()
+
     // The toolbar buttons InDuckGo offers: stored name, title, explanation.
     readonly property var toolbarButtons: [
         { id: "backAndForward", title: "Back and Forward", subtitle: "Go to the previous or next page" },
@@ -182,6 +188,37 @@ Dialog {
                             AdwaitaSwitch {
                                 checked: dialog.bridge.wide_address_bar()
                                 onToggled: { dialog.bridge.set_wide_address_bar(checked); dialog.toolbarChanged() }
+                            }
+                        }
+                    }
+                    PreferencesGroup {
+                        Layout.leftMargin: 54
+                        Layout.rightMargin: 54
+                        PreferencesRow {
+                            title: dialog.say("Tab Position")
+                            SegmentedChoice {
+                                options: dialog.tabPlacements.map(function(id) { return { id: id, label: dialog.say(dialog.placementLabels[id]) } })
+                                current: dialog.tabPlacement
+                                onChosen: function(id) {
+                                    dialog.bridge.set_tab_placement(id)
+                                    dialog.tabPlacement = id
+                                    dialog.toolbarChanged()
+                                }
+                            }
+                        }
+                        PreferencesRow {
+                            title: dialog.say("Window Buttons")
+                            SegmentedChoice {
+                                options: [
+                                    { id: "default", label: dialog.say("Default") },
+                                    { id: "macos", label: dialog.say("macOS") }
+                                ]
+                                current: dialog.windowButtons
+                                onChosen: function(id) {
+                                    dialog.bridge.set_window_controls_style(id)
+                                    dialog.windowButtons = id
+                                    dialog.toolbarChanged()
+                                }
                             }
                         }
                     }

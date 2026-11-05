@@ -812,3 +812,27 @@ msgstr "Gỡ cài đặt {name}?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "Xóa ứng dụng cùng cookie, thông tin đăng nhập và dữ liệu của nó. Không thể hoàn tác."
+
+msgid "Tab Position"
+msgstr "Vị trí thẻ"
+
+msgid "Top"
+msgstr "Trên"
+
+msgid "Bottom"
+msgstr "Dưới"
+
+msgid "Left"
+msgstr "Trái"
+
+msgid "Right"
+msgstr "Phải"
+
+msgid "Window Buttons"
+msgstr "Nút cửa sổ"
+
+msgid "Default"
+msgstr "Mặc định"
+
+msgid "macOS"
+msgstr "macOS"

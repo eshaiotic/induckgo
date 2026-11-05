@@ -812,3 +812,27 @@ msgstr "Odinstalovat {name}?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "Smaže aplikaci spolu s jejími cookies, přihlášeními a daty. Tuto akci nelze vrátit zpět."
+
+msgid "Tab Position"
+msgstr "Umístění karet"
+
+msgid "Top"
+msgstr "Nahoře"
+
+msgid "Bottom"
+msgstr "Dole"
+
+msgid "Left"
+msgstr "Vlevo"
+
+msgid "Right"
+msgstr "Vpravo"
+
+msgid "Window Buttons"
+msgstr "Tlačítka okna"
+
+msgid "Default"
+msgstr "Výchozí"
+
+msgid "macOS"
+msgstr "macOS"

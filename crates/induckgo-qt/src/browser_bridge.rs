@@ -44,6 +44,20 @@ pub mod ffi {
         #[qinvokable]
         fn set_wide_address_bar(self: &BrowserBridge, is_wide: bool);
 
+        /// Which side of the page the tabs sit on: `top`, `bottom`, `left` or `right`.
+        #[qinvokable]
+        fn tab_placement(self: &BrowserBridge) -> QString;
+
+        #[qinvokable]
+        fn set_tab_placement(self: &BrowserBridge, placement: &QString);
+
+        /// How the window buttons look: `default` or `macos`.
+        #[qinvokable]
+        fn window_controls_style(self: &BrowserBridge) -> QString;
+
+        #[qinvokable]
+        fn set_window_controls_style(self: &BrowserBridge, style: &QString);
+
         /// Whether the mouse wheel scrolls smoothly.
         #[qinvokable]
         fn smooth_wheel(self: &BrowserBridge) -> bool;
@@ -224,6 +238,30 @@ impl ffi::BrowserBridge {
     fn set_wide_address_bar(&self, is_wide: bool) {
         if let Some(session) = ProfileSession::current() {
             session.preferences().set_wide_address_bar(is_wide);
+        }
+    }
+
+    fn tab_placement(&self) -> QString {
+        ProfileSession::current()
+            .map_or_else(|| QString::from("top"), |session| QString::from(session.preferences().tab_placement()))
+    }
+
+    fn set_tab_placement(&self, placement: &QString) {
+        if let Some(session) = ProfileSession::current() {
+            session.preferences().set_tab_placement(&placement.to_string());
+        }
+    }
+
+    fn window_controls_style(&self) -> QString {
+        ProfileSession::current().map_or_else(
+            || QString::from("default"),
+            |session| QString::from(session.preferences().window_controls_style()),
+        )
+    }
+
+    fn set_window_controls_style(&self, style: &QString) {
+        if let Some(session) = ProfileSession::current() {
+            session.preferences().set_window_controls_style(&style.to_string());
         }
     }
 

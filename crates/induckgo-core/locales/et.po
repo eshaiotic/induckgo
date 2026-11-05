@@ -812,3 +812,27 @@ msgstr "Kas desinstallida {name}?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "Kustutab rakenduse koos selle küpsiste, sisselogimiste ja andmetega. Seda ei saa tagasi võtta."
+
+msgid "Tab Position"
+msgstr "Vahekaartide asukoht"
+
+msgid "Top"
+msgstr "Üleval"
+
+msgid "Bottom"
+msgstr "All"
+
+msgid "Left"
+msgstr "Vasakul"
+
+msgid "Right"
+msgstr "Paremal"
+
+msgid "Window Buttons"
+msgstr "Akna nupud"
+
+msgid "Default"
+msgstr "Vaikimisi"
+
+msgid "macOS"
+msgstr "macOS"

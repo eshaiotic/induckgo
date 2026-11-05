@@ -4,8 +4,12 @@
 use std::path::Path;
 
 use induckgo_core::profile::address_bar_preferences::AddressBarPreferences;
+use induckgo_core::profile::tab_placement::TabPlacement;
+use induckgo_core::profile::tab_placement::TabPlacementPreferences;
 use induckgo_core::profile::toolbar_layout::ToolbarButton;
 use induckgo_core::profile::toolbar_layout::ToolbarLayout;
+use induckgo_core::profile::window_controls_style::WindowControlsPreferences;
+use induckgo_core::profile::window_controls_style::WindowControlsStyle;
 use induckgo_core::scrolling::scrolling_preferences::ScrollingPreferences;
 use induckgo_core::storage::owned_json_file::OwnedJsonFile;
 
@@ -16,6 +20,10 @@ pub struct ProfilePreferences {
     scrolling_file: OwnedJsonFile,
     address_bar: AddressBarPreferences,
     address_bar_file: OwnedJsonFile,
+    tab_placement: TabPlacementPreferences,
+    tab_placement_file: OwnedJsonFile,
+    window_controls: WindowControlsPreferences,
+    window_controls_file: OwnedJsonFile,
 }
 
 impl ProfilePreferences {
@@ -24,6 +32,8 @@ impl ProfilePreferences {
         let toolbar_file = OwnedJsonFile::new(directory.join("toolbar.json"));
         let scrolling_file = OwnedJsonFile::new(directory.join("scrolling.json"));
         let address_bar_file = OwnedJsonFile::new(directory.join("address-bar.json"));
+        let tab_placement_file = OwnedJsonFile::new(directory.join("tab-placement.json"));
+        let window_controls_file = OwnedJsonFile::new(directory.join("window-controls.json"));
         Self {
             toolbar: toolbar_file.read().map(|document| ToolbarLayout::from_json(&document)).unwrap_or_default(),
             scrolling: scrolling_file
@@ -34,9 +44,19 @@ impl ProfilePreferences {
                 .read()
                 .map(|document| AddressBarPreferences::from_json(&document))
                 .unwrap_or_default(),
+            tab_placement: tab_placement_file
+                .read()
+                .map(|document| TabPlacementPreferences::from_json(&document))
+                .unwrap_or_default(),
+            window_controls: window_controls_file
+                .read()
+                .map(|document| WindowControlsPreferences::from_json(&document))
+                .unwrap_or_default(),
             toolbar_file,
             scrolling_file,
             address_bar_file,
+            tab_placement_file,
+            window_controls_file,
         }
     }
 
@@ -72,6 +92,32 @@ impl ProfilePreferences {
     pub fn set_wide_address_bar(&mut self, is_wide: bool) {
         self.address_bar.set_wide(is_wide);
         let _ = self.address_bar_file.write(&self.address_bar.to_json());
+    }
+
+    /// Where the tabs sit, as the identifier the interface uses (`top`, `bottom`, `left`, `right`).
+    #[must_use]
+    pub fn tab_placement(&self) -> &'static str {
+        self.tab_placement.placement().id()
+    }
+
+    /// A name nobody offers changes nothing.
+    pub fn set_tab_placement(&mut self, id: &str) {
+        let Some(placement) = TabPlacement::from_id(id) else { return };
+        self.tab_placement.set_placement(placement);
+        let _ = self.tab_placement_file.write(&self.tab_placement.to_json());
+    }
+
+    /// How the window buttons look, as the identifier the interface uses (`default`, `macos`).
+    #[must_use]
+    pub fn window_controls_style(&self) -> &'static str {
+        self.window_controls.style().id()
+    }
+
+    /// A name nobody offers changes nothing.
+    pub fn set_window_controls_style(&mut self, id: &str) {
+        let Some(style) = WindowControlsStyle::from_id(id) else { return };
+        self.window_controls.set_style(style);
+        let _ = self.window_controls_file.write(&self.window_controls.to_json());
     }
 
     fn button_named(id: &str) -> Option<ToolbarButton> {

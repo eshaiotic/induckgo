@@ -812,3 +812,27 @@ msgstr "Удалить {name}?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "Удаляет приложение вместе с его файлами cookie, входами и данными. Это действие нельзя отменить."
+
+msgid "Tab Position"
+msgstr "Положение вкладок"
+
+msgid "Top"
+msgstr "Сверху"
+
+msgid "Bottom"
+msgstr "Снизу"
+
+msgid "Left"
+msgstr "Слева"
+
+msgid "Right"
+msgstr "Справа"
+
+msgid "Window Buttons"
+msgstr "Кнопки окна"
+
+msgid "Default"
+msgstr "По умолчанию"
+
+msgid "macOS"
+msgstr "macOS"

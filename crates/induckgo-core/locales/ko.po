@@ -812,3 +812,27 @@ msgstr "{name}을(를) 제거하시겠습니까?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "앱을 쿠키, 로그인 정보 및 데이터와 함께 삭제합니다. 이 작업은 되돌릴 수 없습니다."
+
+msgid "Tab Position"
+msgstr "탭 위치"
+
+msgid "Top"
+msgstr "위"
+
+msgid "Bottom"
+msgstr "아래"
+
+msgid "Left"
+msgstr "왼쪽"
+
+msgid "Right"
+msgstr "오른쪽"
+
+msgid "Window Buttons"
+msgstr "창 버튼"
+
+msgid "Default"
+msgstr "기본값"
+
+msgid "macOS"
+msgstr "macOS"

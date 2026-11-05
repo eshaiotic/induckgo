@@ -812,3 +812,27 @@ msgstr "{name}ని అన్‌ఇన్‌స్టాల్ చేయాల�
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "యాప్‌ను దాని కుకీలు, లాగిన్‌లు మరియు డేటాతో పాటు తొలగిస్తుంది. దీన్ని రద్దు చేయలేరు."
+
+msgid "Tab Position"
+msgstr "ట్యాబ్‌ల స్థానం"
+
+msgid "Top"
+msgstr "పైన"
+
+msgid "Bottom"
+msgstr "కింద"
+
+msgid "Left"
+msgstr "ఎడమ"
+
+msgid "Right"
+msgstr "కుడి"
+
+msgid "Window Buttons"
+msgstr "విండో బటన్‌లు"
+
+msgid "Default"
+msgstr "డిఫాల్ట్"
+
+msgid "macOS"
+msgstr "macOS"

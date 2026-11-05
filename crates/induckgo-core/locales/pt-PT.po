@@ -812,3 +812,27 @@ msgstr "Desinstalar {name}?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "Elimina a aplicação com os seus cookies, inícios de sessão e dados. Isto não pode ser anulado."
+
+msgid "Tab Position"
+msgstr "Posição dos separadores"
+
+msgid "Top"
+msgstr "Em cima"
+
+msgid "Bottom"
+msgstr "Em baixo"
+
+msgid "Left"
+msgstr "Esquerda"
+
+msgid "Right"
+msgstr "Direita"
+
+msgid "Window Buttons"
+msgstr "Botões da janela"
+
+msgid "Default"
+msgstr "Predefinição"
+
+msgid "macOS"
+msgstr "macOS"

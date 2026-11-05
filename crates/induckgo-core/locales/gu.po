@@ -812,3 +812,27 @@ msgstr "{name} અનઇન્સ્ટોલ કરીએ?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "એપને તેની કૂકીઓ, લોગિન અને ડેટા સાથે કાઢી નાખે છે. આ પાછું લઈ શકાશે નહીં."
+
+msgid "Tab Position"
+msgstr "ટૅબની સ્થિતિ"
+
+msgid "Top"
+msgstr "ઉપર"
+
+msgid "Bottom"
+msgstr "નીચે"
+
+msgid "Left"
+msgstr "ડાબે"
+
+msgid "Right"
+msgstr "જમણે"
+
+msgid "Window Buttons"
+msgstr "વિન્ડો બટનો"
+
+msgid "Default"
+msgstr "ડિફોલ્ટ"
+
+msgid "macOS"
+msgstr "macOS"

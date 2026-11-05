@@ -812,3 +812,27 @@ msgstr "要卸载 {name} 吗？"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "将删除该应用及其 Cookie、登录信息和数据。此操作无法撤销。"
+
+msgid "Tab Position"
+msgstr "标签页位置"
+
+msgid "Top"
+msgstr "顶部"
+
+msgid "Bottom"
+msgstr "底部"
+
+msgid "Left"
+msgstr "左侧"
+
+msgid "Right"
+msgstr "右侧"
+
+msgid "Window Buttons"
+msgstr "窗口按钮"
+
+msgid "Default"
+msgstr "默认"
+
+msgid "macOS"
+msgstr "macOS"

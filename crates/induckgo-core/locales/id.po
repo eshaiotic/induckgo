@@ -812,3 +812,27 @@ msgstr "Copot {name}?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "Menghapus aplikasi beserta cookie, login, dan datanya. Tindakan ini tidak dapat dibatalkan."
+
+msgid "Tab Position"
+msgstr "Posisi tab"
+
+msgid "Top"
+msgstr "Atas"
+
+msgid "Bottom"
+msgstr "Bawah"
+
+msgid "Left"
+msgstr "Kiri"
+
+msgid "Right"
+msgstr "Kanan"
+
+msgid "Window Buttons"
+msgstr "Tombol jendela"
+
+msgid "Default"
+msgstr "Bawaan"
+
+msgid "macOS"
+msgstr "macOS"

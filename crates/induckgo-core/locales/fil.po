@@ -812,3 +812,27 @@ msgstr "I-uninstall ang {name}?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "Binubura ang app kasama ang mga cookie, login at data nito. Hindi na ito mababawi."
+
+msgid "Tab Position"
+msgstr "Posisyon ng mga tab"
+
+msgid "Top"
+msgstr "Itaas"
+
+msgid "Bottom"
+msgstr "Ibaba"
+
+msgid "Left"
+msgstr "Kaliwa"
+
+msgid "Right"
+msgstr "Kanan"
+
+msgid "Window Buttons"
+msgstr "Mga button ng window"
+
+msgid "Default"
+msgstr "Default"
+
+msgid "macOS"
+msgstr "macOS"

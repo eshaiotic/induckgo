@@ -812,3 +812,27 @@ msgstr "Deïnstalleer {name}?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "Vee die toepassing saam met sy koekies, aanmeldings en data uit. Dit kan nie ongedaan gemaak word nie."
+
+msgid "Tab Position"
+msgstr "Posisie van oortjies"
+
+msgid "Top"
+msgstr "Bo"
+
+msgid "Bottom"
+msgstr "Onder"
+
+msgid "Left"
+msgstr "Links"
+
+msgid "Right"
+msgstr "Regs"
+
+msgid "Window Buttons"
+msgstr "Vensterknoppies"
+
+msgid "Default"
+msgstr "Verstek"
+
+msgid "macOS"
+msgstr "macOS"

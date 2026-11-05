@@ -812,3 +812,27 @@ msgstr "Pašalinti „{name}“?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "Ištrina programą kartu su jos slapukais, prisijungimais ir duomenimis. Šio veiksmo negalima atšaukti."
+
+msgid "Tab Position"
+msgstr "Skirtukų vieta"
+
+msgid "Top"
+msgstr "Viršuje"
+
+msgid "Bottom"
+msgstr "Apačioje"
+
+msgid "Left"
+msgstr "Kairėje"
+
+msgid "Right"
+msgstr "Dešinėje"
+
+msgid "Window Buttons"
+msgstr "Lango mygtukai"
+
+msgid "Default"
+msgstr "Numatytasis"
+
+msgid "macOS"
+msgstr "macOS"

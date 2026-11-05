@@ -38,6 +38,9 @@ ApplicationWindow {
     property int toolbarVersion: 0
     function shows(button) { return toolbarVersion >= 0 && bridge.toolbar_shows(button) }
     property string downloadFolder: bridge.download_folder()
+    // Where the tabs sit and how the window buttons look, re-read whenever the preferences change.
+    readonly property string tabPlacement: toolbarVersion >= 0 ? bridge.tab_placement() : "top"
+    readonly property bool macosControls: toolbarVersion >= 0 && bridge.window_controls_style() === "macos"
 
     // Qt's web-channel client followed by Guard's page script (empty when the client is missing).
     readonly property string guardSource: bridge.guard_page_script()
@@ -304,10 +307,20 @@ ApplicationWindow {
 
             // Navigation on the left, the page's tools and the window buttons on the right, the address in the
             // middle of the window whatever the two sides hold (as a GNOME header bar centres its title).
+            WindowControls {
+                id: macControls
+                visible: window.macosControls
+                style: "macos"
+                window: window
+                anchors.left: parent.left
+                anchors.leftMargin: 14
+                anchors.verticalCenter: parent.verticalCenter
+            }
+
             RowLayout {
                 id: leftGroup
                 anchors.left: parent.left
-                anchors.leftMargin: 6
+                anchors.leftMargin: window.macosControls ? 6 + macControls.width + 14 : 6
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: 6
 
@@ -527,21 +540,12 @@ ApplicationWindow {
                     }
                 }
 
-                Item { Layout.preferredWidth: 1 }
-                WindowControls { window: window }
+                Item { Layout.preferredWidth: 1; visible: !window.macosControls }
+                WindowControls { visible: !window.macosControls; window: window }
             }
         }
 
-        TabStrip {
-            Layout.fillWidth: true
-            visible: window.tabList.length > 1 && !window.isWebApp
-            Layout.preferredHeight: visible ? 38 : 0
-            tabs: window.tabList
-            currentIndex: window.currentIndex
-            closeTip: ""
-            onSelected: function(index) { window.currentIndex = index }
-            onCloseRequested: function(index) { window.closeTab(index) }
-        }
+        PlacedTabs { Layout.fillWidth: true; side: "top" }
 
         Label {
             Layout.fillWidth: true
@@ -553,6 +557,21 @@ ApplicationWindow {
             color: "#533f03"
             text: bridge.startup_notice()
         }
+    }
+
+    // The tab strip of one side of the page; only the side the person chose shows it, and only with several tabs.
+    component PlacedTabs: TabStrip {
+        required property string side
+        placement: side
+        visible: window.tabPlacement === side && window.tabList.length > 1 && !window.isWebApp
+        Layout.preferredHeight: visible && !vertical ? 38 : 0
+        Layout.preferredWidth: visible && vertical ? 220 : 0
+        Layout.fillHeight: vertical
+        tabs: window.tabList
+        currentIndex: window.currentIndex
+        closeTip: ""
+        onSelected: function(index) { window.currentIndex = index }
+        onCloseRequested: function(index) { window.closeTab(index) }
     }
 
     // The frameless window is resized from its edges and corners.
@@ -587,18 +606,33 @@ ApplicationWindow {
         }
     }
 
-    StackLayout {
-        id: tabStack
+    RowLayout {
         anchors.fill: parent
-        currentIndex: window.currentIndex
+        spacing: 0
+
+        PlacedTabs { side: "left" }
+        StackLayout {
+            id: tabStack
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            currentIndex: window.currentIndex
+        }
+        PlacedTabs { side: "right" }
     }
 
-    footer: FindBar {
-        id: findBar
-        view: window.currentTab
-        placeholder: bridge.message("Find in page")
-        closeTip: ""
-        onClosed: if (window.currentTab) window.currentTab.forceActiveFocus()
+    // The find bar sits above the tabs when they are at the bottom.
+    footer: ColumnLayout {
+        spacing: 0
+
+        FindBar {
+            id: findBar
+            Layout.fillWidth: true
+            view: window.currentTab
+            placeholder: bridge.message("Find in page")
+            closeTip: ""
+            onClosed: if (window.currentTab) window.currentTab.forceActiveFocus()
+        }
+        PlacedTabs { Layout.fillWidth: true; side: "bottom" }
     }
 
     DownloadsHub {

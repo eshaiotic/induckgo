@@ -812,3 +812,27 @@ msgstr "Të çinstalohet {name}?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "Fshin aplikacionin me cookie-t, hyrjet dhe të dhënat e tij. Kjo nuk mund të zhbëhet."
+
+msgid "Tab Position"
+msgstr "Pozicioni i skedave"
+
+msgid "Top"
+msgstr "Lart"
+
+msgid "Bottom"
+msgstr "Poshtë"
+
+msgid "Left"
+msgstr "Majtas"
+
+msgid "Right"
+msgstr "Djathtas"
+
+msgid "Window Buttons"
+msgstr "Butonat e dritares"
+
+msgid "Default"
+msgstr "Parazgjedhja"
+
+msgid "macOS"
+msgstr "macOS"

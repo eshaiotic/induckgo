@@ -812,3 +812,27 @@ msgstr "Απεγκατάσταση του {name};"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "Διαγράφει την εφαρμογή μαζί με τα cookies, τις συνδέσεις και τα δεδομένα της. Δεν μπορεί να αναιρεθεί."
+
+msgid "Tab Position"
+msgstr "Θέση καρτελών"
+
+msgid "Top"
+msgstr "Πάνω"
+
+msgid "Bottom"
+msgstr "Κάτω"
+
+msgid "Left"
+msgstr "Αριστερά"
+
+msgid "Right"
+msgstr "Δεξιά"
+
+msgid "Window Buttons"
+msgstr "Κουμπιά παραθύρου"
+
+msgid "Default"
+msgstr "Προεπιλογή"
+
+msgid "macOS"
+msgstr "macOS"

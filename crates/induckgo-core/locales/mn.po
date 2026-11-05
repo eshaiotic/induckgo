@@ -812,3 +812,27 @@ msgstr "{name}-г устгах уу?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "Аппыг түүний күүки, нэвтрэлт, өгөгдлийн хамт устгана. Үүнийг буцаах боломжгүй."
+
+msgid "Tab Position"
+msgstr "Табуудын байрлал"
+
+msgid "Top"
+msgstr "Дээд"
+
+msgid "Bottom"
+msgstr "Доод"
+
+msgid "Left"
+msgstr "Зүүн"
+
+msgid "Right"
+msgstr "Баруун"
+
+msgid "Window Buttons"
+msgstr "Цонхны товчнууд"
+
+msgid "Default"
+msgstr "Үндсэн"
+
+msgid "macOS"
+msgstr "macOS"

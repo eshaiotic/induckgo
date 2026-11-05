@@ -812,3 +812,27 @@ msgstr "Ondoa {name}?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "Hufuta programu pamoja na vidakuzi, kuingia na data yake. Haiwezi kutenduliwa."
+
+msgid "Tab Position"
+msgstr "Mahali pa vichupo"
+
+msgid "Top"
+msgstr "Juu"
+
+msgid "Bottom"
+msgstr "Chini"
+
+msgid "Left"
+msgstr "Kushoto"
+
+msgid "Right"
+msgstr "Kulia"
+
+msgid "Window Buttons"
+msgstr "Vitufe vya dirisha"
+
+msgid "Default"
+msgstr "Chaguomsingi"
+
+msgid "macOS"
+msgstr "macOS"

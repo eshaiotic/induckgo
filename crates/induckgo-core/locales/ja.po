@@ -812,3 +812,27 @@ msgstr "{name} をアンインストールしますか？"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "アプリをそのクッキー、ログイン情報、データとともに削除します。この操作は元に戻せません。"
+
+msgid "Tab Position"
+msgstr "タブの位置"
+
+msgid "Top"
+msgstr "上"
+
+msgid "Bottom"
+msgstr "下"
+
+msgid "Left"
+msgstr "左"
+
+msgid "Right"
+msgstr "右"
+
+msgid "Window Buttons"
+msgstr "ウィンドウボタン"
+
+msgid "Default"
+msgstr "デフォルト"
+
+msgid "macOS"
+msgstr "macOS"

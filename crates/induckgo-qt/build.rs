@@ -19,6 +19,7 @@ fn main() {
         "qml/PreferencesDialog.qml",
         "qml/PreferencesGroup.qml",
         "qml/PreferencesRow.qml",
+        "qml/SegmentedChoice.qml",
         "qml/TabStrip.qml",
         "qml/TintedIcon.qml",
         "qml/WebAppInstallation.qml",

@@ -812,3 +812,27 @@ msgstr "{name} ကို ဖယ်ရှားမလား။"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "အက်ပ်ကို ၎င်း၏ ကွတ်ကီးများ၊ လော့ဂ်အင်များနှင့် ဒေတာများနှင့်အတူ ဖျက်ပစ်သည်။ ၎င်းကို ပြန်ပြင်၍ မရပါ။"
+
+msgid "Tab Position"
+msgstr "တက်ဘ်နေရာ"
+
+msgid "Top"
+msgstr "အပေါ်"
+
+msgid "Bottom"
+msgstr "အောက်"
+
+msgid "Left"
+msgstr "ဘယ်"
+
+msgid "Right"
+msgstr "ညာ"
+
+msgid "Window Buttons"
+msgstr "ဝင်းဒိုးခလုတ်များ"
+
+msgid "Default"
+msgstr "မူလ"
+
+msgid "macOS"
+msgstr "macOS"

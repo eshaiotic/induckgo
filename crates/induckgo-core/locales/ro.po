@@ -812,3 +812,27 @@ msgstr "Dezinstalezi {name}?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "Șterge aplicația împreună cu cookie-urile, autentificările și datele ei. Acțiunea nu poate fi anulată."
+
+msgid "Tab Position"
+msgstr "Poziția filelor"
+
+msgid "Top"
+msgstr "Sus"
+
+msgid "Bottom"
+msgstr "Jos"
+
+msgid "Left"
+msgstr "Stânga"
+
+msgid "Right"
+msgstr "Dreapta"
+
+msgid "Window Buttons"
+msgstr "Butoanele ferestrei"
+
+msgid "Default"
+msgstr "Implicit"
+
+msgid "macOS"
+msgstr "macOS"

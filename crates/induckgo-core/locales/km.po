@@ -812,3 +812,27 @@ msgstr "លុប {name} ចេញ?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "លុបកម្មវិធីជាមួយខូគី ការចូលគណនី និងទិន្នន័យរបស់វា។ សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។"
+
+msgid "Tab Position"
+msgstr "ទីតាំងផ្ទាំង"
+
+msgid "Top"
+msgstr "ខាងលើ"
+
+msgid "Bottom"
+msgstr "ខាងក្រោម"
+
+msgid "Left"
+msgstr "ឆ្វេង"
+
+msgid "Right"
+msgstr "ស្តាំ"
+
+msgid "Window Buttons"
+msgstr "ប៊ូតុងបង្អួច"
+
+msgid "Default"
+msgstr "លំនាំដើម"
+
+msgid "macOS"
+msgstr "macOS"

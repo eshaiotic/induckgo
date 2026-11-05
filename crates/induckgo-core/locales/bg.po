@@ -812,3 +812,27 @@ msgstr "Деинсталиране на {name}?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "Изтрива приложението заедно с бисквитките, вписванията и данните му. Това не може да бъде отменено."
+
+msgid "Tab Position"
+msgstr "Позиция на разделите"
+
+msgid "Top"
+msgstr "Горе"
+
+msgid "Bottom"
+msgstr "Долу"
+
+msgid "Left"
+msgstr "Вляво"
+
+msgid "Right"
+msgstr "Вдясно"
+
+msgid "Window Buttons"
+msgstr "Бутони на прозореца"
+
+msgid "Default"
+msgstr "По подразбиране"
+
+msgid "macOS"
+msgstr "macOS"

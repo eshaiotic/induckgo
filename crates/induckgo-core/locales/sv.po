@@ -812,3 +812,27 @@ msgstr "Avinstallera {name}?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "Tar bort appen med dess cookies, inloggningar och data. Det går inte att ångra."
+
+msgid "Tab Position"
+msgstr "Flikarnas placering"
+
+msgid "Top"
+msgstr "Överst"
+
+msgid "Bottom"
+msgstr "Nederst"
+
+msgid "Left"
+msgstr "Vänster"
+
+msgid "Right"
+msgstr "Höger"
+
+msgid "Window Buttons"
+msgstr "Fönsterknappar"
+
+msgid "Default"
+msgstr "Standard"
+
+msgid "macOS"
+msgstr "macOS"

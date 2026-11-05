@@ -812,3 +812,27 @@ msgstr "{name} silinsin?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "Tətbiq kukiləri, giriş məlumatları və datası ilə birlikdə silinir. Bu geri qaytarıla bilməz."
+
+msgid "Tab Position"
+msgstr "Vərəqlərin yeri"
+
+msgid "Top"
+msgstr "Yuxarı"
+
+msgid "Bottom"
+msgstr "Aşağı"
+
+msgid "Left"
+msgstr "Sol"
+
+msgid "Right"
+msgstr "Sağ"
+
+msgid "Window Buttons"
+msgstr "Pəncərə düymələri"
+
+msgid "Default"
+msgstr "Standart"
+
+msgid "macOS"
+msgstr "macOS"

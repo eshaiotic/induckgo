@@ -812,3 +812,27 @@ msgstr "Eltávolítja a(z) {name} alkalmazást?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "Törli az alkalmazást a sütikkel, bejelentkezésekkel és adatokkal együtt. Ez nem vonható vissza."
+
+msgid "Tab Position"
+msgstr "Fülek helye"
+
+msgid "Top"
+msgstr "Fent"
+
+msgid "Bottom"
+msgstr "Lent"
+
+msgid "Left"
+msgstr "Balra"
+
+msgid "Right"
+msgstr "Jobbra"
+
+msgid "Window Buttons"
+msgstr "Ablakgombok"
+
+msgid "Default"
+msgstr "Alapértelmezett"
+
+msgid "macOS"
+msgstr "macOS"

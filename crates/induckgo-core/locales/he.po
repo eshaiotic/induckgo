@@ -812,3 +812,27 @@ msgstr "להסיר את {name}?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "מוחק את היישום יחד עם העוגיות, ההתחברויות והנתונים שלו. אי אפשר לבטל פעולה זו."
+
+msgid "Tab Position"
+msgstr "מיקום הלשוניות"
+
+msgid "Top"
+msgstr "למעלה"
+
+msgid "Bottom"
+msgstr "למטה"
+
+msgid "Left"
+msgstr "שמאל"
+
+msgid "Right"
+msgstr "ימין"
+
+msgid "Window Buttons"
+msgstr "לחצני החלון"
+
+msgid "Default"
+msgstr "ברירת מחדל"
+
+msgid "macOS"
+msgstr "macOS"

@@ -812,3 +812,27 @@ msgstr "{name}ን ማራገፍ?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "መተግበሪያውን ከኩኪዎቹ፣ ከመግቢያዎቹ እና ከውሂቡ ጋር ይሰርዛል። ይህ መመለስ አይችልም።"
+
+msgid "Tab Position"
+msgstr "የትር ቦታ"
+
+msgid "Top"
+msgstr "ላይ"
+
+msgid "Bottom"
+msgstr "ታች"
+
+msgid "Left"
+msgstr "ግራ"
+
+msgid "Right"
+msgstr "ቀኝ"
+
+msgid "Window Buttons"
+msgstr "የመስኮት አዝራሮች"
+
+msgid "Default"
+msgstr "ነባሪ"
+
+msgid "macOS"
+msgstr "macOS"

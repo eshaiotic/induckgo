@@ -812,3 +812,27 @@ msgstr "Deinstalirati {name}?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "Briše aplikaciju zajedno s njezinim kolačićima, prijavama i podacima. To se ne može poništiti."
+
+msgid "Tab Position"
+msgstr "Položaj kartica"
+
+msgid "Top"
+msgstr "Gore"
+
+msgid "Bottom"
+msgstr "Dolje"
+
+msgid "Left"
+msgstr "Lijevo"
+
+msgid "Right"
+msgstr "Desno"
+
+msgid "Window Buttons"
+msgstr "Gumbi prozora"
+
+msgid "Default"
+msgstr "Zadano"
+
+msgid "macOS"
+msgstr "macOS"

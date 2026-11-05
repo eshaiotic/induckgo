@@ -812,3 +812,27 @@ msgstr "Poistetaanko {name}?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "Poistaa sovelluksen evästeineen, kirjautumisineen ja tietoineen. Toimintoa ei voi peruuttaa."
+
+msgid "Tab Position"
+msgstr "Välilehtien sijainti"
+
+msgid "Top"
+msgstr "Ylhäällä"
+
+msgid "Bottom"
+msgstr "Alhaalla"
+
+msgid "Left"
+msgstr "Vasemmalla"
+
+msgid "Right"
+msgstr "Oikealla"
+
+msgid "Window Buttons"
+msgstr "Ikkunan painikkeet"
+
+msgid "Default"
+msgstr "Oletus"
+
+msgid "macOS"
+msgstr "macOS"

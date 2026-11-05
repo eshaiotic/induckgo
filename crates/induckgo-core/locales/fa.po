@@ -812,3 +812,27 @@ msgstr "{name} حذف شود؟"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "برنامه را همراه با کوکی‌ها، ورودها و داده‌هایش حذف می‌کند. این کار قابل بازگشت نیست."
+
+msgid "Tab Position"
+msgstr "جای زبانه‌ها"
+
+msgid "Top"
+msgstr "بالا"
+
+msgid "Bottom"
+msgstr "پایین"
+
+msgid "Left"
+msgstr "چپ"
+
+msgid "Right"
+msgstr "راست"
+
+msgid "Window Buttons"
+msgstr "دکمه‌های پنجره"
+
+msgid "Default"
+msgstr "پیش‌فرض"
+
+msgid "macOS"
+msgstr "macOS"

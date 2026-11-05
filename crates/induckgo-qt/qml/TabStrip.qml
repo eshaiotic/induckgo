@@ -2,27 +2,48 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-// The row of open tabs: favicon, title, and a close button on each; shown only when there is more than one.
+// The open tabs: favicon, title, and a close button on each; shown only when there is more than one. They run side
+// by side along the top or bottom of the page, or one above the other along its left or right edge.
 Rectangle {
     id: strip
     property var tabs: []
     property int currentIndex: 0
     property string closeTip
+    /// The side of the page the tabs sit on: `top`, `bottom`, `left` or `right`.
+    property string placement: "top"
+    readonly property bool vertical: placement === "left" || placement === "right"
 
     signal selected(int index)
     signal closeRequested(int index)
 
     color: palette.window
-    implicitHeight: 38
+    implicitHeight: vertical ? 0 : 38
+    implicitWidth: vertical ? 220 : 0
 
-    Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Qt.alpha(palette.windowText, 0.15) }
+    // The line that parts the tabs from the page runs along the edge facing it.
+    Rectangle {
+        readonly property bool alongWidth: !strip.vertical
+        anchors.top: strip.placement === "bottom" ? parent.top : undefined
+        anchors.bottom: strip.placement === "top" ? parent.bottom : undefined
+        anchors.left: strip.placement === "right" ? parent.left : undefined
+        anchors.right: strip.placement === "left" ? parent.right : undefined
+        width: alongWidth ? parent.width : 1
+        height: alongWidth ? 1 : parent.height
+        color: Qt.alpha(palette.windowText, 0.15)
+    }
 
-    RowLayout {
+    GridLayout {
         anchors.fill: parent
-        anchors.leftMargin: 6
+        anchors.margins: strip.vertical ? 6 : 0
+        anchors.leftMargin: strip.vertical ? 6 : 6
         anchors.rightMargin: 6
-        anchors.topMargin: 4
-        spacing: 2
+        anchors.topMargin: strip.vertical ? 6 : (strip.placement === "top" ? 4 : 0)
+        anchors.bottomMargin: strip.vertical ? 6 : (strip.placement === "bottom" ? 4 : 0)
+        rowSpacing: 2
+        columnSpacing: 2
+        flow: strip.vertical ? GridLayout.TopToBottom : GridLayout.LeftToRight
+        rows: strip.vertical ? strip.tabs.length + 1 : 1
+        columns: strip.vertical ? 1 : strip.tabs.length + 1
 
         Repeater {
             model: strip.tabs.length
@@ -33,9 +54,11 @@ Rectangle {
                 readonly property bool current: index === strip.currentIndex
 
                 Layout.fillWidth: true
-                Layout.maximumWidth: 240
+                Layout.maximumWidth: strip.vertical ? -1 : 240
                 Layout.minimumWidth: 72
-                Layout.fillHeight: true
+                Layout.fillHeight: !strip.vertical
+                Layout.preferredHeight: strip.vertical ? 34 : -1
+                Layout.alignment: Qt.AlignTop
                 radius: 8
                 color: current ? palette.base : hover.hovered ? Qt.alpha(palette.windowText, 0.07) : "transparent"
                 border.color: current ? Qt.alpha(palette.windowText, 0.18) : "transparent"
@@ -85,6 +108,11 @@ Rectangle {
                 }
             }
         }
-        Item { Layout.fillWidth: true; Layout.minimumWidth: 0; visible: strip.tabs.length < 4 }
+        Item {
+            Layout.fillWidth: !strip.vertical
+            Layout.fillHeight: strip.vertical
+            Layout.minimumWidth: 0
+            visible: strip.vertical || strip.tabs.length < 4
+        }
     }
 }

@@ -812,3 +812,27 @@ msgstr "{name} ان انسٹال کریں؟"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "ایپ کو اس کی کوکیز، لاگ اِنز اور ڈیٹا سمیت حذف کر دیتا ہے۔ اسے واپس نہیں کیا جا سکتا۔"
+
+msgid "Tab Position"
+msgstr "ٹیبز کی جگہ"
+
+msgid "Top"
+msgstr "اوپر"
+
+msgid "Bottom"
+msgstr "نیچے"
+
+msgid "Left"
+msgstr "بائیں"
+
+msgid "Right"
+msgstr "دائیں"
+
+msgid "Window Buttons"
+msgstr "ونڈو بٹن"
+
+msgid "Default"
+msgstr "ڈیفالٹ"
+
+msgid "macOS"
+msgstr "macOS"

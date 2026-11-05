@@ -812,3 +812,27 @@ msgstr "{name} ಅನ್ನು ಅಸ್ಥಾಪಿಸಬೇಕೆ?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "ಅಪ್ಲಿಕೇಶನ್ ಅನ್ನು ಅದರ ಕುಕೀಗಳು, ಲಾಗಿನ್‌ಗಳು ಮತ್ತು ಡೇಟಾದೊಂದಿಗೆ ಅಳಿಸುತ್ತದೆ. ಇದನ್ನು ಹಿಂತಿರುಗಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ."
+
+msgid "Tab Position"
+msgstr "ಟ್ಯಾಬ್‌ಗಳ ಸ್ಥಾನ"
+
+msgid "Top"
+msgstr "ಮೇಲೆ"
+
+msgid "Bottom"
+msgstr "ಕೆಳಗೆ"
+
+msgid "Left"
+msgstr "ಎಡ"
+
+msgid "Right"
+msgstr "ಬಲ"
+
+msgid "Window Buttons"
+msgstr "ವಿಂಡೋ ಬಟನ್‌ಗಳು"
+
+msgid "Default"
+msgstr "ಡೀಫಾಲ್ಟ್"
+
+msgid "macOS"
+msgstr "macOS"

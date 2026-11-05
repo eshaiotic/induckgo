@@ -812,3 +812,27 @@ msgstr "{name} विस्थापित करायचे?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "अ‍ॅप त्याच्या कुकीज, लॉगिन आणि डेटासह हटवते. हे पूर्ववत करता येणार नाही."
+
+msgid "Tab Position"
+msgstr "टॅबची जागा"
+
+msgid "Top"
+msgstr "वर"
+
+msgid "Bottom"
+msgstr "खाली"
+
+msgid "Left"
+msgstr "डावीकडे"
+
+msgid "Right"
+msgstr "उजवीकडे"
+
+msgid "Window Buttons"
+msgstr "विंडो बटणे"
+
+msgid "Default"
+msgstr "डीफॉल्ट"
+
+msgid "macOS"
+msgstr "macOS"

@@ -812,3 +812,27 @@ msgstr "{name} қолданбасын жою керек пе?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "Қолданбаны оның cookie файлдарымен, кіру деректерімен және мәліметтерімен бірге жояды. Мұны қайтару мүмкін емес."
+
+msgid "Tab Position"
+msgstr "Қойындылардың орны"
+
+msgid "Top"
+msgstr "Жоғарыда"
+
+msgid "Bottom"
+msgstr "Төменде"
+
+msgid "Left"
+msgstr "Сол жақта"
+
+msgid "Right"
+msgstr "Оң жақта"
+
+msgid "Window Buttons"
+msgstr "Терезе түймелері"
+
+msgid "Default"
+msgstr "Әдепкі"
+
+msgid "macOS"
+msgstr "macOS"

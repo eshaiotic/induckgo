@@ -812,3 +812,27 @@ msgstr "{name} අස්ථාපනය කරන්නද?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "යෙදුම එහි කුකී, පිවිසුම් සහ දත්ත සමඟ මකා දමයි. මෙය ආපසු හැරවිය නොහැක."
+
+msgid "Tab Position"
+msgstr "ටැබ් පිහිටීම"
+
+msgid "Top"
+msgstr "ඉහළ"
+
+msgid "Bottom"
+msgstr "පහළ"
+
+msgid "Left"
+msgstr "වම"
+
+msgid "Right"
+msgstr "දකුණ"
+
+msgid "Window Buttons"
+msgstr "කවුළු බොත්තම්"
+
+msgid "Default"
+msgstr "පෙරනිමි"
+
+msgid "macOS"
+msgstr "macOS"

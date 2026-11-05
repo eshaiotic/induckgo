@@ -812,3 +812,27 @@ msgstr "Видалити {name}?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "Видаляє застосунок разом з його файлами cookie, входами та даними. Цю дію неможливо скасувати."
+
+msgid "Tab Position"
+msgstr "Розташування вкладок"
+
+msgid "Top"
+msgstr "Угорі"
+
+msgid "Bottom"
+msgstr "Унизу"
+
+msgid "Left"
+msgstr "Ліворуч"
+
+msgid "Right"
+msgstr "Праворуч"
+
+msgid "Window Buttons"
+msgstr "Кнопки вікна"
+
+msgid "Default"
+msgstr "Типово"
+
+msgid "macOS"
+msgstr "macOS"

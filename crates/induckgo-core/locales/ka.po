@@ -812,3 +812,27 @@ msgstr "წაიშალოს {name}?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "წაშლის აპლიკაციას მისი ქუქიებით, ავტორიზაციებითა და მონაცემებით. ამის გაუქმება შეუძლებელია."
+
+msgid "Tab Position"
+msgstr "ჩანართების მდებარეობა"
+
+msgid "Top"
+msgstr "ზემოთ"
+
+msgid "Bottom"
+msgstr "ქვემოთ"
+
+msgid "Left"
+msgstr "მარცხნივ"
+
+msgid "Right"
+msgstr "მარჯვნივ"
+
+msgid "Window Buttons"
+msgstr "ფანჯრის ღილაკები"
+
+msgid "Default"
+msgstr "ნაგულისხმევი"
+
+msgid "macOS"
+msgstr "macOS"

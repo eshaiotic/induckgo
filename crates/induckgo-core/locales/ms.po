@@ -812,3 +812,27 @@ msgstr "Nyahpasang {name}?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "Memadam apl bersama kuki, log masuk dan datanya. Ini tidak boleh dibatalkan."
+
+msgid "Tab Position"
+msgstr "Kedudukan tab"
+
+msgid "Top"
+msgstr "Atas"
+
+msgid "Bottom"
+msgstr "Bawah"
+
+msgid "Left"
+msgstr "Kiri"
+
+msgid "Right"
+msgstr "Kanan"
+
+msgid "Window Buttons"
+msgstr "Butang tetingkap"
+
+msgid "Default"
+msgstr "Lalai"
+
+msgid "macOS"
+msgstr "macOS"

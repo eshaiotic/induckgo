@@ -70,6 +70,9 @@ msgstr ""
 msgid "Best wherever Tor is not blocked."
 msgstr ""
 
+msgid "Bottom"
+msgstr ""
+
 msgid "Bridges I provide"
 msgstr ""
 
@@ -215,6 +218,9 @@ msgid "Could not install the app: {error}"
 msgstr ""
 
 msgid "Could not remove everything: {error}"
+msgstr ""
+
+msgid "Default"
 msgstr ""
 
 msgid "Delete"
@@ -382,6 +388,9 @@ msgstr ""
 msgid "Language"
 msgstr ""
 
+msgid "Left"
+msgstr ""
+
 msgid "Legal"
 msgstr ""
 
@@ -502,6 +511,9 @@ msgstr ""
 msgid "Reset Zoom"
 msgstr ""
 
+msgid "Right"
+msgstr ""
+
 msgid "Save File"
 msgstr ""
 
@@ -548,6 +560,9 @@ msgid "Switch tracker protection off or on for the site"
 msgstr ""
 
 msgid "System default ({language})"
+msgstr ""
+
+msgid "Tab Position"
 msgstr ""
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
@@ -649,6 +664,9 @@ msgstr ""
 msgid "Toolbar Buttons"
 msgstr ""
 
+msgid "Top"
+msgstr ""
+
 msgid "Tor Connection"
 msgstr ""
 
@@ -721,6 +739,9 @@ msgstr ""
 msgid "Wide Address Bar"
 msgstr ""
 
+msgid "Window Buttons"
+msgstr ""
+
 msgid "Your Bridges"
 msgstr ""
 
@@ -755,6 +776,9 @@ msgid "_Save"
 msgstr ""
 
 msgid "_Select"
+msgstr ""
+
+msgid "macOS"
 msgstr ""
 
 msgid "obfs4proxy (Debian, Ubuntu), obfs4 (Fedora) or obfs4proxy from the AUR (Arch)"

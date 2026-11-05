@@ -812,3 +812,27 @@ msgstr "Odinstalować {name}?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "Usuwa aplikację razem z jej ciasteczkami, logowaniami i danymi. Tej operacji nie można cofnąć."
+
+msgid "Tab Position"
+msgstr "Położenie kart"
+
+msgid "Top"
+msgstr "Góra"
+
+msgid "Bottom"
+msgstr "Dół"
+
+msgid "Left"
+msgstr "Lewo"
+
+msgid "Right"
+msgstr "Prawo"
+
+msgid "Window Buttons"
+msgstr "Przyciski okna"
+
+msgid "Default"
+msgstr "Domyślny"
+
+msgid "macOS"
+msgstr "macOS"

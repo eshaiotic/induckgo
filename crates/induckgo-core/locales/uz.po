@@ -812,3 +812,27 @@ msgstr "{name} o‘chirilsinmi?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "Ilovani cookie fayllari, kirishlari va ma’lumotlari bilan birga o‘chiradi. Buni qaytarib bo‘lmaydi."
+
+msgid "Tab Position"
+msgstr "Varaqlar joyi"
+
+msgid "Top"
+msgstr "Yuqori"
+
+msgid "Bottom"
+msgstr "Pastki"
+
+msgid "Left"
+msgstr "Chap"
+
+msgid "Right"
+msgstr "O‘ng"
+
+msgid "Window Buttons"
+msgstr "Oyna tugmalari"
+
+msgid "Default"
+msgstr "Standart"
+
+msgid "macOS"
+msgstr "macOS"

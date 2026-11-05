@@ -812,3 +812,27 @@ msgstr "{name} verwijderen?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "Verwijdert de app met zijn cookies, aanmeldingen en gegevens. Dit kan niet ongedaan worden gemaakt."
+
+msgid "Tab Position"
+msgstr "Positie van tabbladen"
+
+msgid "Top"
+msgstr "Boven"
+
+msgid "Bottom"
+msgstr "Onder"
+
+msgid "Left"
+msgstr "Links"
+
+msgid "Right"
+msgstr "Rechts"
+
+msgid "Window Buttons"
+msgstr "Vensterknoppen"
+
+msgid "Default"
+msgstr "Standaard"
+
+msgid "macOS"
+msgstr "macOS"

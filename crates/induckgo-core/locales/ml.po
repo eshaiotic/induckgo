@@ -812,3 +812,27 @@ msgstr "{name} അൺഇൻസ്റ്റാൾ ചെയ്യണോ?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "ആപ്പിനെ അതിന്റെ കുക്കികൾ, ലോഗിനുകൾ, ഡാറ്റ എന്നിവയോടൊപ്പം ഇല്ലാതാക്കുന്നു. ഇത് പഴയപടിയാക്കാൻ കഴിയില്ല."
+
+msgid "Tab Position"
+msgstr "ടാബുകളുടെ സ്ഥാനം"
+
+msgid "Top"
+msgstr "മുകളിൽ"
+
+msgid "Bottom"
+msgstr "താഴെ"
+
+msgid "Left"
+msgstr "ഇടത്"
+
+msgid "Right"
+msgstr "വലത്"
+
+msgid "Window Buttons"
+msgstr "വിൻഡോ ബട്ടണുകൾ"
+
+msgid "Default"
+msgstr "സ്ഥിരം"
+
+msgid "macOS"
+msgstr "macOS"

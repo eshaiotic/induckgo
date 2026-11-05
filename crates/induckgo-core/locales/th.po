@@ -812,3 +812,27 @@ msgstr "ถอนการติดตั้ง {name} ไหม"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "ลบแอปพร้อมคุกกี้ การเข้าสู่ระบบ และข้อมูลของแอป การดำเนินการนี้ไม่สามารถยกเลิกได้"
+
+msgid "Tab Position"
+msgstr "ตำแหน่งแท็บ"
+
+msgid "Top"
+msgstr "ด้านบน"
+
+msgid "Bottom"
+msgstr "ด้านล่าง"
+
+msgid "Left"
+msgstr "ซ้าย"
+
+msgid "Right"
+msgstr "ขวา"
+
+msgid "Window Buttons"
+msgstr "ปุ่มหน้าต่าง"
+
+msgid "Default"
+msgstr "ค่าเริ่มต้น"
+
+msgid "macOS"
+msgstr "macOS"

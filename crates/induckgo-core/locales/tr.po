@@ -812,3 +812,27 @@ msgstr "{name} kaldırılsın mı?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "Uygulamayı çerezleri, oturumları ve verileriyle birlikte siler. Bu işlem geri alınamaz."
+
+msgid "Tab Position"
+msgstr "Sekmelerin konumu"
+
+msgid "Top"
+msgstr "Üst"
+
+msgid "Bottom"
+msgstr "Alt"
+
+msgid "Left"
+msgstr "Sol"
+
+msgid "Right"
+msgstr "Sağ"
+
+msgid "Window Buttons"
+msgstr "Pencere düğmeleri"
+
+msgid "Default"
+msgstr "Varsayılan"
+
+msgid "macOS"
+msgstr "macOS"

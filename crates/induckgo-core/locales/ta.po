@@ -812,3 +812,27 @@ msgstr "{name} ஐ நிறுவல் நீக்கவா?"
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
 msgstr "ஆப்ஸை அதன் குக்கீகள், உள்நுழைவுகள் மற்றும் தரவுடன் நீக்குகிறது. இதைத் திரும்பப் பெற முடியாது."
+
+msgid "Tab Position"
+msgstr "தாவல்களின் இடம்"
+
+msgid "Top"
+msgstr "மேலே"
+
+msgid "Bottom"
+msgstr "கீழே"
+
+msgid "Left"
+msgstr "இடது"
+
+msgid "Right"
+msgstr "வலது"
+
+msgid "Window Buttons"
+msgstr "சாளர பொத்தான்கள்"
+
+msgid "Default"
+msgstr "இயல்புநிலை"
+
+msgid "macOS"
+msgstr "macOS"

@@ -39,9 +39,10 @@ Popup {
         border.color: Qt.alpha(palette.windowText, 0.16)
     }
 
-    // One of the closing rows: a centred title that is lit while the pointer is over it.
+    // One of the closing rows: its icon and title, lit while the pointer is over it.
     component CloseRow: AbstractButton {
         id: entry
+        property string iconName
         Layout.fillWidth: true
         implicitHeight: 36
         background: Rectangle {
@@ -50,12 +51,11 @@ Popup {
                  : entry.down ? Qt.alpha(palette.windowText, 0.14)
                  : entry.hovered || entry.visualFocus ? Qt.alpha(palette.windowText, 0.08) : "transparent"
         }
-        contentItem: Label {
-            text: entry.text
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
-            elide: Text.ElideRight
+        contentItem: RowLayout {
+            spacing: 12
             opacity: entry.enabled ? 1 : 0.4
+            TintedIcon { Layout.leftMargin: 8; name: entry.iconName; size: 16 }
+            Label { Layout.fillWidth: true; text: entry.text; elide: Text.ElideRight }
         }
     }
 
@@ -91,17 +91,20 @@ Popup {
             color: Qt.alpha(palette.windowText, 0.12)
         }
         CloseRow {
+            iconName: "download"
             text: popover.bridge.message("Show All Downloads")
             onClicked: { popover.close(); popover.managerRequested() }
         }
         CloseRow {
+            iconName: "folder"
+            text: popover.bridge.message("Go to Download Folder")
+            onClicked: { popover.hub.openFolder(); popover.close() }
+        }
+        CloseRow {
+            iconName: "trash"
             text: popover.bridge.message("Clear List")
             enabled: popover.hub.latest.count > 0
             onClicked: popover.hub.clearList()
-        }
-        CloseRow {
-            text: popover.bridge.message("Go to Download Folder")
-            onClicked: { popover.hub.openFolder(); popover.close() }
         }
     }
 }

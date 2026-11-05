@@ -37,6 +37,13 @@ pub mod ffi {
         #[qinvokable]
         fn set_toolbar_shown(self: &BrowserBridge, id: &QString, is_shown: bool);
 
+        /// Whether the address bar takes all the room the toolbar leaves it.
+        #[qinvokable]
+        fn wide_address_bar(self: &BrowserBridge) -> bool;
+
+        #[qinvokable]
+        fn set_wide_address_bar(self: &BrowserBridge, is_wide: bool);
+
         /// Whether the mouse wheel scrolls smoothly.
         #[qinvokable]
         fn smooth_wheel(self: &BrowserBridge) -> bool;
@@ -141,11 +148,14 @@ pub mod ffi {
         /// folder is opened, never a file: a downloaded file is not launched from here.
         #[qinvokable]
         fn open_folder(self: &BrowserBridge, folder: &QString) -> bool;
+
+        /// Select a downloaded file in the system file manager.
+        #[qinvokable]
+        fn show_file_in_folder(self: &BrowserBridge, path: &QString) -> bool;
     }
 }
 
 use std::path::PathBuf;
-use std::process::Command;
 
 use cxx_qt_lib::QString;
 use induckgo_core::download::download_history::DownloadHistory;
@@ -165,6 +175,7 @@ use url::Url;
 use induckgo_core::about::about_content::AboutContent;
 
 use crate::burn_restart::BurnRestart;
+use crate::file_manager_request::FileManagerRequest;
 use crate::interface_catalogue::InterfaceCatalogue;
 use crate::interface_language_setting::InterfaceLanguageSetting;
 use crate::launch_context::LaunchContext;
@@ -203,6 +214,16 @@ impl ffi::BrowserBridge {
     fn set_toolbar_shown(&self, id: &QString, is_shown: bool) {
         if let Some(session) = ProfileSession::current() {
             session.preferences().set_toolbar_button_shown(&id.to_string(), is_shown);
+        }
+    }
+
+    fn wide_address_bar(&self) -> bool {
+        ProfileSession::current().is_none_or(|session| session.preferences().wide_address_bar())
+    }
+
+    fn set_wide_address_bar(&self, is_wide: bool) {
+        if let Some(session) = ProfileSession::current() {
+            session.preferences().set_wide_address_bar(is_wide);
         }
     }
 
@@ -384,8 +405,13 @@ impl ffi::BrowserBridge {
     }
 
     fn open_folder(&self, folder: &QString) -> bool {
-        let folder = PathBuf::from(folder.to_string());
-        folder.is_absolute() && folder.is_dir() && Command::new("xdg-open").arg(folder).spawn().is_ok()
+        FileManagerRequest::showing_folder(&PathBuf::from(folder.to_string()))
+            .map(FileManagerRequest::carry_out)
+            .is_some()
+    }
+
+    fn show_file_in_folder(&self, path: &QString) -> bool {
+        FileManagerRequest::showing_file(&PathBuf::from(path.to_string())).map(FileManagerRequest::carry_out).is_some()
     }
 
     fn percent(level: ZoomLevel) -> i32 {

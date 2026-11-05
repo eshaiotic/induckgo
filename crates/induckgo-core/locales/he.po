@@ -797,3 +797,9 @@ msgstr "הרישיון הציבורי של מוזילה, גרסה 2.0"
 
 msgid "BSD 3-Clause License"
 msgstr "רישיון BSD תלת־סעיפי"
+
+msgid "Wide Address Bar"
+msgstr "שורת כתובת רחבה"
+
+msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
+msgstr "שורת הכתובת ממלאת את כל המקום בסרגל הכלים; כשהאפשרות כבויה היא נשארת קצרה וממורכזת"

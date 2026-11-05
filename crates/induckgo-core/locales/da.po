@@ -797,3 +797,9 @@ msgstr "Mozilla offentlig licens 2.0"
 
 msgid "BSD 3-Clause License"
 msgstr "BSD 3-klausullicens"
+
+msgid "Wide Address Bar"
+msgstr "Bred adresselinje"
+
+msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
+msgstr "Adresselinjen fylder al pladsen i værktøjslinjen; slået fra forbliver den kort og centreret"

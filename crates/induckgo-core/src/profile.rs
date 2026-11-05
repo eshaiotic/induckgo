@@ -1,5 +1,6 @@
 //! Isolated browsing profiles and their per-profile settings.
 
+pub mod address_bar_preferences;
 pub mod browsing_profile;
 pub mod profile_catalog;
 pub mod profile_directories;

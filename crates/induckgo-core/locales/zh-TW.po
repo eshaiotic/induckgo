@@ -797,3 +797,9 @@ msgstr "《Mozilla 公眾授權條款 2.0》"
 
 msgid "BSD 3-Clause License"
 msgstr "《BSD 3-Clause 授權條款》"
+
+msgid "Wide Address Bar"
+msgstr "寬網址列"
+
+msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
+msgstr "網址列佔滿工具列中的所有空位；關閉後維持較短並置中"

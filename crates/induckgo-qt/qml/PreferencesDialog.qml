@@ -176,6 +176,18 @@ Dialog {
                     PreferencesGroup {
                         Layout.leftMargin: 54
                         Layout.rightMargin: 54
+                        PreferencesRow {
+                            title: dialog.say("Wide Address Bar")
+                            subtitle: dialog.say("The address bar fills all the room in the toolbar; off keeps it short and centred")
+                            AdwaitaSwitch {
+                                checked: dialog.bridge.wide_address_bar()
+                                onToggled: { dialog.bridge.set_wide_address_bar(checked); dialog.toolbarChanged() }
+                            }
+                        }
+                    }
+                    PreferencesGroup {
+                        Layout.leftMargin: 54
+                        Layout.rightMargin: 54
                         title: dialog.say("Scrolling")
                         PreferencesRow {
                             title: dialog.say("Smooth mouse wheel scrolling")

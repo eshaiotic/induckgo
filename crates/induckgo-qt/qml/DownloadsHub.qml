@@ -45,7 +45,7 @@ Item {
 
     function clearHistory() { bridge.download_clear_history(); clearedThrough = -1; reload() }
     function remove(id) { bridge.download_remove(id); reload() }
-    function showInFolder(path) { bridge.open_folder(path.substring(0, path.lastIndexOf("/"))) }
+    function showInFolder(path) { bridge.show_file_in_folder(path) }
     function openFolder() { bridge.open_folder(bridge.download_folder()) }
 
     function begin(download, path) {

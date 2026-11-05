@@ -797,3 +797,9 @@ msgstr "Mozilla Public License 2.0"
 
 msgid "BSD 3-Clause License"
 msgstr "BSD 3-Clause License"
+
+msgid "Wide Address Bar"
+msgstr "వెడల్పైన చిరునామా బార్"
+
+msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
+msgstr "చిరునామా బార్ టూల్‌బార్‌లోని మొత్తం స్థలాన్ని నింపుతుంది; ఆఫ్ చేస్తే అది చిన్నగా, మధ్యలో ఉంటుంది"

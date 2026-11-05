@@ -797,3 +797,9 @@ msgstr "Mozilla 公用许可证第 2.0 版"
 
 msgid "BSD 3-Clause License"
 msgstr "BSD 3-Clause 许可证"
+
+msgid "Wide Address Bar"
+msgstr "宽地址栏"
+
+msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
+msgstr "地址栏占满工具栏中的全部空位；关闭后保持较短并居中"

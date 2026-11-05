@@ -797,3 +797,9 @@ msgstr "Mozilla Public License 2.0"
 
 msgid "BSD 3-Clause License"
 msgstr "BSD 3 cikkelyes licenc"
+
+msgid "Wide Address Bar"
+msgstr "Széles címsor"
+
+msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
+msgstr "A címsor kitölti az eszköztár teljes szabad helyét; kikapcsolva rövid és középre igazított marad"

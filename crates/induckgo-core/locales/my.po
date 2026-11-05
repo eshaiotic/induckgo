@@ -797,3 +797,9 @@ msgstr "Mozilla Public License 2.0"
 
 msgid "BSD 3-Clause License"
 msgstr "BSD 3-Clause License"
+
+msgid "Wide Address Bar"
+msgstr "အကျယ်လိပ်စာဘား"
+
+msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
+msgstr "လိပ်စာဘားသည် ကိရိယာဘားရှိ နေရာအားလုံးကို ယူသည်၊ ပိတ်ထားပါက တိုပြီး အလယ်တွင် ရှိနေမည်"

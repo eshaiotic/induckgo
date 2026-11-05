@@ -797,3 +797,9 @@ msgstr "Llicència pública de Mozilla 2.0"
 
 msgid "BSD 3-Clause License"
 msgstr "Llicència BSD de 3 clàusules"
+
+msgid "Wide Address Bar"
+msgstr "Barra d'adreces ampla"
+
+msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
+msgstr "La barra d'adreces ocupa tot l'espai de la barra d'eines; desactivat, es manté curta i centrada"

@@ -797,3 +797,9 @@ msgstr "Licencia Mozilla Public License 2.0"
 
 msgid "BSD 3-Clause License"
 msgstr "Licencia BSD 3-Clause"
+
+msgid "Wide Address Bar"
+msgstr "Široký panel s adresou"
+
+msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
+msgstr "Panel s adresou zaberie všetko miesto na paneli nástrojov; vypnutý zostane krátky a v strede"

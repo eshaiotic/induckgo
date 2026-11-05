@@ -797,3 +797,9 @@ msgstr "Мозилина јавна дозвола 2.0"
 
 msgid "BSD 3-Clause License"
 msgstr "БСД дозвола 3-услова"
+
+msgid "Wide Address Bar"
+msgstr "Широка адресна трака"
+
+msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
+msgstr "Адресна трака попуњава сав простор на траци са алаткама; када је искључено, остаје кратка и центрирана"

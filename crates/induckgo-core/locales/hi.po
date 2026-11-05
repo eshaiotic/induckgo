@@ -797,3 +797,9 @@ msgstr "मोज़िला पब्लिक लाइसेंस 2.0"
 
 msgid "BSD 3-Clause License"
 msgstr "बीएसडी 3-क्लॉज लाइसेंस"
+
+msgid "Wide Address Bar"
+msgstr "चौड़ा पता बार"
+
+msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
+msgstr "पता बार टूलबार की पूरी जगह भर लेता है; बंद करने पर वह छोटा और बीच में रहता है"

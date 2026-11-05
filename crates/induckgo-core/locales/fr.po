@@ -797,3 +797,9 @@ msgstr "Licence Publique Mozilla 2.0"
 
 msgid "BSD 3-Clause License"
 msgstr "Licence BSD à 3 clauses"
+
+msgid "Wide Address Bar"
+msgstr "Barre d'adresse large"
+
+msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
+msgstr "La barre d'adresse occupe toute la place de la barre d'outils ; désactivée, elle reste courte et centrée"

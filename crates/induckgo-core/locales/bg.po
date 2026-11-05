@@ -797,3 +797,9 @@ msgstr "Публичен лиценз на Mozilla, версия 2.0"
 
 msgid "BSD 3-Clause License"
 msgstr "Триклаузов лиценз на BSD"
+
+msgid "Wide Address Bar"
+msgstr "Широка адресна лента"
+
+msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
+msgstr "Адресната лента заема цялото място в лентата с инструменти; изключена остава къса и центрирана по средата"

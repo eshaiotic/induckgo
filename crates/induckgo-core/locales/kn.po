@@ -797,3 +797,9 @@ msgstr "Mozilla Public License 2.0"
 
 msgid "BSD 3-Clause License"
 msgstr "BSD 3-Clause License"
+
+msgid "Wide Address Bar"
+msgstr "ಅಗಲವಾದ ವಿಳಾಸ ಪಟ್ಟಿ"
+
+msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
+msgstr "ವಿಳಾಸ ಪಟ್ಟಿ ಟೂಲ್‌ಬಾರ್‌ನ ಎಲ್ಲಾ ಜಾಗವನ್ನು ತುಂಬುತ್ತದೆ; ಆಫ್ ಮಾಡಿದರೆ ಅದು ಚಿಕ್ಕದಾಗಿ ಮತ್ತು ಮಧ್ಯದಲ್ಲಿ ಇರುತ್ತದೆ"

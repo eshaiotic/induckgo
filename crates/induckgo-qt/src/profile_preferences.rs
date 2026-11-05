@@ -3,6 +3,7 @@
 
 use std::path::Path;
 
+use induckgo_core::profile::address_bar_preferences::AddressBarPreferences;
 use induckgo_core::profile::toolbar_layout::ToolbarButton;
 use induckgo_core::profile::toolbar_layout::ToolbarLayout;
 use induckgo_core::scrolling::scrolling_preferences::ScrollingPreferences;
@@ -13,6 +14,8 @@ pub struct ProfilePreferences {
     toolbar_file: OwnedJsonFile,
     scrolling: ScrollingPreferences,
     scrolling_file: OwnedJsonFile,
+    address_bar: AddressBarPreferences,
+    address_bar_file: OwnedJsonFile,
 }
 
 impl ProfilePreferences {
@@ -20,14 +23,20 @@ impl ProfilePreferences {
     pub fn open(directory: &Path) -> Self {
         let toolbar_file = OwnedJsonFile::new(directory.join("toolbar.json"));
         let scrolling_file = OwnedJsonFile::new(directory.join("scrolling.json"));
+        let address_bar_file = OwnedJsonFile::new(directory.join("address-bar.json"));
         Self {
             toolbar: toolbar_file.read().map(|document| ToolbarLayout::from_json(&document)).unwrap_or_default(),
             scrolling: scrolling_file
                 .read()
                 .map(|document| ScrollingPreferences::from_json(&document))
                 .unwrap_or_default(),
+            address_bar: address_bar_file
+                .read()
+                .map(|document| AddressBarPreferences::from_json(&document))
+                .unwrap_or_default(),
             toolbar_file,
             scrolling_file,
+            address_bar_file,
         }
     }
 
@@ -52,6 +61,17 @@ impl ProfilePreferences {
     pub fn set_smooth_wheel(&mut self, is_enabled: bool) {
         self.scrolling.set_smooth_wheel(is_enabled);
         let _ = self.scrolling_file.write(&self.scrolling.to_json());
+    }
+
+    /// Whether the address bar takes all the room the toolbar leaves it, not a short centred bar.
+    #[must_use]
+    pub fn wide_address_bar(&self) -> bool {
+        self.address_bar.is_wide()
+    }
+
+    pub fn set_wide_address_bar(&mut self, is_wide: bool) {
+        self.address_bar.set_wide(is_wide);
+        let _ = self.address_bar_file.write(&self.address_bar.to_json());
     }
 
     fn button_named(id: &str) -> Option<ToolbarButton> {

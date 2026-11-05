@@ -320,9 +320,13 @@ ApplicationWindow {
                 id: addressGroup
                 anchors.verticalCenter: parent.verticalCenter
                 visible: !window.isWebApp
-                // The address takes all the room the two groups of buttons leave.
-                x: leftGroup.x + leftGroup.width + 12
-                width: Math.max(160, rightGroup.x - 12 - x)
+                // Wide: the address takes all the room the two groups of buttons leave. Short: a centred bar of at most
+                // 550 px that never reaches either group.
+                readonly property bool wide: window.toolbarVersion >= 0 && bridge.wide_address_bar()
+                readonly property real room: Math.max(160, rightGroup.x - 12 - (leftGroup.x + leftGroup.width + 12))
+                width: wide ? room : Math.min(550, room)
+                x: wide ? leftGroup.x + leftGroup.width + 12
+                        : Math.max(leftGroup.x + leftGroup.width + 12, (parent.width - width) / 2)
                 spacing: 6
 
                 Rectangle {

@@ -797,3 +797,9 @@ msgstr "Mozilla viešoji licencija 2.0"
 
 msgid "BSD 3-Clause License"
 msgstr "BSD 3 dalių licencija"
+
+msgid "Wide Address Bar"
+msgstr "Plati adreso juosta"
+
+msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
+msgstr "Adreso juosta užpildo visą įrankių juostos vietą; išjungus ji lieka trumpa ir centruota"

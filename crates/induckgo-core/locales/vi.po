@@ -797,3 +797,9 @@ msgstr "Giấy phép Công Mozilla 2.0"
 
 msgid "BSD 3-Clause License"
 msgstr "Mệnh đề 3 giấy phép BSD"
+
+msgid "Wide Address Bar"
+msgstr "Thanh địa chỉ rộng"
+
+msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
+msgstr "Thanh địa chỉ chiếm toàn bộ chỗ trống trên thanh công cụ; khi tắt, thanh này ngắn và nằm ở giữa"

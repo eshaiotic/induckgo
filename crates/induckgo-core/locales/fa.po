@@ -797,3 +797,9 @@ msgstr "نگارش ۲٫۰ پروانهٔ همگانی موزیلا"
 
 msgid "BSD 3-Clause License"
 msgstr "پروانهٔ سه بندی بی‌اس‌دی"
+
+msgid "Wide Address Bar"
+msgstr "نوار آدرس پهن"
+
+msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
+msgstr "نوار آدرس تمام فضای نوار ابزار را پر می‌کند؛ در حالت خاموش کوتاه و در مرکز می‌ماند"

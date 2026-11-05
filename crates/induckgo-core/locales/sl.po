@@ -797,3 +797,9 @@ msgstr "Javno dovoljenje Mozilla 2.0"
 
 msgid "BSD 3-Clause License"
 msgstr "Dovoljenje BSD 3-Clause"
+
+msgid "Wide Address Bar"
+msgstr "Širok naslovni trak"
+
+msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
+msgstr "Naslovni trak zapolni ves prostor v orodni vrstici; ko je izklopljeno, ostane kratek in na sredini"

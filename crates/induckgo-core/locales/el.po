@@ -797,3 +797,9 @@ msgstr "Δημόσια άδεια Mozilla 2.0"
 
 msgid "BSD 3-Clause License"
 msgstr "BSD 3-Άδεια ρήτρας"
+
+msgid "Wide Address Bar"
+msgstr "Πλατιά γραμμή διευθύνσεων"
+
+msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
+msgstr "Η γραμμή διευθύνσεων καλύπτει όλο τον χώρο της γραμμής εργαλείων· όταν είναι απενεργοποιημένη, μένει κοντή και κεντραρισμένη"

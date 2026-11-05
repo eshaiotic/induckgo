@@ -797,3 +797,9 @@ msgstr "Mozilla Public License 2.0"
 
 msgid "BSD 3-Clause License"
 msgstr "สัญญาอนุญาต BSD แบบ 3 ข้อ"
+
+msgid "Wide Address Bar"
+msgstr "แถบที่อยู่แบบกว้าง"
+
+msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
+msgstr "แถบที่อยู่จะเต็มพื้นที่ว่างทั้งหมดบนแถบเครื่องมือ หากปิดไว้ จะสั้นและอยู่ตรงกลาง"

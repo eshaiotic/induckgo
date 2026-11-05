@@ -797,3 +797,9 @@ msgstr "Mozilla Public License 2.0"
 
 msgid "BSD 3-Clause License"
 msgstr "BSD 3-Clause License"
+
+msgid "Wide Address Bar"
+msgstr "Malapad na address bar"
+
+msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
+msgstr "Pinupunan ng address bar ang buong espasyo sa toolbar; kapag naka-off, nananatili itong maikli at nasa gitna"

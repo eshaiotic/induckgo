@@ -797,3 +797,9 @@ msgstr "Mozilla Public License 2.0"
 
 msgid "BSD 3-Clause License"
 msgstr "BSD 3-Clause License"
+
+msgid "Wide Address Bar"
+msgstr "रुंद पत्ता पट्टी"
+
+msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
+msgstr "पत्ता पट्टी टूलबारमधील सर्व जागा व्यापते; बंद केल्यास ती लहान आणि मध्यभागी राहते"

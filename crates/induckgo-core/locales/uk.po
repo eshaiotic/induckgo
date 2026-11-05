@@ -797,3 +797,9 @@ msgstr "Громадська ліцензія Mozilla 2.0"
 
 msgid "BSD 3-Clause License"
 msgstr "Спрощена (3-Clause) ліцензія BSD"
+
+msgid "Wide Address Bar"
+msgstr "Широкий адресний рядок"
+
+msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
+msgstr "Адресний рядок займає все вільне місце на панелі інструментів; якщо вимкнено, він залишається коротким і по центру"

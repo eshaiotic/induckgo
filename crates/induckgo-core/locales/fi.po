@@ -797,3 +797,9 @@ msgstr "Mozilla Public -lisenssi 2.0"
 
 msgid "BSD 3-Clause License"
 msgstr "3-lausekkeinen BSD-lisenssi"
+
+msgid "Wide Address Bar"
+msgstr "Leveä osoitepalkki"
+
+msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
+msgstr "Osoitepalkki täyttää kaiken työkalupalkin tilan; pois päältä se pysyy lyhyenä ja keskellä"

@@ -797,3 +797,9 @@ msgstr "Licența Publică Mozilla 2.0"
 
 msgid "BSD 3-Clause License"
 msgstr "Licența BSD clauza-3"
+
+msgid "Wide Address Bar"
+msgstr "Bară de adrese lată"
+
+msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
+msgstr "Bara de adrese ocupă tot spațiul din bara de instrumente; dezactivată, rămâne scurtă și centrată"

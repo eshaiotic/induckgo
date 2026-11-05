@@ -7,6 +7,7 @@ pub mod browser_bridge;
 pub mod burn_restart;
 pub mod desktop_font;
 pub mod download_center;
+pub mod file_manager_request;
 // `cxx-qt` bridge, like `browser_bridge`.
 #[allow(unsafe_code, clippy::unnecessary_box_returns)]
 pub mod guard_bridge;

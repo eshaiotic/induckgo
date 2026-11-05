@@ -797,3 +797,9 @@ msgstr "Mozilla Public License 2.0"
 
 msgid "BSD 3-Clause License"
 msgstr "Лицензия BSD 3-Clause"
+
+msgid "Wide Address Bar"
+msgstr "Широкая адресная строка"
+
+msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
+msgstr "Адресная строка занимает всё свободное место на панели инструментов; если выключено, она остаётся короткой и по центру"

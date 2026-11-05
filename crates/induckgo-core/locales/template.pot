@@ -544,6 +544,9 @@ msgstr ""
 msgid "System default ({language})"
 msgstr ""
 
+msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
+msgstr ""
+
 msgid "The authority that issued the certificate has revoked it."
 msgstr ""
 
@@ -704,6 +707,9 @@ msgid "Unknown bridge transport: {name}"
 msgstr ""
 
 msgid "Valid until {date}"
+msgstr ""
+
+msgid "Wide Address Bar"
 msgstr ""
 
 msgid "Your Bridges"

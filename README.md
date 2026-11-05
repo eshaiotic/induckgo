@@ -14,7 +14,7 @@ through InDuckGo's own Tor.
 
 [![tests](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml/badge.svg)](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml)
 [![release](https://img.shields.io/github/v/release/eshaiotic/induckgo?color=6A5ACD)](https://github.com/eshaiotic/induckgo/releases/latest)
-![cargo nextest](https://img.shields.io/badge/cargo%20nextest-426%20tests-success)
+![cargo nextest](https://img.shields.io/badge/cargo%20nextest-670%20tests-success)
 ![stack](https://img.shields.io/badge/stack-Rust%20%E2%80%A2%20GTK%204%20%E2%80%A2%20WebKitGTK%206.0-8E7FE8)
 ![telemetry](https://img.shields.io/badge/telemetry-none-FFB300)
 [![licence](https://img.shields.io/badge/licence-GPL--3.0--or--later-2E1A87)](LICENSE)
@@ -141,7 +141,7 @@ does not carry all of them yet.
 
 Every list and data set is downloaded, never bundled, and size-limited and validated before use. A filter list
 can only block or hide: the conversion keeps no scriptlets, so a hostile list could break a site but never run
-code in it. The whole suite (`./run-tests`, 426 tests plus clippy and `cargo audit` in CI) runs on every push.
+code in it. The whole suite (`./run-tests`, 670 tests plus clippy and `cargo audit` in CI) runs on every push.
 
 ### The evidence
 
@@ -179,7 +179,7 @@ The measurement supports "InDuckGo gives trackers and its own maker less to work
 
 Usable work in progress: browsing with tabs, all protections above, profiles, web apps, the Tor window,
 downloads, permission prompts and find-in-page work. Not built yet: session restore, bookmarks, history window,
-cookie-consent handling, translations. The full list with reasons is in the architecture document.
+cookie-consent handling. The full list with reasons is in the architecture document.
 
 In the future InDuckGo will ship as part of a new Linux distribution. It stays a standalone project and keeps
 its packages for other distributions.
@@ -257,9 +257,9 @@ Installed web apps start from the desktop's application menu (`induckgo --web-ap
 
 ## Testing
 
-Stack: **cargo-nextest** — 426 object-oriented Given/When/Then scenarios: 365 for the domain in
-`crates/induckgo-core/tests/` (42 files, one per domain type) and 61 for the report tool in
-`crates/induckgo-test-report/tests/`.
+Stack: **cargo-nextest** — 670 object-oriented Given/When/Then scenarios: 600 for the domain in
+`crates/induckgo-core/tests/` (72 files, one per domain type), 61 for the report tool in
+`crates/induckgo-test-report/tests/` and 9 for the benchmark tool in `crates/induckgo-bench/tests/`.
 
 ```sh
 ./run-tests                     # all tests + HTML report in tests/reports/ (opens in the browser)

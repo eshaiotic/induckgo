@@ -14,7 +14,7 @@ bez rozszerzeń do pilnowania, każdy profil i każda zainstalowana aplikacja we
 
 [![tests](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml/badge.svg)](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml)
 [![release](https://img.shields.io/github/v/release/eshaiotic/induckgo?color=6A5ACD)](https://github.com/eshaiotic/induckgo/releases/latest)
-![cargo nextest](https://img.shields.io/badge/cargo%20nextest-426%20test%C3%B3w-success)
+![cargo nextest](https://img.shields.io/badge/cargo%20nextest-670%20test%C3%B3w-success)
 ![stack](https://img.shields.io/badge/stack-Rust%20%E2%80%A2%20GTK%204%20%E2%80%A2%20WebKitGTK%206.0-8E7FE8)
 ![telemetria](https://img.shields.io/badge/telemetria-brak-FFB300)
 [![licencja](https://img.shields.io/badge/licencja-GPL--3.0--or--later-2E1A87)](LICENSE)
@@ -88,7 +88,7 @@ DuckDuckGo dla macOS, którą InDuckGo pobiera.
 | Ochrona | Jak działa |
 |---|---|
 | Trackery stron trzecich | Tracker Data Set DuckDuckGo jest tłumaczony na reguły blokowania treści WebKita (port `TrackerRadarKit`). |
-| Psucie stron | Konfiguracja prywatności DuckDuckGo dostarcza wyjątki dla serwisów, żeby działały; przycisk tarczy (w aplikacji webowej: *Protect This Site* w menu) wyłącza ochronę dla jednego serwisu. |
+| Psucie stron | Konfiguracja prywatności DuckDuckGo dostarcza wyjątki dla serwisów, żeby działały; przycisk tarczy (w aplikacji webowej: *Chroń tę witrynę* w menu) wyłącza ochronę dla jednego serwisu. |
 | Fingerprinting, GPC | Content Scope Scripts DuckDuckGo działają w każdej ramce; InDuckGo Guard włącza obronę canvas, audio, ekranu i referera, którą DuckDuckGo zostawia wyłączoną, i wysyła nagłówek `Sec-GPC: 1`. |
 | Reklamy, trackery, komunikaty o cookies | InDuckGo Guard pobiera listy EasyList, EasyPrivacy, uBlock Origin, Petera Lowe'a, polskie i listy komunikatów o cookies, i stosuje je także do własnych zapytań serwisu. |
 | Ciasteczka między serwisami | Ciasteczka stron trzecich są odrzucane; włączone jest Intelligent Tracking Prevention WebKita. |
@@ -100,23 +100,23 @@ DuckDuckGo dla macOS, którą InDuckGo pobiera.
 
 Rozszerzeń nie ma — celowo, i dlatego, że WebKitGTK nie ma API rozszerzeń.
 
-**Aplikacje webowe.** *Install Site as App* (przycisk na prawym końcu paska adresu albo menu okna) zamienia
+**Aplikacje webowe.** *Zainstaluj witrynę jako aplikację* (przycisk na prawym końcu paska adresu albo menu okna) zamienia
 dowolny serwis — bank, pocztę — w aplikację na pulpicie z ikoną serwisu. Każda aplikacja ma własną,
 odizolowaną sesję; link do innego serwisu kliknięty w aplikacji otwiera się w przeglądarce, więc logowanie
 aplikacji nigdy nie spotyka obcych stron.
 
-**Okno Tor.** Przycisk z cebulą na pasku narzędzi, *New Tor Window* w menu (`Alt+Shift+N`) albo
+**Okno Tor.** Przycisk z cebulą na pasku narzędzi, *Nowe okno Tor* w menu (`Alt+Shift+N`) albo
 `induckgo --tor` otwiera okno, którego każde żądanie
 idzie przez Tora, więc serwisy widzą przekaźnik wyjściowy Tora zamiast Twojego adresu. InDuckGo uruchamia dla
 niego własny `tor`, nigdy ogólnosystemową usługę Tor, i pokazuje postęp łączenia, aż Tor będzie gotowy; do
 tego czasu żadna strona się nie wczytuje i nic nigdy nie przechodzi na połączenie bezpośrednie. Ciasteczka,
 pamięć podręczna i ustawienia okna żyją tylko w pamięci, WebRTC jest wyłączone, wyszukiwanie idzie przez usługę
-onion DuckDuckGo, a strony `.onion` się otwierają. Tam, gdzie Tor jest blokowany, *Tor Connection…* oferuje
-Snowflake, obfs4 (z wbudowanymi mostami Tor Browsera) albo własne mosty. Przycisk Fire staje się *New
-Identity*: dane usunięte, nowe obwody Tora. Okno ukrywa Twój adres, ale nie to, że używasz InDuckGo: gdy liczy
+onion DuckDuckGo, a strony `.onion` się otwierają. Tam, gdzie Tor jest blokowany, *Połączenie z Tor…* oferuje
+Snowflake, obfs4 (z wbudowanymi mostami Tor Browsera) albo własne mosty. Przycisk Fire staje się *Nową
+tożsamością*: dane usunięte, nowe obwody Tora. Okno ukrywa Twój adres, ale nie to, że używasz InDuckGo: gdy liczy
 się nieodróżnialność wśród użytkowników Tora, używaj Tor Browsera.
 
-**Pasek narzędzi.** *Preferences…* w menu (`Ctrl+,`) wybiera, które przyciski pasek pokazuje wokół paska
+**Pasek narzędzi.** *Preferencje…* w menu (`Ctrl+,`) wybiera, które przyciski pasek pokazuje wokół paska
 adresu (wstecz i dalej, odświeżanie, cebula okna Tor, tarcza ochrony, Fire, nowa karta, ikona instalacji),
 osobno w każdym profilu.
 
@@ -142,7 +142,7 @@ i jeszcze nie ma ich wszystkich.
 
 Każda lista i zestaw danych jest pobierany, nigdy dołączany, a przed użyciem ograniczany rozmiarem i
 walidowany. Lista filtrów może tylko blokować albo ukrywać: konwersja nie zachowuje skryptletów, więc złośliwa
-lista mogłaby zepsuć stronę, ale nigdy nie uruchomi w niej kodu. Cały zestaw (`./run-tests`, 426 testów oraz
+lista mogłaby zepsuć stronę, ale nigdy nie uruchomi w niej kodu. Cały zestaw (`./run-tests`, 670 testów oraz
 clippy i `cargo audit` w CI) uruchamia się przy każdym wypchnięciu.
 
 ### Dowody
@@ -184,7 +184,7 @@ bez zastrzeżeń, że „InDuckGo jest bardziej anonimowy niż Brave lub DuckDuc
 
 Projekt w toku, ale używalny: działają karty, wszystkie powyższe zabezpieczenia, profile, aplikacje webowe,
 okno Tor, pobieranie plików, pytania o uprawnienia i wyszukiwanie na stronie. Jeszcze nie ma: przywracania sesji,
-zakładek, okna historii, obsługi zgód na cookies, tłumaczeń. Pełna lista z uzasadnieniem jest w dokumencie
+zakładek, okna historii, obsługi zgód na cookies. Pełna lista z uzasadnieniem jest w dokumencie
 architektury.
 
 W przyszłości InDuckGo będzie częścią nowej dystrybucji Linuksa. Pozostanie samodzielnym projektem i zachowa
@@ -262,9 +262,9 @@ Zainstalowane aplikacje webowe uruchamia się z menu aplikacji pulpitu (`induckg
 
 ## Testy
 
-Stos: **cargo-nextest** — 426 obiektowych scenariuszy Given/When/Then: 365 dla domeny w
-`crates/induckgo-core/tests/` (42 plików, jeden na typ domenowy) i 61 dla narzędzia raportu w
-`crates/induckgo-test-report/tests/`.
+Stos: **cargo-nextest** — 670 obiektowych scenariuszy Given/When/Then: 600 dla domeny w
+`crates/induckgo-core/tests/` (72 pliki, jeden na typ domenowy), 61 dla narzędzia raportu w
+`crates/induckgo-test-report/tests/` i 9 dla narzędzia benchmarków w `crates/induckgo-bench/tests/`.
 
 ```sh
 ./run-tests                     # wszystkie testy + raport HTML w tests/reports/ (otwiera się w przeglądarce)

@@ -73,3 +73,10 @@ fn should_keep_every_other_line_of_the_packaged_entry() {
     assert!(lines.contains(&"StartupWMClass=InDuckGo".to_owned()));
     assert!(lines.contains(&"Name=New Window".to_owned()));
 }
+
+#[test]
+fn should_mark_the_entry_as_written_by_the_appimage_so_that_a_hand_written_one_is_never_replaced() {
+    let lines = MenuEntryScenario::given_appimage_at("/home/ola/Apps/InDuckGo.AppImage").when_rendered();
+
+    assert_eq!(lines[..2], ["[Desktop Entry]", AppImageMenuEntry::MARKER]);
+}

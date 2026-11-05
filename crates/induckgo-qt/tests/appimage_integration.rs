@@ -1,8 +1,11 @@
 //! An AppImage puts itself into the application menu, so the desktop can show its icon.
 //!
 //! A packaged InDuckGo already has its entry in `/usr/share/applications`; the AppImage must not shadow it.
+//! The entry makes the desktop run the AppImage file later, so it is only written for a file nobody else can
+//! replace, and it never overwrites an entry the person wrote themselves.
 
 use std::fs;
+use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
 use std::path::PathBuf;
 
@@ -22,7 +25,19 @@ impl IntegrationScenario {
     const ICON: &'static str = "icons/hicolor/scalable/apps/io.github.induckgo.InDuckGo.svg";
 
     fn given_an_appimage_on_a_machine_without_an_installed_package() -> Self {
-        Self { roots: TempDir::new().expect("roots"), appimage: PathBuf::from("/home/ola/Apps/InDuckGo.AppImage") }
+        let roots = TempDir::new().expect("roots");
+        let appimage = Self::appimage_in(&roots.path().join("Apps"), "InDuckGo.AppImage");
+        Self { roots, appimage }
+    }
+
+    /// An executable file in a directory only its owner can write to.
+    fn appimage_in(directory: &Path, name: &str) -> PathBuf {
+        fs::create_dir_all(directory).expect("directory");
+        fs::set_permissions(directory, fs::Permissions::from_mode(0o755)).expect("directory mode");
+        let appimage = directory.join(name);
+        fs::write(&appimage, b"AppImage").expect("appimage");
+        fs::set_permissions(&appimage, fs::Permissions::from_mode(0o755)).expect("appimage mode");
+        appimage
     }
 
     fn with_the_package_installed_system_wide(self) -> Self {
@@ -32,9 +47,32 @@ impl IntegrationScenario {
         self
     }
 
-    fn with_the_appimage_moved_to(mut self, path: &str) -> Self {
+    fn with_the_appimage_moved_to_another_folder(mut self) -> Self {
         self.integrate();
-        self.appimage = PathBuf::from(path);
+        self.appimage = Self::appimage_in(&self.roots.path().join("Downloads"), "InDuckGo.AppImage");
+        self
+    }
+
+    fn with_the_appimage_file_writable_by_others(self) -> Self {
+        fs::set_permissions(&self.appimage, fs::Permissions::from_mode(0o757)).expect("appimage mode");
+        self
+    }
+
+    fn with_the_appimage_folder_writable_by_the_group(self) -> Self {
+        let folder = self.appimage.parent().expect("folder");
+        fs::set_permissions(folder, fs::Permissions::from_mode(0o775)).expect("folder mode");
+        self
+    }
+
+    fn with_a_missing_appimage(mut self) -> Self {
+        self.appimage = self.roots.path().join("Apps/Gone.AppImage");
+        self
+    }
+
+    fn with_an_entry_the_person_wrote(self, text: &str) -> Self {
+        let entry = self.user_file(Self::ENTRY);
+        fs::create_dir_all(entry.parent().expect("parent")).expect("applications");
+        fs::write(entry, text).expect("own entry");
         self
     }
 
@@ -59,34 +97,35 @@ impl IntegrationScenario {
     fn user_file(&self, relative: &str) -> PathBuf {
         self.data_home().join(relative)
     }
+
+    fn entry_text(&self) -> String {
+        fs::read_to_string(self.user_file(Self::ENTRY)).expect("entry")
+    }
 }
 
 #[test]
 fn should_write_a_menu_entry_that_starts_the_appimage() {
     let scenario = IntegrationScenario::given_an_appimage_on_a_machine_without_an_installed_package().when_started();
 
-    let entry = fs::read_to_string(scenario.user_file(IntegrationScenario::ENTRY)).expect("entry");
-    assert!(entry.contains("Exec=/home/ola/Apps/InDuckGo.AppImage %U"));
+    assert!(scenario.entry_text().contains(&format!("Exec={} %U", scenario.appimage.display())));
 }
 
 #[test]
 fn should_write_the_icon_the_entry_names() {
     let scenario = IntegrationScenario::given_an_appimage_on_a_machine_without_an_installed_package().when_started();
 
-    let entry = fs::read_to_string(scenario.user_file(IntegrationScenario::ENTRY)).expect("entry");
     let icon = scenario.user_file(IntegrationScenario::ICON);
-    assert!(entry.contains(&format!("Icon={}", icon.display())));
+    assert!(scenario.entry_text().contains(&format!("Icon={}", icon.display())));
     assert!(fs::read_to_string(icon).expect("icon").contains("<svg"));
 }
 
 #[test]
 fn should_follow_the_appimage_when_it_is_moved() {
     let scenario = IntegrationScenario::given_an_appimage_on_a_machine_without_an_installed_package()
-        .with_the_appimage_moved_to("/home/ola/Downloads/InDuckGo.AppImage")
+        .with_the_appimage_moved_to_another_folder()
         .when_started();
 
-    let entry = fs::read_to_string(scenario.user_file(IntegrationScenario::ENTRY)).expect("entry");
-    assert!(entry.contains("Exec=/home/ola/Downloads/InDuckGo.AppImage %U"));
+    assert!(scenario.entry_text().contains(&format!("Exec={} %U", scenario.appimage.display())));
 }
 
 #[test]
@@ -95,5 +134,41 @@ fn should_leave_the_installed_package_alone() {
         .with_the_package_installed_system_wide()
         .when_started();
 
-    assert!(!Path::new(&scenario.user_file(IntegrationScenario::ENTRY)).exists());
+    assert!(!scenario.user_file(IntegrationScenario::ENTRY).exists());
+}
+
+#[test]
+fn should_not_run_an_appimage_file_that_others_can_replace() {
+    let scenario = IntegrationScenario::given_an_appimage_on_a_machine_without_an_installed_package()
+        .with_the_appimage_file_writable_by_others()
+        .when_started();
+
+    assert!(!scenario.user_file(IntegrationScenario::ENTRY).exists());
+}
+
+#[test]
+fn should_not_run_an_appimage_from_a_folder_the_group_can_write_to() {
+    let scenario = IntegrationScenario::given_an_appimage_on_a_machine_without_an_installed_package()
+        .with_the_appimage_folder_writable_by_the_group()
+        .when_started();
+
+    assert!(!scenario.user_file(IntegrationScenario::ENTRY).exists());
+}
+
+#[test]
+fn should_not_write_an_entry_for_an_appimage_that_does_not_exist() {
+    let scenario = IntegrationScenario::given_an_appimage_on_a_machine_without_an_installed_package()
+        .with_a_missing_appimage()
+        .when_started();
+
+    assert!(!scenario.user_file(IntegrationScenario::ENTRY).exists());
+}
+
+#[test]
+fn should_keep_an_entry_the_person_wrote_themselves() {
+    let scenario = IntegrationScenario::given_an_appimage_on_a_machine_without_an_installed_package()
+        .with_an_entry_the_person_wrote("[Desktop Entry]\nName=My browser\n")
+        .when_started();
+
+    assert_eq!(scenario.entry_text(), "[Desktop Entry]\nName=My browser\n");
 }

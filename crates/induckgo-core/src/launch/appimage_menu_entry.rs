@@ -15,7 +15,10 @@ pub struct AppImageMenuEntry<'entry> {
 }
 
 impl<'entry> AppImageMenuEntry<'entry> {
+    /// The line that tells the entry apart from one the person wrote: only marked entries are ever rewritten.
+    pub const MARKER: &'static str = "X-InDuckGo-AppImage=true";
     /// The name of the installed program in the packaged entry's `Exec` lines.
+    const GROUP_HEADER: &'static str = "[Desktop Entry]";
     const PACKAGED_PROGRAM: &'static str = "induckgo";
 
     #[must_use]
@@ -33,6 +36,9 @@ impl<'entry> AppImageMenuEntry<'entry> {
     }
 
     fn adapted(&self, line: &str) -> String {
+        if line == Self::GROUP_HEADER {
+            return format!("{line}\n{}", Self::MARKER);
+        }
         if let Some(arguments) = line.strip_prefix("Exec=").and_then(|exec| exec.strip_prefix(Self::PACKAGED_PROGRAM)) {
             let program = DesktopEntry::exec_argument(&self.appimage.to_string_lossy());
             return format!("Exec={program}{arguments}");

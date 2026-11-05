@@ -4,9 +4,14 @@
 //! installs that file, an AppImage does not. Without it the window shows a generic Wayland icon. The entry lives in
 //! the person's own data directory and names the AppImage file, so moving the file only needs one more start.
 //! A packaged InDuckGo already owns the entry system-wide and is left alone.
+//!
+//! The entry makes the desktop run the AppImage file whenever the person clicks it, so it is written only for a
+//! file that nobody but its owner can replace (neither the file nor its folder is writable by the group or by
+//! others: `/tmp` is not), and an entry the person wrote themselves is never overwritten.
 
 use std::fs;
 use std::io;
+use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
 use std::path::PathBuf;
 
@@ -26,6 +31,8 @@ impl AppImageIntegration {
     const ICON_FILE: &'static str = "io.github.induckgo.InDuckGo.svg";
     const PACKAGED_ENTRY: &'static str = include_str!("../../../packaging/linux/io.github.induckgo.InDuckGo.desktop");
     const ICON: &'static str = include_str!("../../../assets/icons/io.github.induckgo.InDuckGo.svg");
+    /// The group-write and other-write permission bits.
+    const WRITABLE_BY_OTHERS: u32 = 0o022;
     const DEFAULT_SYSTEM_DATA_DIRECTORIES: &'static str = "/usr/local/share:/usr/share";
 
     #[must_use]
@@ -50,13 +57,32 @@ impl AppImageIntegration {
     /// # Errors
     /// Returns the I/O error when the person's data directory cannot be written.
     pub fn install(&self, appimage: &Path) -> io::Result<()> {
-        if self.is_installed_system_wide() {
+        let entry_file = self.applications.join(Self::ENTRY_FILE);
+        if self.is_installed_system_wide()
+            || !Self::is_safe_to_run_later(appimage)
+            || Self::is_written_by_hand(&entry_file)
+        {
             return Ok(());
         }
         let icon = self.icons.join(Self::ICON_FILE);
         Self::write_when_changed(&icon, Self::ICON)?;
         let entry = AppImageMenuEntry::new(Self::PACKAGED_ENTRY, appimage, &icon).render();
-        Self::write_when_changed(&self.applications.join(Self::ENTRY_FILE), &entry)
+        Self::write_when_changed(&entry_file, &entry)
+    }
+
+    /// An existing file that does not carry the marker is the person's own entry.
+    fn is_written_by_hand(entry_file: &Path) -> bool {
+        fs::read_to_string(entry_file).is_ok_and(|text| !text.lines().any(|line| line == AppImageMenuEntry::MARKER))
+    }
+
+    /// A file that exists and that only its owner can write, in a folder only its owner can write to.
+    fn is_safe_to_run_later(appimage: &Path) -> bool {
+        let is_closed = |path: &Path| {
+            fs::metadata(path).is_ok_and(|metadata| metadata.permissions().mode() & Self::WRITABLE_BY_OTHERS == 0)
+        };
+        fs::metadata(appimage).is_ok_and(|metadata| metadata.is_file())
+            && is_closed(appimage)
+            && appimage.parent().is_some_and(is_closed)
     }
 
     fn is_installed_system_wide(&self) -> bool {

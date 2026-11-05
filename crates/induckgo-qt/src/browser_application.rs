@@ -2,7 +2,6 @@
 
 use std::fs;
 use std::path::Path;
-use std::path::PathBuf;
 use std::process::ExitCode;
 use std::sync::Arc;
 
@@ -103,8 +102,13 @@ impl BrowserApplication {
 
     /// An AppImage installs no `.desktop` file, so the desktop could not show its icon; it gets an entry of its own.
     fn integrate_appimage(directories: &InstallationDirectories) {
-        let appimage = std::env::var_os(ProgramLocation::APPIMAGE_VARIABLE).map(PathBuf::from);
-        let Some(appimage) = appimage.filter(|path| path.is_absolute()) else { return };
+        let appimage = std::env::var_os(ProgramLocation::APPIMAGE_VARIABLE);
+        let appdir = std::env::var_os(ProgramLocation::APPDIR_VARIABLE);
+        let Ok(executable) = std::env::current_exe() else { return };
+        let Some(appimage) = ProgramLocation::running_appimage(appimage.as_deref(), appdir.as_deref(), &executable)
+        else {
+            return;
+        };
         if let Err(error) = AppImageIntegration::for_environment(directories).install(&appimage) {
             eprintln!("induckgo: cannot add the application menu entry: {error}");
         }

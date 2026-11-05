@@ -587,42 +587,22 @@ ApplicationWindow {
         leaving.forEach(function(tab) { closeTab(tabList.indexOf(tab)) })
     }
 
-    Dialog {
+    ConfirmDialog {
         id: clearAppDataDialog
-        title: window.isWebApp ? bridge.message("Clear Data of {name}?").replace("{name}", window.launch.webApp.name) : ""
-        modal: true
-        padding: 20
-        anchors.centerIn: parent
-        width: Math.min(460, window.width - 48)
-        footer: DialogButtonBox {
-            Button { text: window.plain("_Cancel"); DialogButtonBox.buttonRole: DialogButtonBox.RejectRole }
-            Button { text: window.plain("C_lear"); highlighted: true; DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole }
-        }
-        onAccepted: window.burn()
-        Label {
-            width: parent.width
-            wrapMode: Text.Wrap
-            text: bridge.message("Signs you out and deletes this app's cookies, site data and cache. Nothing else is affected.")
-        }
+        bridge: bridge
+        heading: window.isWebApp ? bridge.message("Clear Data of {name}?").replace("{name}", window.launch.webApp.name) : ""
+        body: bridge.message("Signs you out and deletes this app's cookies, site data and cache. Nothing else is affected.")
+        confirmLabel: "C_lear"
+        onConfirmed: window.burn()
     }
 
-    Dialog {
+    ConfirmDialog {
         id: burnDialog
-        title: bridge.message("Burn Browsing Data?")
-        modal: true
-        padding: 20
-        anchors.centerIn: parent
-        width: Math.min(460, window.width - 48)
-        footer: DialogButtonBox {
-            Button { text: window.plain("_Cancel"); DialogButtonBox.buttonRole: DialogButtonBox.RejectRole }
-            Button { text: window.plain("_Burn"); highlighted: true; DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole }
-        }
-        onAccepted: window.burn()
-        Label {
-            width: parent.width
-            wrapMode: Text.Wrap
-            text: bridge.message("Closes all tabs and windows of this profile and deletes its cookies, site data, cache and history.")
-        }
+        bridge: bridge
+        heading: bridge.message("Burn Browsing Data?")
+        body: bridge.message("Closes all tabs and windows of this profile and deletes its cookies, site data, cache and history.")
+        confirmLabel: "_Burn"
+        onConfirmed: window.burn()
     }
 
     AboutDialog {

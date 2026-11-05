@@ -126,7 +126,7 @@ separately in every profile.
 A site, an advertiser or the browser's own maker can follow you in seven ways. This table names each way, the
 mechanism InDuckGo uses against it, where that mechanism lives in the code, and the check that exercises it. The
 mechanisms are those of the WebKitGTK edition (1.1.x); the 1.2 edition on QtWebEngine is being rebuilt to
-match them (see the [migration plan](docs/en/plans/2026-11-04-qtwebengine-migration-implementation.md)) and
+match them (see the [migration plan](docs/en/plans/2026-11-04-qtwebengine-migration-plan.md)) and
 does not carry all of them yet.
 
 | Way of following you | What InDuckGo does | Code (`crates/induckgo-core/src`) | Checked by |

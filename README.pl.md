@@ -127,7 +127,7 @@ osobno w każdym profilu.
 Strona, reklamodawca albo sam producent przeglądarki mogą Cię śledzić na siedem sposobów. Tabela nazywa każdy
 z nich, mechanizm użyty przeciwko niemu przez InDuckGo, miejsce tego mechanizmu w kodzie i test lub pomiar,
 który go sprawdza. Mechanizmy dotyczą edycji na WebKitGTK (1.1.x); edycja 1.2 na QtWebEngine jest odtwarzana
-tak, by je powtórzyć (zob. [plan migracji](docs/pl/plans/2026-11-04-qtwebengine-migration-implementation.md)),
+tak, by je powtórzyć (zob. [plan migracji](docs/pl/plans/2026-11-04-qtwebengine-migration-plan.md)),
 i jeszcze nie ma ich wszystkich.
 
 | Sposób śledzenia | Co robi InDuckGo | Kod (`crates/induckgo-core/src`) | Sprawdza to |

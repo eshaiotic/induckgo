@@ -171,7 +171,7 @@ Qt edition still lacks is listed in the [protection table](#what-it-protects-you
 
 Every list and data set is downloaded, never bundled, and size-limited and validated before use. A filter list
 can only block or hide: the conversion keeps no scriptlets, so a hostile list could break a site but never run
-code in it. The whole suite (`./run-tests`, 736 tests in CI plus the 124 Qt tests run locally, clippy and `cargo audit`) runs on every push.
+code in it. The whole suite (`./run-tests`, 860 tests including the Qt ones, clippy and `cargo audit`) runs on every push.
 
 ### The evidence
 
@@ -315,8 +315,9 @@ Installed web apps start from the desktop's application menu (`induckgo-qt --web
 Stack: **cargo-nextest** — 860 object-oriented Given/When/Then scenarios: 666 for the domain in
 `crates/induckgo-core/tests/` (80 files, one per domain type), 124 for the Qt edition and its engine adapter,
 61 for the report tool in `crates/induckgo-test-report/tests/` and 9 for the benchmark tool in
-`crates/induckgo-bench/tests/`. The Qt crates need Qt 6, so CI runs the other 736; run the Qt ones with
-`QT_QPA_PLATFORM=offscreen cargo test -p induckgo-qt -p induckgo-engine-qt`.
+`crates/induckgo-bench/tests/`. CI runs all of them in an Arch container with Qt 6, the Qt ones under Xvfb with Mesa (QtWebEngine needs an OpenGL
+context even offscreen); run only those with
+`xvfb-run -a cargo test -p induckgo-qt -p induckgo-engine-qt` (or `QT_QPA_PLATFORM=offscreen` on a desktop).
 
 ```sh
 ./run-tests                     # all tests + HTML report in tests/reports/ (opens in the browser)

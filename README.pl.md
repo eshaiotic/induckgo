@@ -172,7 +172,7 @@ WebKitGTK i edycja Qt; czego edycji Qt jeszcze brakuje, wymienia [tabela ochron]
 
 Każda lista i zestaw danych jest pobierany, nigdy dołączany, a przed użyciem ograniczany rozmiarem i
 walidowany. Lista filtrów może tylko blokować albo ukrywać: konwersja nie zachowuje skryptletów, więc złośliwa
-lista mogłaby zepsuć stronę, ale nigdy nie uruchomi w niej kodu. Cały zestaw (`./run-tests`, 736 testów w CI i 124 testy Qt uruchamianych lokalnie oraz
+lista mogłaby zepsuć stronę, ale nigdy nie uruchomi w niej kodu. Cały zestaw (`./run-tests`, 860 testów razem z testami Qt, oraz
 clippy i `cargo audit` w CI) uruchamia się przy każdym wypchnięciu.
 
 ### Dowody
@@ -317,8 +317,9 @@ Zainstalowane aplikacje webowe uruchamia się z menu aplikacji pulpitu (`induckg
 Stos: **cargo-nextest** — 860 obiektowych scenariuszy Given/When/Then: 666 dla domeny w
 `crates/induckgo-core/tests/` (80 plików, jeden na typ domenowy), 124 dla edycji Qt i jej adaptera silnika, 61 dla
 narzędzia raportu w `crates/induckgo-test-report/tests/` i 9 dla narzędzia benchmarków w
-`crates/induckgo-bench/tests/`. Crate'y Qt potrzebują Qt 6, więc CI uruchamia pozostałe 736; testy Qt uruchom
-przez `QT_QPA_PLATFORM=offscreen cargo test -p induckgo-qt -p induckgo-engine-qt`.
+`crates/induckgo-bench/tests/`. CI uruchamia je wszystkie w kontenerze Arch z Qt 6, testy Qt pod Xvfb z Mesą (QtWebEngine potrzebuje kontekstu
+OpenGL nawet bez okna); same testy Qt uruchom przez
+`xvfb-run -a cargo test -p induckgo-qt -p induckgo-engine-qt` (albo `QT_QPA_PLATFORM=offscreen` na pulpicie).
 
 ```sh
 ./run-tests                     # wszystkie testy + raport HTML w tests/reports/ (otwiera się w przeglądarce)

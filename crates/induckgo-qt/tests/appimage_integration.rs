@@ -2,7 +2,8 @@
 //!
 //! A packaged InDuckGo already has its entry in `/usr/share/applications`; the AppImage must not shadow it.
 //! The entry makes the desktop run the AppImage file later, so it is only written for a file nobody else can
-//! replace, and it never overwrites an entry the person wrote themselves.
+//! replace, it is withdrawn when the file stops being such a file, and it never touches an entry the person
+//! wrote themselves.
 
 use std::fs;
 use std::os::unix::fs::PermissionsExt;
@@ -19,6 +20,8 @@ use induckgo_qt as _;
 struct IntegrationScenario {
     roots: TempDir,
     appimage: PathBuf,
+    /// The folders from here upwards are the person's own business and are not examined.
+    home: PathBuf,
 }
 
 impl IntegrationScenario {
@@ -28,7 +31,8 @@ impl IntegrationScenario {
     fn given_an_appimage_on_a_machine_without_an_installed_package() -> Self {
         let roots = TempDir::new().expect("roots");
         let appimage = Self::appimage_in(&roots.path().join("Apps"), "InDuckGo.AppImage");
-        Self { roots, appimage }
+        let home = roots.path().to_path_buf();
+        Self { roots, appimage, home }
     }
 
     /// An executable file in a directory only its owner can write to.
@@ -91,6 +95,17 @@ impl IntegrationScenario {
         fs::canonicalize(self.roots.path().join("Shared/InDuckGo-1.2.3.AppImage")).expect("real file")
     }
 
+    /// The AppImage lies in a folder of its own inside a folder everybody can create files in, outside the home.
+    fn with_the_appimage_in_a_folder_below_a_shared_temporary_folder(mut self) -> Self {
+        let shared = self.roots.path().join("Shared");
+        fs::create_dir_all(&shared).expect("shared");
+        fs::set_permissions(&shared, fs::Permissions::from_mode(0o1777)).expect("shared mode");
+        self.appimage = Self::appimage_in(&shared.join("Apps"), "InDuckGo.AppImage");
+        self.home = self.roots.path().join("home");
+        fs::create_dir_all(&self.home).expect("home");
+        self
+    }
+
     fn with_a_missing_appimage(mut self) -> Self {
         self.appimage = self.roots.path().join("Apps/Gone.AppImage");
         self
@@ -113,10 +128,20 @@ impl IntegrationScenario {
 
     fn integrate(&self) {
         let directories = InstallationDirectories::under(&self.data_home(), &self.roots.path().join("cache"));
-        AppImageIntegration::new(&directories, vec![self.system_data()]).install(&self.appimage).expect("install");
+        AppImageIntegration::new(&directories, &self.home, vec![self.system_data()])
+            .install(&self.appimage)
+            .expect("install");
     }
 
     fn when_started(self) -> Self {
+        self.integrate();
+        self
+    }
+
+    /// The person closed the AppImage's permissions behind the desktop's back, then starts it again.
+    fn when_started_again_after_others_were_allowed_to_write_to_the_appimage(self) -> Self {
+        self.integrate();
+        fs::set_permissions(&self.appimage, fs::Permissions::from_mode(0o757)).expect("appimage mode");
         self.integrate();
         self
     }
@@ -234,4 +259,31 @@ fn should_name_the_file_a_link_leads_to_instead_of_the_link() {
         .when_started();
 
     assert!(scenario.entry_text().contains(&format!("Exec={} %U", scenario.real_appimage().display())));
+}
+
+#[test]
+fn should_not_run_an_appimage_below_a_shared_folder_even_inside_a_folder_of_its_own() {
+    let scenario = IntegrationScenario::given_an_appimage_on_a_machine_without_an_installed_package()
+        .with_the_appimage_in_a_folder_below_a_shared_temporary_folder()
+        .when_started();
+
+    assert!(!scenario.user_file(IntegrationScenario::ENTRY).exists());
+}
+
+#[test]
+fn should_withdraw_its_entry_when_the_appimage_it_names_is_no_longer_safe_to_run() {
+    let scenario = IntegrationScenario::given_an_appimage_on_a_machine_without_an_installed_package()
+        .when_started_again_after_others_were_allowed_to_write_to_the_appimage();
+
+    assert!(!scenario.user_file(IntegrationScenario::ENTRY).exists());
+}
+
+#[test]
+fn should_never_withdraw_an_entry_the_person_wrote_themselves() {
+    let scenario = IntegrationScenario::given_an_appimage_on_a_machine_without_an_installed_package()
+        .with_the_appimage_file_writable_by_others()
+        .with_an_entry_the_person_wrote("[Desktop Entry]\nName=My browser\n")
+        .when_started();
+
+    assert_eq!(scenario.entry_text(), "[Desktop Entry]\nName=My browser\n");
 }

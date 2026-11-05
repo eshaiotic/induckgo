@@ -8,11 +8,28 @@ Item {
     property string title
     property string subtitle
     default property alias control: controlSlot.data
+    /// The whole row can be clicked, as libadwaita's activatable rows can; the control at its end stays as it is.
+    property bool activatable: false
+    signal activated()
     readonly property bool isFirst: !parent || parent.children[0] === row
 
     Layout.fillWidth: true
     implicitHeight: Math.max(50, texts.implicitHeight + 24)
 
+    Rectangle {
+        visible: row.activatable && (rowArea.containsMouse || rowArea.pressed)
+        anchors.fill: parent
+        anchors.topMargin: row.isFirst ? 0 : 1
+        color: Qt.alpha(palette.windowText, rowArea.pressed ? 0.1 : 0.05)
+    }
+    MouseArea {
+        id: rowArea
+        anchors.fill: parent
+        enabled: row.activatable
+        hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
+        onClicked: row.activated()
+    }
     Rectangle {
         visible: !row.isFirst
         anchors.top: parent.top

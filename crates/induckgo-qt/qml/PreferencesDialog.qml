@@ -225,6 +225,8 @@ Dialog {
                         PreferencesRow {
                             title: dialog.say("Download Folder")
                             subtitle: dialog.downloadFolder
+                            activatable: true
+                            onActivated: dialog.folderRequested()
                             IconButton {
                                 iconName: "folder"
                                 tip: dialog.say("Choose Folder")

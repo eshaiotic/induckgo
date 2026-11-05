@@ -674,7 +674,10 @@ ApplicationWindow {
         downloadFolder: window.downloadFolder
         onToolbarChanged: window.toolbarVersion++
         onNotice: function(text) { window.toast(text) }
-        onFolderRequested: folderDialog.open()
+        onFolderRequested: {
+            folderDialog.currentFolder = "file://" + window.downloadFolder
+            folderDialog.open()
+        }
     }
 
     FolderDialog {

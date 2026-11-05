@@ -9,8 +9,8 @@
 **A privacy-first web browser for Linux.** It rebuilds the protections of the open-source DuckDuckGo macOS
 browser on **QtWebEngine** (Chromium, the engine of Chrome and Brave), with a **Qt 6 Quick** user interface and a
 domain core written in **Rust**. No telemetry, no extensions to manage, every profile and installed web app kept
-apart from the others. The first generation ran on WebKitGTK; its code and its 1.2.0 packages are still in this
-repository while the Qt edition catches up.
+apart from the others. The first generation ran on WebKitGTK (the versions before 1.2.0); its code stays in this
+repository, and the packages still contain it, while the Qt edition catches up.
 
 [![tests](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml/badge.svg)](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml)
 [![release](https://img.shields.io/github/v/release/eshaiotic/induckgo?color=6A5ACD)](https://github.com/eshaiotic/induckgo/releases/latest)
@@ -31,7 +31,7 @@ each in its own window behind a proxy that recorded only host names, for 5 minut
 counted once per site. The run was done twice (Chrome and Brave in both, so the two runs show how much a single
 run varies), because InDuckGo's Qt edition needs protection data that it does not download itself yet.
 
-| | Chrome | Brave | InDuckGo Qt, fresh profile | InDuckGo Qt, protection data on disk | InDuckGo GTK (the 1.2.0 packages) |
+| | Chrome | Brave | InDuckGo Qt, fresh profile | InDuckGo Qt, protection data on disk | InDuckGo GTK (versions before 1.2.0) |
 |---|---|---|---|---|---|
 | Trackers let through on 12 sites | 111 / 109 | 9 / 8 | 90 | 31 | **6** |
 | … of which ad servers | 90 / 88 | 7 / 7 | 73 | 31 | **5** |
@@ -228,8 +228,8 @@ its packages for other distributions.
 
 ## Installing
 
-Download a package from the [latest release](https://github.com/eshaiotic/induckgo/releases/latest). **The 1.2.0
-packages hold the previous, WebKitGTK edition** (the Qt edition has no packages yet; see *Running from source*, and
+Download a package from the [latest release](https://github.com/eshaiotic/induckgo/releases/latest). **The packages still hold
+the previous, WebKitGTK edition** (the one of the versions before 1.2.0; 1.2.x did not change its behaviour; the Qt edition has no packages yet; see *Running from source*, and
 the packaging task in the migration plan):
 
 | File | For |
@@ -345,7 +345,7 @@ crates/induckgo-core/tests/
 crates/induckgo-qt/      the browser: Qt Quick interface (QML) on QtWebEngine, bound to Rust with cxx-qt
 crates/induckgo-engine-qt/
                          the QtWebEngine adapter: request and cookie policies, C++ shim
-crates/induckgo/         the previous edition: GTK 4 + libadwaita on WebKitGTK (what the 1.2.0 packages hold)
+crates/induckgo/         the previous edition: GTK 4 + libadwaita on WebKitGTK (the versions before 1.2.0; the packages still hold it)
 crates/induckgo-test-report/
                          developer tool behind ./run-tests: the HTML test report (never packaged)
 assets/                  vendored Content Scope Scripts (Apache-2.0), Guard's page script, icons,

@@ -9,8 +9,8 @@
 **Przeglądarka dla Linuksa, w której prywatność jest na pierwszym miejscu.** Odtwarza ochronę z otwartej
 przeglądarki DuckDuckGo dla macOS na silniku **QtWebEngine** (Chromium, silnik Chrome i Brave), z interfejsem
 **Qt 6 Quick** i rdzeniem domenowym napisanym w **Rust**. Bez telemetrii, bez rozszerzeń do pilnowania, każdy
-profil i każda zainstalowana aplikacja webowa są od siebie odizolowane. Pierwsza generacja działała na WebKitGTK;
-jej kod i paczki 1.2.0 zostają w tym repozytorium, dopóki edycja Qt jej nie dogoni.
+profil i każda zainstalowana aplikacja webowa są od siebie odizolowane. Pierwsza generacja działała na WebKitGTK (wersje przed 1.2.0);
+jej kod zostaje w tym repozytorium, a paczki wciąż ją zawierają, dopóki edycja Qt jej nie dogoni.
 
 [![tests](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml/badge.svg)](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml)
 [![release](https://img.shields.io/github/v/release/eshaiotic/induckgo?color=6A5ACD)](https://github.com/eshaiotic/induckgo/releases/latest)
@@ -31,7 +31,7 @@ z 12 popularnych serwisów. Trackery ocenia neutralna lista (Disconnect), każdy
 Pomiar wykonano dwa razy (Chrome i Brave w obu, więc dwa przebiegi pokazują, jak bardzo wynik waha się między
 uruchomieniami), ponieważ edycja Qt potrzebuje danych ochrony, których jeszcze sama nie pobiera.
 
-| | Chrome | Brave | InDuckGo Qt, świeży profil | InDuckGo Qt, dane ochrony na dysku | InDuckGo GTK (paczki 1.2.0) |
+| | Chrome | Brave | InDuckGo Qt, świeży profil | InDuckGo Qt, dane ochrony na dysku | InDuckGo GTK (wersje przed 1.2.0) |
 |---|---|---|---|---|---|
 | Trackery przepuszczone na 12 serwisach | 111 / 109 | 9 / 8 | 90 | 31 | **6** |
 | … w tym serwery reklam | 90 / 88 | 7 / 7 | 73 | 31 | **5** |
@@ -231,8 +231,8 @@ paczki dla innych dystrybucji.
 
 ## Instalacja
 
-Pobierz paczkę z [najnowszego wydania](https://github.com/eshaiotic/induckgo/releases/latest). **Paczki 1.2.0
-zawierają poprzednią edycję, na WebKitGTK** (edycja Qt nie ma jeszcze paczek; zob. *Uruchamianie ze źródeł* i
+Pobierz paczkę z [najnowszego wydania](https://github.com/eshaiotic/induckgo/releases/latest). **Paczki wciąż
+zawierają poprzednią edycję, na WebKitGTK** (tę z wersji przed 1.2.0; wersje 1.2.x nie zmieniły jej działania; edycja Qt nie ma jeszcze paczek; zob. *Uruchamianie ze źródeł* i
 zadanie pakowania w planie migracji):
 
 | Plik | Dla |
@@ -349,7 +349,7 @@ crates/induckgo-core/tests/
 crates/induckgo-qt/      przeglądarka: interfejs Qt Quick (QML) na QtWebEngine, spięty z Rustem przez cxx-qt
 crates/induckgo-engine-qt/
                          adapter QtWebEngine: polityki żądań i ciasteczek, przekładka w C++
-crates/induckgo/         poprzednia edycja: GTK 4 + libadwaita na WebKitGTK (to jest w paczkach 1.2.0)
+crates/induckgo/         poprzednia edycja: GTK 4 + libadwaita na WebKitGTK (wersje przed 1.2.0; paczki wciąż ją zawierają)
 crates/induckgo-test-report/
                          narzędzie deweloperskie za ./run-tests: raport testów HTML (nie trafia do paczek)
 assets/                  dołączone Content Scope Scripts (Apache-2.0), skrypt strony Guarda, ikony,

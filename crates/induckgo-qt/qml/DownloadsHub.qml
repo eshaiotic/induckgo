@@ -12,6 +12,7 @@ Item {
     readonly property alias everything: allRows
     property int clearedThrough: -1
     property bool managerOpen: false
+    property bool popoverOpen: false
     property var waiting: null
 
     signal finished(string name, string path)
@@ -20,18 +21,26 @@ Item {
     ListModel { id: latestRows }
     ListModel { id: allRows }
 
+    // The same downloads in the same order are updated in place, so a list being scrolled or hovered keeps still.
     function fill(model, json) {
-        model.clear()
-        for (const row of JSON.parse(json)) {
-            model.append({ id: row.id, name: row.name, path: row.path, state: row.state,
-                           received: row.received, total: row.total === null ? -1 : row.total, missing: row.missing })
-        }
+        const rows = JSON.parse(json)
+        const unchanged = model.count === rows.length && rows.every(function(row, index) { return model.get(index).id === row.id })
+        if (!unchanged) model.clear()
+        rows.forEach(function(row, index) {
+            const values = { id: row.id, name: row.name, path: row.path, state: row.state,
+                             received: row.received, total: row.total === null ? -1 : row.total, missing: row.missing }
+            if (unchanged) model.set(index, values)
+            else model.append(values)
+        })
     }
 
     function reload() {
         fill(latestRows, bridge.downloads_json(clearedThrough, 5))
         if (managerOpen) fill(allRows, bridge.downloads_json(-1, 0))
     }
+
+    // A file deleted or moved while a list is on screen greys out its row: the lists look again every two seconds.
+    Timer { interval: 2000; repeat: true; running: hub.managerOpen || hub.popoverOpen; onTriggered: hub.reload() }
 
     // A large file reports progress thousands of times: the lists are rebuilt at most four times a second.
     Timer { id: coalesce; interval: 250; onTriggered: hub.reload() }
@@ -45,7 +54,10 @@ Item {
 
     function clearHistory() { bridge.download_clear_history(); clearedThrough = -1; reload() }
     function remove(id) { bridge.download_remove(id); reload() }
-    function showInFolder(path) { bridge.show_file_in_folder(path) }
+    // A file that is gone cannot be selected: its folder is shown instead.
+    function showInFolder(path) {
+        if (!bridge.show_file_in_folder(path)) bridge.open_folder(path.substring(0, path.lastIndexOf("/")))
+    }
     function openFolder() { bridge.open_folder(bridge.download_folder()) }
 
     function begin(download, path) {

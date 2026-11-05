@@ -42,6 +42,8 @@ ItemDelegate {
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignVCenter
             spacing: 2
+            // A file that was moved or deleted is greyed out: there is nothing to open.
+            opacity: row.state === "finished" && row.missing ? 0.45 : 1
             Text {
                 Layout.fillWidth: true
                 text: row.name

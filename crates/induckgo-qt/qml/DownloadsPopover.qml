@@ -21,7 +21,8 @@ Popup {
     modal: false
     focus: true
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
-    onClosed: closedAt = Date.now()
+    onAboutToShow: { hub.popoverOpen = true; hub.reload() }
+    onClosed: { closedAt = Date.now(); hub.popoverOpen = false }
 
     enter: Transition {
         NumberAnimation { property: "opacity"; from: 0; to: 1; duration: 110; easing.type: Easing.OutCubic }

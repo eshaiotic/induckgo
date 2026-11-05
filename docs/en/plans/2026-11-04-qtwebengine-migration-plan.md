@@ -162,6 +162,8 @@ At start, `EngineVersionProbe::current()` is checked against `MinimumEngineVersi
 
 ### Task 13: Packaging
 
+**Status: done 2026-11-05 (version 1.2.2).** All four formats carry the Qt edition. Qt 6.8 (Debian 13) crashes when `userScripts.collection` is bound while the view is created, so `BrowserTab.qml` installs the scripts afterwards and loads the first page only then. The Arch and Fedora builds need link-time optimisation off (`!lto`, `_lto_cflags`), because Rust's linker cannot read GCC's LTO objects of the C++ bridge. The AppImage is about 150 MB. Each package was installed in a clean container and started under Xvfb; it downloaded the protection data on first start. CI (`tests.yml`) runs all 860 tests, the Qt ones under Xvfb with Mesa.
+
 Arch PKGBUILD, rpm spec, deb: depend on distribution `qt6-webengine`; AppImage bundles Qt + QtWebEngine (record size in the release notes). Update `packaging/release.sh`, desktop entry and AppStream metadata; CI `tests.yml` installs Qt dev packages. Verify: `packaging/release.sh arch deb appimage rpm` builds; the AppImage starts on a clean container.
 
 ### Task 14: Benchmarks, sign-off, GTK removal, release

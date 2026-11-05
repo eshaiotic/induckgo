@@ -157,6 +157,8 @@ Przy starcie `EngineVersionProbe::current()` jest porównywane z `MinimumEngineV
 
 ### Zadanie 13: Pakowanie
 
+**Status: wykonane 2026-11-05 (wersja 1.2.2).** Wszystkie cztery formaty zawierają edycję Qt. Qt 6.8 (Debian 13) wywala się, gdy `userScripts.collection` jest związane przy tworzeniu widoku, więc `BrowserTab.qml` instaluje skrypty po utworzeniu i dopiero wtedy ładuje pierwszą stronę. Budowy dla Arch i Fedory wymagają wyłączenia optymalizacji w czasie łączenia (`!lto`, `_lto_cflags`), bo linker Rusta nie czyta obiektów LTO GCC z części C++. AppImage ma około 150 MB. Każdą paczkę zainstalowano w czystym kontenerze i uruchomiono pod Xvfb; przy pierwszym starcie pobrała dane ochrony. CI (`tests.yml`) uruchamia wszystkie 860 testów, te Qt pod Xvfb z Mesą.
+
 PKGBUILD dla Arch, spec rpm, deb: zależność od `qt6-webengine` dystrybucji; AppImage dołącza Qt + QtWebEngine (rozmiar zapisany w notatkach wydania). Zaktualizuj `packaging/release.sh`, plik desktop i metadane AppStream; CI `tests.yml` instaluje pakiety deweloperskie Qt. Weryfikacja: `packaging/release.sh arch deb appimage rpm` buduje; AppImage uruchamia się w czystym kontenerze.
 
 ### Zadanie 14: Benchmarki, odbiór, usunięcie GTK, wydanie

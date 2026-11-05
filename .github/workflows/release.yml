@@ -2,7 +2,7 @@
 #
 # The packages are built by the same scripts as a local `packaging/release.sh`: the .deb and the AppImage in a
 # Debian 13 container, the .rpm in a Fedora 44 container, the pacman package with makepkg in an Arch Linux
-# container. The release job adds SHA256SUMS and signed build provenance attestations, so anyone can check
+# container. All of them carry the Qt edition (QtWebEngine); the AppImage brings its own Qt. The release job adds SHA256SUMS and signed build provenance attestations, so anyone can check
 # that a download was built here from this repository (`gh attestation verify FILE --repo OWNER/REPO`).
 #
 # Third-party actions are pinned to commit SHAs: a moved tag cannot change what runs with the release token.
@@ -53,7 +53,7 @@ jobs:
       - name: Install build tools and InDuckGo's libraries
         run: >-
           pacman -Syu --noconfirm --needed base-devel git rust cargo-audit
-          gtk4 libadwaita libsoup3 webkitgtk-6.0 hicolor-icon-theme tor
+          hicolor-icon-theme qt6-base qt6-declarative qt6-svg qt6-webchannel qt6-webengine
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false

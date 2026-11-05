@@ -1,5 +1,5 @@
 #!/bin/sh
-# AppImage entry point of the Qt build: points Qt and QtWebEngine at the copies inside the image.
+# AppImage entry point: points Qt and QtWebEngine at the copies inside the image.
 here=$(dirname "$(readlink -f "$0")")
 export LD_LIBRARY_PATH="$here/usr/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 export QT_PLUGIN_PATH="$here/usr/lib/qt6/plugins"

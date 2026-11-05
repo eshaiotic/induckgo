@@ -10,18 +10,13 @@ Icon=io.github.induckgo.InDuckGo
 Terminal=false
 StartupNotify=true
 StartupWMClass=InDuckGo
-Categories=Network;WebBrowser;GTK;
+Categories=Network;WebBrowser;Qt;
 Keywords=web;browser;internet;privacy;tracker;duckduckgo;
 Keywords[pl]=www;przeglądarka;internet;prywatność;śledzenie;duckduckgo;
 MimeType=text/html;application/xhtml+xml;x-scheme-handler/http;x-scheme-handler/https;
-Actions=new-window;new-tor-window;
+Actions=new-window;
 
 [Desktop Action new-window]
 Name=New Window
 Name[pl]=Nowe okno
 Exec=induckgo
-
-[Desktop Action new-tor-window]
-Name=New Tor Window
-Name[pl]=Nowe okno Tor
-Exec=induckgo --tor

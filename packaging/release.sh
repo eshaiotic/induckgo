@@ -1,12 +1,12 @@
 #!/bin/sh
 # Builds InDuckGo release packages into dist/, with SHA256SUMS.
 #
-#   arch      pacman package, built here with makepkg (makepkg.conf flags apply: for this machine)
-#   deb       built in a Debian 13 container; installs on Debian 13, Ubuntu 24.04 LTS and newer; carries
-#             Debian's tor for the Tor window (Debian's tor package would start a system-wide Tor service)
-#   appimage  the Debian 13 build as an AppImage, with tor, its libraries, obfs4proxy and snowflake-client;
-#             the host needs WebKitGTK 6.0, GTK 4.14, libadwaita 1.5
-#   rpm       built in a Fedora 44 container
+#   arch      pacman package, built here with makepkg (makepkg.conf flags apply: for this machine); uses Arch's Qt
+#   deb       built in a Debian 13 container (Qt 6.8); installs on Debian 13 and newer, using the
+#             distribution's Qt and QtWebEngine
+#   appimage  the Debian 13 build with its own Qt, QtWebEngine and QML modules inside; runs on any x86_64
+#             Linux with glibc 2.41 or newer, the graphics stack and a desktop portal from the host
+#   rpm       built in a Fedora 44 container; uses Fedora's Qt and QtWebEngine
 #
 # Usage: packaging/release.sh [arch] [deb] [appimage] [rpm]      (no argument: all of them)
 # Containers run with rootless podman; CONTAINER_ENGINE=docker works too, but leaves root-owned files.

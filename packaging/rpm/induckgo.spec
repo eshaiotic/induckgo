@@ -1,32 +1,43 @@
 # Built by packaging/release.sh inside a Fedora container (packaging/rpm/build.sh). Source0 is a tarball of
-# the working tree. Library dependencies (libwebkitgtk-6.0.so.4, ...) are found by rpm in the ELF binary.
+# the working tree. Library dependencies (libQt6WebEngineQuick.so.6, ...) are found by rpm in the ELF binary;
+# the QML modules, the SVG plugin and the web engine's helper process are loaded at run time, so they are listed.
 
 # The release profile strips symbols, so there is nothing for a debuginfo package.
 %global debug_package %{nil}
+# Fedora's link-time optimisation flags would leave the C++ part of the Qt bridge unreadable for Rust's linker
+# (undefined references to Qt's inline functions).
+%global _lto_cflags %{nil}
 
 Name:           induckgo
-Version:        1.2.1
+Version:        1.2.2
 Release:        1%{?dist}
-Summary:        Privacy-first WebKitGTK browser built on DuckDuckGo's open-source tracker protections
+Summary:        Privacy-first browser on QtWebEngine (Chromium), built on DuckDuckGo's open-source tracker protections
 License:        GPL-3.0-or-later
 Source0:        %{name}-%{version}.tar.gz
 
 BuildRequires:  cargo
 BuildRequires:  rust
-BuildRequires:  pkgconfig(gtk4)
-BuildRequires:  pkgconfig(libadwaita-1)
-BuildRequires:  pkgconfig(libsoup-3.0)
-BuildRequires:  pkgconfig(webkitgtk-6.0)
+BuildRequires:  gcc-c++
+BuildRequires:  clang
+BuildRequires:  lld
+BuildRequires:  cmake(Qt6Core)
+BuildRequires:  cmake(Qt6Gui)
+BuildRequires:  cmake(Qt6Network)
+BuildRequires:  cmake(Qt6Qml)
+BuildRequires:  cmake(Qt6Quick)
+BuildRequires:  cmake(Qt6WebEngineCore)
+BuildRequires:  cmake(Qt6WebEngineQuick)
+BuildRequires:  cmake(Qt6WebChannel)
 Requires:       hicolor-icon-theme
-# The Tor window starts its own tor; Fedora's tor package leaves its system service off.
-Requires:       tor
-Recommends:     obfs4
+Requires:       qt6-qtdeclarative
+Requires:       qt6-qtsvg
+Requires:       qt6-qtwebchannel
+Requires:       qt6-qtwebengine
 
 %description
 InDuckGo blocks third-party trackers with DuckDuckGo's open-source protections, upgrades connections to
-HTTPS, removes tracking parameters from links and announces Global Privacy Control. Every profile and every
-site installed as an app runs in its own process with its own cookies and storage. The Tor window browses
-through InDuckGo's own Tor, with a session that lives in memory only.
+HTTPS and removes tracking parameters from links. Every profile and every site installed as an app runs in
+its own process with its own cookies and storage.
 
 %prep
 %autosetup
@@ -36,13 +47,13 @@ if ! grep -qx 'version = "%{version}"' Cargo.toml; then
 fi
 
 %build
-cargo build --release --locked -p induckgo
+cargo build --release --locked -p induckgo-qt
 
 %check
 cargo test --locked -p induckgo-core
 
 %install
-install -Dm0755 target/release/induckgo %{buildroot}%{_bindir}/induckgo
+install -Dm0755 target/release/induckgo-qt %{buildroot}%{_bindir}/induckgo
 install -Dm0644 packaging/linux/io.github.induckgo.InDuckGo.desktop -t %{buildroot}%{_datadir}/applications
 install -Dm0644 packaging/linux/io.github.induckgo.InDuckGo.metainfo.xml -t %{buildroot}%{_metainfodir}
 install -Dm0644 assets/icons/io.github.induckgo.InDuckGo.svg -t %{buildroot}%{_datadir}/icons/hicolor/scalable/apps
@@ -56,6 +67,11 @@ install -Dm0644 assets/icons/io.github.induckgo.InDuckGo.svg -t %{buildroot}%{_d
 %{_datadir}/icons/hicolor/scalable/apps/io.github.induckgo.InDuckGo.svg
 
 %changelog
+* Thu Nov 05 2026 Michał Ligus <eshaiotic@eshaiotic.io> - 1.2.2-1
+- The browser now runs on QtWebEngine (Chromium) with a Qt Quick interface; it replaces the WebKitGTK edition.
+- Tracker protection: DuckDuckGo's rules evaluated as DuckDuckGo evaluates them, a stricter layer for advertising and analytics trackers, a local gate that refuses connections a page opens before any request, and protection data downloaded on first start and kept current. Measured on 12 popular sites: 5 trackers against 6 for the WebKitGTK edition, 8 for Brave and 109 for Chrome.
+- Not yet in this edition: fingerprint and GPC protection, the Tor window, automatic rejection of cookie pop-ups, bookmarks and history.
+
 * Thu Nov 05 2026 Michał Ligus <eshaiotic@eshaiotic.io> - 1.2.1-1
 - The WebKitGTK browser is unchanged in behaviour; the shared core gained tab placement, window button style and profile tile preferences for the Qt edition (QtWebEngine), which is not packaged yet.
 - Interface texts for the new features were added to all 66 translations.

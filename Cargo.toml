@@ -8,17 +8,18 @@ members = [
     "crates/induckgo-engine-qt",
     "crates/induckgo-qt",
 ]
-# The Qt crates need Qt 6 with QtWebEngine; they are built on request (`-p induckgo-engine-qt`) until packaging
-# and CI install Qt (plan Task 13).
+# Building the Qt crates needs Qt 6 with QtWebEngine, QtWebChannel and Qt Quick's development files installed.
 default-members = [
     "crates/induckgo-core",
     "crates/induckgo",
     "crates/induckgo-test-report",
     "crates/induckgo-bench",
+    "crates/induckgo-engine-qt",
+    "crates/induckgo-qt",
 ]
 
 [workspace.package]
-version = "1.2.1"
+version = "1.2.2"
 edition = "2024"
 license = "GPL-3.0-or-later"
 rust-version = "1.92"

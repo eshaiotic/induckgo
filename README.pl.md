@@ -10,7 +10,7 @@
 przeglądarki DuckDuckGo dla macOS na silniku **QtWebEngine** (Chromium, silnik Chrome i Brave), z interfejsem
 **Qt 6 Quick** i rdzeniem domenowym napisanym w **Rust**. Bez telemetrii, bez rozszerzeń do pilnowania, każdy
 profil i każda zainstalowana aplikacja webowa są od siebie odizolowane. Pierwsza generacja działała na WebKitGTK (wersje przed 1.2.0);
-jej kod zostaje w tym repozytorium, a paczki wciąż ją zawierają, dopóki edycja Qt jej nie dogoni.
+jej kod zostaje w tym repozytorium, dopóki edycja Qt nie ma wszystkiego, co miała tamta (zob. *Status*).
 
 [![tests](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml/badge.svg)](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml)
 [![release](https://img.shields.io/github/v/release/eshaiotic/induckgo?color=6A5ACD)](https://github.com/eshaiotic/induckgo/releases/latest)
@@ -238,16 +238,15 @@ paczki dla innych dystrybucji.
 
 ## Instalacja
 
-Pobierz paczkę z [najnowszego wydania](https://github.com/eshaiotic/induckgo/releases/latest). **Paczki wciąż
-zawierają poprzednią edycję, na WebKitGTK** (tę z wersji przed 1.2.0; wersje 1.2.x nie zmieniły jej działania; edycja Qt nie ma jeszcze paczek; zob. *Uruchamianie ze źródeł* i
-zadanie pakowania w planie migracji):
+Pobierz paczkę z [najnowszego wydania](https://github.com/eshaiotic/induckgo/releases/latest). Paczki wersji
+1.2.2 i nowszych zawierają edycję Qt (QtWebEngine); wydania przed 1.2.0 zawierały edycję na WebKitGTK.
 
 | Plik | Dla |
 |---|---|
-| `induckgo_*_amd64.deb` | Debian 13, Ubuntu 24.04 LTS i nowsze |
+| `induckgo_*_amd64.deb` | Debian 13 i nowsze |
 | `induckgo-*.fc44.x86_64.rpm` | Fedora 44 |
 | `induckgo-*-x86_64.pkg.tar.zst` | Arch Linux, CachyOS, EndeavourOS, Manjaro |
-| `InDuckGo-*-x86_64.AppImage` | każda inna dystrybucja z WebKitGTK 6.0, GTK ≥ 4.14 i libadwaita ≥ 1.5 |
+| `InDuckGo-*-x86_64.AppImage` | każda inna dystrybucja z glibc 2.41 lub nowszą (około 150 MB: zawiera Chromium) |
 
 Każde wydanie ma `SHA256SUMS` i atestację pochodzenia (build provenance), która dowodzi, że plik zbudował
 GitHub Actions tego repozytorium:
@@ -257,12 +256,12 @@ sha256sum --check --ignore-missing SHA256SUMS
 gh attestation verify induckgo_*_amd64.deb --repo eshaiotic/induckgo
 ```
 
-Paczki korzystają z systemowych WebKitGTK, GTK i libadwaita, więc silnik przeglądarki dostaje aktualizacje
-bezpieczeństwa Twojej dystrybucji. Na potrzeby okna Tor paczki dla Arch i Fedory dociągają `tor` z
-dystrybucji (żadna usługa Tor nie jest uruchamiana); `.deb` niesie Debianowy `tor` sam, bo paczka Debiana
-uruchamiałaby ogólnosystemową usługę Tor, i poleca `obfs4proxy` oraz `snowflake-client` dla mostów; AppImage
-niesie wszystkie trzy. AppImage nie wymaga instalacji:
-`chmod +x InDuckGo-*-x86_64.AppImage && ./InDuckGo-*-x86_64.AppImage`.
+Paczki deb, rpm i pacmana korzystają z systemowych Qt i QtWebEngine, więc silnik przeglądarki dostaje aktualizacje
+bezpieczeństwa Twojej dystrybucji; zależą od pakietów Qt Quick, QtWebChannel, QtWebEngine i SVG, które menedżer
+pakietów doinstaluje. AppImage niesie własne Qt i QtWebEngine (Chromium), grafikę bierze z hosta, a aktualizacje
+silnika dostaje tylko z nowym wydaniem InDuckGo. Nie wymaga instalacji:
+`chmod +x InDuckGo-*-x86_64.AppImage && ./InDuckGo-*-x86_64.AppImage`. Edycja Qt nie ma jeszcze okna Tor, więc
+żadna paczka nie dociąga Tora.
 
 Z kopii tego repozytorium:
 
@@ -281,9 +280,11 @@ packaging/release.sh                # wszystkie formaty do dist/, z SHA256SUMS
 packaging/release.sh deb appimage   # albo tylko wybrane: arch, deb, appimage, rpm
 ```
 
-`.deb` i AppImage powstają w kontenerze Debiana 13, a `.rpm` w kontenerze Fedory 44 (rootless podman), więc
-linkują się z bibliotekami systemów, na które są przeznaczone. Paczkę dla Archa buduje `makepkg` na hoście,
-z flagami jego `makepkg.conf`. Runtime AppImage jest przypięty do wydania i sprawdzany po SHA-256.
+`.deb` i AppImage powstają w kontenerze Debiana 13 (Qt 6.8), a `.rpm` w kontenerze Fedory 44 (rootless podman
+albo `CONTAINER_ENGINE=docker`, który zostawia pliki należące do roota), więc linkują się z bibliotekami systemów,
+na które są przeznaczone. Paczkę dla Archa buduje `makepkg` na hoście, z flagami jego `makepkg.conf` (bez
+optymalizacji w czasie łączenia, której linker Rusta nie czyta w części C++). Runtime AppImage jest przypięty do
+wydania i sprawdzany po SHA-256.
 
 Wypchnięcie taga wersji publikuje wydanie: `git tag vX.Y.Z && git push origin vX.Y.Z`.
 [Workflow wydania](.github/workflows/release.yml) uruchamia te same skrypty (paczkę Archa w kontenerze Arch
@@ -356,7 +357,7 @@ crates/induckgo-core/tests/
 crates/induckgo-qt/      przeglądarka: interfejs Qt Quick (QML) na QtWebEngine, spięty z Rustem przez cxx-qt
 crates/induckgo-engine-qt/
                          adapter QtWebEngine: polityki żądań i ciasteczek, przekładka w C++
-crates/induckgo/         poprzednia edycja: GTK 4 + libadwaita na WebKitGTK (wersje przed 1.2.0; paczki wciąż ją zawierają)
+crates/induckgo/         poprzednia edycja: GTK 4 + libadwaita na WebKitGTK (wersje przed 1.2.0)
 crates/induckgo-test-report/
                          narzędzie deweloperskie za ./run-tests: raport testów HTML (nie trafia do paczek)
 assets/                  dołączone Content Scope Scripts (Apache-2.0), skrypt strony Guarda, ikony,

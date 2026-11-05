@@ -7,18 +7,13 @@
   <summary>Privacy-first browser with DuckDuckGo's tracker protections</summary>
   <description>
     <p>
-      InDuckGo is a WebKitGTK web browser that blocks third-party trackers with DuckDuckGo's open-source
-      protections, upgrades connections to HTTPS, removes tracking parameters from links and announces
-      Global Privacy Control. It has no extension support, by design.
+      InDuckGo is a web browser on QtWebEngine (Chromium) that blocks third-party trackers with DuckDuckGo's
+      open-source protections and its own filter lists, upgrades connections to HTTPS and removes tracking
+      parameters from links. It has no extension support, by design.
     </p>
     <p>
       Every profile and every site installed as an app runs in its own process with its own cookies and
       storage, so a link clicked in the browser never reaches the session of your bank or mailbox.
-    </p>
-    <p>
-      The Tor window browses through InDuckGo's own Tor, never a system-wide one. Its session lives in memory
-      only, WebRTC is off, onion services open directly, and bridges (Snowflake, obfs4 or your own) reach Tor
-      where it is blocked. New Identity deletes the session and switches to new Tor circuits.
     </p>
     <p>InDuckGo is an independent project, not affiliated with or endorsed by Duck Duck Go, Inc.</p>
   </description>
@@ -32,6 +27,13 @@
   </provides>
   <content_rating type="oars-1.1"/>
   <releases>
+    <release version="1.2.2" date="2026-11-05">
+      <description>
+        <p>InDuckGo now runs on QtWebEngine (Chromium) with a Qt Quick interface, replacing WebKitGTK.</p>
+        <p>Tracker protection: DuckDuckGo's rules are evaluated as DuckDuckGo evaluates them, advertising and analytics trackers are blocked on every page, connections a page opens before any request are refused, and the protection data is downloaded on first start and kept current. On 12 popular sites 5 trackers got through, against 6 for the WebKitGTK edition, 8 for Brave and 109 for Chrome.</p>
+        <p>Not yet in this edition: fingerprint and Global Privacy Control protection, the Tor window, automatic rejection of cookie pop-ups, bookmarks and history.</p>
+      </description>
+    </release>
     <release version="1.2.1" date="2026-11-05">
       <description>
         <p>The WebKitGTK browser behaves as in 1.2.0. The shared core gained tab placement, window button style and profile tile preferences for the upcoming Qt edition, which is not packaged yet.</p>

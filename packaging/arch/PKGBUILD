@@ -5,19 +5,20 @@
 # The flags of /etc/makepkg.conf apply, so the package may be tuned for this machine's processor.
 
 pkgname=induckgo
-pkgver=1.2.1
+pkgver=1.2.2
 pkgrel=1
-pkgdesc="Privacy-first WebKitGTK browser built on DuckDuckGo's open-source tracker protections"
+pkgdesc="Privacy-first browser on QtWebEngine (Chromium), built on DuckDuckGo's open-source tracker protections"
 arch=('x86_64' 'aarch64')
 license=('GPL-3.0-or-later')
-# The Tor window starts its own tor; Arch's tor package starts no system service by itself.
-depends=('gcc-libs' 'glib2' 'glibc' 'gtk4' 'hicolor-icon-theme' 'libadwaita' 'libsoup3' 'tor' 'webkitgtk-6.0')
-optdepends=('obfs4proxy: obfs4 bridges for the Tor window (AUR)'
-            'lyrebird: obfs4 and webtunnel bridges for the Tor window (AUR)'
-            'snowflake-pt-client: Snowflake bridges for the Tor window (AUR)')
+# QtWebEngine is Chromium: the engine's security fixes arrive with Arch's qt6-webengine, not with InDuckGo.
+# qt6-svg draws the interface's icons, qt6-declarative holds Qt Quick with its Controls, Dialogs and Effects,
+# qt6-webchannel the bridge between the page and the browser.
+depends=('gcc-libs' 'glibc' 'hicolor-icon-theme' 'qt6-base' 'qt6-declarative' 'qt6-svg' 'qt6-webchannel'
+         'qt6-webengine')
 makedepends=('cargo')
-# The release profile strips symbols, so a separate debug package would be empty.
-options=('!debug')
+# The release profile strips symbols, so a separate debug package would be empty. makepkg's link-time
+# optimisation flags would make the C++ part of the Qt bridge unreadable for Rust's linker (undefined symbols).
+options=('!debug' '!lto')
 
 _repository="$(realpath "$startdir/../..")"
 
@@ -34,7 +35,7 @@ prepare() {
 build() {
   cd "$_repository"
   export RUSTUP_TOOLCHAIN=stable CARGO_TARGET_DIR="$srcdir/target"
-  cargo build --frozen --release -p induckgo
+  cargo build --frozen --release -p induckgo-qt
 }
 
 check() {
@@ -45,7 +46,7 @@ check() {
 
 package() {
   cd "$_repository"
-  install -Dm0755 "$srcdir/target/release/induckgo" "$pkgdir/usr/bin/induckgo"
+  install -Dm0755 "$srcdir/target/release/induckgo-qt" "$pkgdir/usr/bin/induckgo"
   install -Dm0644 packaging/linux/io.github.induckgo.InDuckGo.desktop -t "$pkgdir/usr/share/applications"
   install -Dm0644 packaging/linux/io.github.induckgo.InDuckGo.metainfo.xml -t "$pkgdir/usr/share/metainfo"
   install -Dm0644 assets/icons/io.github.induckgo.InDuckGo.svg -t "$pkgdir/usr/share/icons/hicolor/scalable/apps"

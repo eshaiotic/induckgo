@@ -13,9 +13,6 @@ install -Dm0644 /src/packaging/linux/io.github.induckgo.InDuckGo.desktop -t "$ro
 install -Dm0644 /src/packaging/linux/io.github.induckgo.InDuckGo.metainfo.xml -t "$root/usr/share/metainfo"
 install -Dm0644 /src/assets/icons/io.github.induckgo.InDuckGo.svg -t "$root/usr/share/icons/hicolor/scalable/apps"
 install -Dm0644 /src/NOTICE /src/README.md -t "$root/usr/share/doc/induckgo"
-# Debian's tor for the Tor window, under InDuckGo's own directory: depending on Debian's tor package would
-# also start a system-wide Tor service at every boot. Its libraries come from Debian (dpkg-shlibdeps below).
-sh /src/packaging/debian/tor-bundle.sh "$root/usr"
 cat > "$root/usr/share/doc/induckgo/copyright" <<'EOF'
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: InDuckGo
@@ -28,11 +25,6 @@ Files: assets/content-scope-scripts/*
 Copyright: 2010-2021 Duck Duck Go, Inc.
 License: Apache-2.0
 
-Files: usr/lib/induckgo/tor/tor
-Copyright: 2001-2004 Roger Dingledine, 2004-2006 Roger Dingledine and Nick Mathewson, 2007- The Tor Project, Inc.
-License: BSD-3-Clause
- Debian's build of tor, unmodified; its full copyright is in /usr/share/doc/induckgo/third-party/tor.copyright.
-
 License: GPL-3.0-or-later
  On Debian systems, the full text of the GNU General Public License, version 3 can be found in
  /usr/share/common-licenses/GPL-3.
@@ -42,11 +34,18 @@ License: Apache-2.0
  /usr/share/common-licenses/Apache-2.0. See /usr/share/doc/induckgo/NOTICE for attributions.
 EOF
 
-# Library dependencies with minimum versions, read from the binary by dpkg-shlibdeps.
+# Library dependencies with minimum versions, read from the binary by dpkg-shlibdeps. Qt Quick loads its QML
+# modules, QtWebEngine its helper process and the interface its SVG icons at run time, so no library link names
+# them: they are listed here, and the list is checked by installing the package in a clean container.
+qt_runtime="qml6-module-qtquick, qml6-module-qtquick-controls, qml6-module-qtquick-layouts,
+ qml6-module-qtquick-dialogs, qml6-module-qtquick-effects, qml6-module-qtquick-window,
+ qml6-module-qtquick-templates, qml6-module-qtqml, qml6-module-qtqml-workerscript, qml6-module-qtwebengine,
+ qml6-module-qtwebchannel, qml6-module-qtcore, libqt6webenginecore6-bin, qt6-svg-plugins, qt6-qpa-plugins,
+ qt6-wayland"
 work=$(mktemp -d)
 mkdir "$work/debian"
 printf 'Source: induckgo\n\nPackage: induckgo\nArchitecture: any\n' > "$work/debian/control"
-libraries=$(cd "$work" && dpkg-shlibdeps -O "$root/usr/bin/induckgo" "$root/usr/lib/induckgo/tor/tor" 2>/dev/null |
+libraries=$(cd "$work" && dpkg-shlibdeps -O "$root/usr/bin/induckgo" 2>/dev/null |
   sed -n 's/^shlibs:Depends=//p')
 
 mkdir "$root/DEBIAN"
@@ -56,16 +55,14 @@ Version: ${VERSION}-1
 Architecture: ${architecture}
 Maintainer: Michał Ligus <eshaiotic@eshaiotic.io>
 Installed-Size: $(du -sk "$root/usr" | cut -f1)
-Depends: ${libraries}, hicolor-icon-theme
-Recommends: obfs4proxy, snowflake-client
+Depends: ${libraries}, ${qt_runtime}, hicolor-icon-theme
 Section: web
 Priority: optional
-Description: privacy-first WebKitGTK web browser
+Description: privacy-first web browser on QtWebEngine (Chromium)
  InDuckGo blocks third-party trackers with DuckDuckGo's open-source
- protections, upgrades connections to HTTPS, removes tracking parameters
- from links and announces Global Privacy Control. Every profile and every
- site installed as an app runs in its own process with its own cookies.
- The Tor window browses through InDuckGo's own Tor, in memory only.
+ protections, upgrades connections to HTTPS and removes tracking parameters
+ from links. Every profile and every site installed as an app runs in its
+ own process with its own cookies and storage.
 EOF
 
 dpkg-deb --root-owner-group --build "$root" "$package" >/dev/null

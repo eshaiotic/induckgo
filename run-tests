@@ -14,9 +14,11 @@ coverage_junit=target/llvm-cov-target/nextest/report/junit.xml
 mkdir -p test-results
 rm -f "$coverage" "$nextest_junit" "$coverage_junit"
 
-# The Qt crates need Qt 6 with QtWebEngine, which the CI container does not have yet (plan Task 13); `--workspace`
-# would pull them in, so they are left out here. Test them with `cargo test -p induckgo-qt -p induckgo-engine-qt`.
-workspace="--workspace --exclude induckgo-qt --exclude induckgo-engine-qt"
+# The Qt crates' tests start Qt and, in one case, the whole browser: without a screen they use Qt's offscreen
+# platform, and as root (a container) Chromium's sandbox, which refuses to run there, is switched off.
+export QT_QPA_PLATFORM=${QT_QPA_PLATFORM:-offscreen}
+[ "$(id -u)" != 0 ] || export QTWEBENGINE_DISABLE_SANDBOX=1
+workspace="--workspace"
 
 status=0
 if cargo llvm-cov --version >/dev/null 2>&1; then
@@ -28,6 +30,7 @@ if cargo llvm-cov --version >/dev/null 2>&1; then
   fi
   cargo llvm-cov nextest --profile report $workspace \
     --exclude-from-report induckgo --exclude-from-report induckgo-test-report \
+    --exclude-from-report induckgo-engine-qt --exclude-from-report induckgo-qt \
     --json --summary-only --output-path "$coverage" || status=$?
 else
   echo "run-tests: cargo-llvm-cov is not installed, the report shows no coverage (pacman -S cargo-llvm-cov)" >&2

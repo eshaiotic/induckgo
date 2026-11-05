@@ -1,7 +1,8 @@
 # Formatting, lints, tests and the dependency audit on every push to main and every pull request; the HTML
 # test report (./run-tests, with coverage) is kept as an artifact of every run, also when tests fail.
-# Runs in an Arch Linux container: it has current WebKitGTK 6.0, GTK 4 and libadwaita, the libraries the app
-# crate needs to compile, and ships rustfmt, clippy, cargo-audit, cargo-nextest and cargo-llvm-cov as packages.
+# Runs in an Arch Linux container: it has current Qt 6 with QtWebEngine (the Qt edition's crates and their
+# tests, which start the real browser offscreen), WebKitGTK 6.0, GTK 4 and libadwaita (the GTK crate that is
+# still in the repository), and ships rustfmt, clippy, cargo-audit, cargo-nextest and cargo-llvm-cov as packages.
 name: Tests
 
 on:
@@ -29,6 +30,8 @@ jobs:
         run: >-
           pacman -Syu --noconfirm --needed base-devel git rust cargo-audit cargo-nextest cargo-llvm-cov llvm
           gtk4 libadwaita libsoup3 webkitgtk-6.0
+          qt6-base qt6-declarative qt6-svg qt6-webchannel qt6-webengine
+          mesa xorg-server-xvfb xorg-xauth ttf-dejavu
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
@@ -39,7 +42,9 @@ jobs:
       - name: Known vulnerabilities in dependencies
         run: cargo audit
       - name: Tests and the HTML test report
-        run: ./run-tests
+        # QtWebEngine needs an OpenGL context even for an offscreen window: Xvfb with Mesa's software renderer
+        # provides one in a container.
+        run: xvfb-run -a -s "-screen 0 1280x800x24" ./run-tests
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:

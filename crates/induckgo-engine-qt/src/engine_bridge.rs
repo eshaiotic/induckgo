@@ -21,6 +21,7 @@ pub mod ffi {
         fn install_hooks(storage_path: &str, cache_path: &str);
         fn chromium_version() -> String;
         fn set_window_icon(resource_path: &str);
+        fn read_qt_resource(path: &str) -> String;
     }
 }
 

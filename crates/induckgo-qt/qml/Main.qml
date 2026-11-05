@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtWebEngine
+import QtWebChannel
 import QtQuick.Dialogs
 import io.induckgo.browser
 
@@ -31,6 +32,9 @@ ApplicationWindow {
     property int toolbarVersion: 0
     function shows(button) { return toolbarVersion >= 0 && bridge.toolbar_shows(button) }
     property string downloadFolder: bridge.download_folder()
+
+    // Qt's web-channel client followed by Guard's page script (empty when the client is missing).
+    readonly property string guardSource: bridge.guard_page_script()
 
     // Controls follow the desktop's colour scheme even where the style's own palette stays light.
     readonly property bool isDark: Qt.styleHints.colorScheme === Qt.Dark
@@ -417,6 +421,7 @@ ApplicationWindow {
         BrowserTab {
             smoothWheelSource: bridge.smooth_wheel_script()
             extensionPromptSource: bridge.duckduckgo_extension_prompt_script()
+            guardSource: window.guardSource
         }
     }
 

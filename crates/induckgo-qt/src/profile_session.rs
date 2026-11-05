@@ -3,10 +3,12 @@
 //! QML creates the bridge objects itself, so the session is installed once at start-up and the bridge finds it
 //! here.
 
+use std::sync::Arc;
 use std::sync::Mutex;
 use std::sync::MutexGuard;
 use std::sync::OnceLock;
 
+use induckgo_core::guard::shared_guard_engine::SharedGuardEngine;
 use induckgo_core::profile::profile_directories::ProfileLocation;
 
 use crate::burn_restart::BurnRestart;
@@ -19,6 +21,8 @@ use crate::site_zoom_store::SiteZoomStore;
 pub struct ProfileSession {
     pub protection: SiteProtection,
     pub burn: BurnRestart,
+    /// InDuckGo Guard's engine, filled in once the filter lists are read.
+    pub guard: Arc<SharedGuardEngine>,
     downloads: Mutex<DownloadCenter>,
     zoom: Mutex<SiteZoomStore>,
     preferences: Mutex<ProfilePreferences>,
@@ -36,10 +40,12 @@ impl ProfileSession {
         zoom: SiteZoomStore,
         preferences: ProfilePreferences,
         language: InterfaceLanguageSetting,
+        guard: Arc<SharedGuardEngine>,
     ) -> Self {
         Self {
             protection,
             burn: BurnRestart::new(location.clone()),
+            guard,
             downloads: Mutex::new(downloads),
             zoom: Mutex::new(zoom),
             preferences: Mutex::new(preferences),

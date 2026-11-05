@@ -1,6 +1,7 @@
 #include "engine_hooks.h"
 #include "induckgo-engine-qt/src/engine_bridge.cxx.h"
 
+#include <QFile>
 #include <QGuiApplication>
 #include <QIcon>
 #include <QQuickWebEngineProfile>
@@ -66,4 +67,12 @@ rust::String chromium_version() {
 void set_window_icon(rust::Str resource_path) {
     QGuiApplication::setWindowIcon(
         QIcon(QString::fromUtf8(resource_path.data(), static_cast<int>(resource_path.size()))));
+}
+
+rust::String read_qt_resource(rust::Str path) {
+    QFile file(QString::fromUtf8(path.data(), static_cast<int>(path.size())));
+    if (!file.open(QIODevice::ReadOnly)) {
+        return rust::String();
+    }
+    return rust::String(QString::fromUtf8(file.readAll()).toStdString());
 }

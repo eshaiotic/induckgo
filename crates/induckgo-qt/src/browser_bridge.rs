@@ -56,6 +56,10 @@ pub mod ffi {
         #[qinvokable]
         fn set_language_position(self: &BrowserBridge, position: i32) -> bool;
 
+        /// Guard's page script with Qt's web-channel client in front of it, or empty when that client is missing.
+        #[qinvokable]
+        fn guard_page_script(self: &BrowserBridge) -> QString;
+
         /// A notice to show when the window opens, or empty.
         #[qinvokable]
         fn startup_notice(self: &BrowserBridge) -> QString;
@@ -144,11 +148,13 @@ use induckgo_core::download::download_history::DownloadHistory;
 use induckgo_core::download::download_history::DownloadId;
 use induckgo_core::engine::duckduckgo_extension_prompt_script::DuckDuckGoExtensionPromptScript;
 use induckgo_core::engine::smooth_wheel_page_script::SmoothWheelPageScript;
+use induckgo_core::guard::guard_page_script::GuardPageScript;
 use induckgo_core::language::message_catalogue::MessageCatalogue;
 use induckgo_core::navigation::address_bar_input::AddressBarInput;
 use induckgo_core::navigation::search_engine::SearchEngine;
 use induckgo_core::page_zoom::zoom_level::ZoomLevel;
 use induckgo_core::scrolling::smooth_wheel_scroll::SmoothWheelScroll;
+use induckgo_engine_qt::qt_web_engine::QtWebEngine;
 use url::Url;
 
 use crate::burn_restart::BurnRestart;
@@ -223,6 +229,12 @@ impl ffi::BrowserBridge {
 
     fn duckduckgo_extension_prompt_script(&self) -> QString {
         QString::from(DuckDuckGoExtensionPromptScript::source())
+    }
+
+    fn guard_page_script(&self) -> QString {
+        let script = QtWebEngine::resource_text(GuardPageScript::CHANNEL_CLIENT_RESOURCE)
+            .map(|client| GuardPageScript::page_script(&client).source);
+        QString::from(script.unwrap_or_default().as_str())
     }
 
     fn startup_notice(&self) -> QString {

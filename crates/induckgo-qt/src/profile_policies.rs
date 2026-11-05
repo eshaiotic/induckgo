@@ -3,8 +3,10 @@
 use std::sync::Arc;
 use std::sync::RwLock;
 
+use induckgo_core::guard::shared_guard_engine::SharedGuardEngine;
 use induckgo_core::navigation::https_upgrade_policy::HttpsUpgradePolicy;
 use induckgo_core::network::chained_request_policy::ChainedRequestPolicy;
+use induckgo_core::network::guard_request_policy::GuardRequestPolicy;
 use induckgo_core::network::https_upgrade_request_policy::HttpsUpgradeRequestPolicy;
 use induckgo_core::network::link_cleaning_request_policy::LinkCleaningRequestPolicy;
 use induckgo_core::network::public_suffix_lookup::PublicSuffixLookup;
@@ -44,6 +46,7 @@ impl ProfilePolicies {
     pub fn assemble(
         documents: Option<&ProtectionDocuments>,
         unprotected_sites: Arc<RwLock<UnprotectedSites>>,
+        guard: Arc<SharedGuardEngine>,
         allow_list: SiteAllowList,
         strictness: ProfileStrictness,
     ) -> Self {
@@ -66,6 +69,7 @@ impl ProfilePolicies {
                 cookies = Arc::new(TrackerCookiePolicy::new(data_set));
             }
         }
+        policies.push(Box::new(GuardRequestPolicy::new(guard)));
         let upgrades = Arc::new(RwLock::new(HttpsUpgradePolicy::new(&excluded_from_https)));
         policies.push(Box::new(HttpsUpgradeRequestPolicy::new(upgrades)));
 

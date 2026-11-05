@@ -41,7 +41,7 @@ if [ -e "$qt/plugins/platformthemes/libqxdgdesktopportal.so" ]; then
   cp "$qt/plugins/platformthemes/libqxdgdesktopportal.so" "$app/usr/lib/qt6/plugins/platformthemes/"
 fi
 # QML modules: Qt Quick with Controls, Layouts, Window, Templates, QtQml and the web view.
-for module in QtQml QtQuick QtWebEngine QtCore Qt; do
+for module in QtQml QtQuick QtWebEngine QtWebChannel QtCore Qt; do
   if [ -d "$qt/qml/$module" ]; then cp -a "$qt/qml/$module" "$app/usr/lib/qt6/qml/$module"; fi
 done
 # Only the Controls styles that need nothing beyond Qt itself.

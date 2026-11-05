@@ -3,6 +3,7 @@
 use std::fs;
 use std::path::Path;
 use std::process::ExitCode;
+use std::sync::Arc;
 
 use cxx_qt_lib::QFont;
 use cxx_qt_lib::QGuiApplication;
@@ -12,6 +13,7 @@ use cxx_qt_lib::QUrl;
 use induckgo_core::engine::engine_verdict::EngineVerdict;
 use induckgo_core::engine::minimum_engine_version::MinimumEngineVersion;
 use induckgo_core::engine::window_kind::WindowKind;
+use induckgo_core::guard::shared_guard_engine::SharedGuardEngine;
 use induckgo_core::network::site_allow_list::SiteAllowList;
 use induckgo_core::profile::profile_directories::ProfileLocation;
 use induckgo_core::profile::profile_id::ProfileId;
@@ -21,6 +23,7 @@ use serde_json::Value;
 use crate::burn_restart::BurnRestart;
 use crate::desktop_font::DesktopFont;
 use crate::download_center::DownloadCenter;
+use crate::guard_lists::GuardLists;
 use crate::installation_directories::InstallationDirectories;
 use crate::interface_catalogue::InterfaceCatalogue;
 use crate::interface_language_setting::InterfaceLanguageSetting;
@@ -79,7 +82,9 @@ impl BrowserApplication {
 
     fn install_policies(directories: &InstallationDirectories) {
         let profile = directories.profile(&ProfileId::default_profile());
-        let session = Self::open_session(directories, &profile);
+        let guard = Arc::new(SharedGuardEngine::default());
+        let session = Self::open_session(directories, &profile, &guard);
+        GuardLists::in_cache(&directories.protection_cache()).build_into(guard);
         let documents = ProtectionDocuments::from_cache(&directories.protection_cache());
         let allow_list = Self::read_json(&profile.data.join("site-allow-list.json"))
             .map(|document| SiteAllowList::from_json(&document))
@@ -87,6 +92,7 @@ impl BrowserApplication {
         let policies = ProfilePolicies::assemble(
             documents.as_ref(),
             session.protection.shared_list(),
+            Arc::clone(&session.guard),
             allow_list,
             ProfileStrictness::Standard,
         );
@@ -98,7 +104,11 @@ impl BrowserApplication {
 
     /// Finishes a burn the Fire button asked for before anything opens the profile's files, then reads the
     /// profile's stored choices.
-    fn open_session(directories: &InstallationDirectories, profile: &ProfileLocation) -> ProfileSession {
+    fn open_session(
+        directories: &InstallationDirectories,
+        profile: &ProfileLocation,
+        guard: &Arc<SharedGuardEngine>,
+    ) -> ProfileSession {
         let burned = BurnRestart::new(profile.clone()).complete_pending();
         let downloads = DownloadCenter::open(&profile.data, directories.system_downloads_folder());
         if let Err(error) = burned {
@@ -114,6 +124,7 @@ impl BrowserApplication {
             SiteZoomStore::open(&profile.data),
             ProfilePreferences::open(&profile.data),
             InterfaceLanguageSetting::open(&directories.interface_language_file()),
+            Arc::clone(guard),
         )
     }
 

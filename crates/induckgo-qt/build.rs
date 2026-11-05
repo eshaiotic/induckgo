@@ -21,7 +21,7 @@ fn main() {
         "qml/WindowControls.qml",
     ]))
     .qrc("icons.qrc")
-    .files(["src/browser_bridge.rs"])
+    .files(["src/browser_bridge.rs", "src/guard_bridge.rs"])
     .qt_module("Quick")
     .qt_module("Gui")
     .build();

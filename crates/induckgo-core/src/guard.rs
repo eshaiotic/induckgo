@@ -8,5 +8,8 @@ pub mod filter_list_source;
 pub mod fingerprint_hardening;
 pub mod generic_hiding;
 pub mod generic_hiding_request;
+pub mod guard_engine;
+pub mod guard_page_script;
 pub mod guard_rule_list;
 pub mod pending_rule_changes;
+pub mod shared_guard_engine;

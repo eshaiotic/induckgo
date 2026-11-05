@@ -11,3 +11,5 @@ rust::String chromium_version();
 /// Gives every window the icon at `resource_path` (a Qt resource such as `:/icons/app.svg`); on Wayland and X11
 /// alike this is what the window's title bar and the task bar show when no installed desktop entry names one.
 void set_window_icon(rust::Str resource_path);
+/// The text of a Qt resource (`:/qtwebchannel/qwebchannel.js`); empty when there is no such resource.
+rust::String read_qt_resource(rust::Str path);

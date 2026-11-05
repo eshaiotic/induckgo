@@ -40,6 +40,12 @@ impl QtWebEngine {
         ffi::set_window_icon(resource_path);
     }
 
+    /// The text of the Qt resource at `path` (`:/qtwebchannel/qwebchannel.js`); `None` when there is none.
+    #[must_use]
+    pub fn resource_text(path: &str) -> Option<String> {
+        Some(ffi::read_qt_resource(path)).filter(|text| !text.is_empty())
+    }
+
     /// The Chromium version inside the installed `QtWebEngine`; `None` if it cannot be read.
     #[must_use]
     pub fn chromium_version() -> Option<EngineVersion> {

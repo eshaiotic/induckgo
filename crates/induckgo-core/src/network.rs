@@ -4,6 +4,7 @@
 //! the [`request_decision::RequestDecision`] a [`request_policy::RequestPolicy`] returns.
 
 pub mod chained_request_policy;
+pub mod guard_request_policy;
 pub mod https_upgrade_request_policy;
 pub mod link_cleaning_request_policy;
 pub mod network_request;

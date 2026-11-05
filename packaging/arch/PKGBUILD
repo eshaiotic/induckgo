@@ -5,7 +5,7 @@
 # The flags of /etc/makepkg.conf apply, so the package may be tuned for this machine's processor.
 
 pkgname=induckgo
-pkgver=1.2.2
+pkgver=1.2.3
 pkgrel=1
 pkgdesc="Privacy-first browser on QtWebEngine (Chromium), built on DuckDuckGo's open-source tracker protections"
 arch=('x86_64' 'aarch64')

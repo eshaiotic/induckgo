@@ -9,7 +9,7 @@
 %global _lto_cflags %{nil}
 
 Name:           induckgo
-Version:        1.2.2
+Version:        1.2.3
 Release:        1%{?dist}
 Summary:        Privacy-first browser on QtWebEngine (Chromium), built on DuckDuckGo's open-source tracker protections
 License:        GPL-3.0-or-later
@@ -67,6 +67,10 @@ install -Dm0644 assets/icons/io.github.induckgo.InDuckGo.svg -t %{buildroot}%{_d
 %{_datadir}/icons/hicolor/scalable/apps/io.github.induckgo.InDuckGo.svg
 
 %changelog
+* Thu Nov 05 2026 Michał Ligus <eshaiotic@eshaiotic.io> - 1.2.3-1
+- Cookie dialogs are rejected at once (DuckDuckGo's autoconsent, Facebook's included) and never accepted; a site whose shield is off is left alone.
+- Fixed: the page scripts were not applied, so DuckDuckGo offered a browser extension the browser does not install and Guard hid no page elements.
+
 * Thu Nov 05 2026 Michał Ligus <eshaiotic@eshaiotic.io> - 1.2.2-1
 - The browser now runs on QtWebEngine (Chromium) with a Qt Quick interface; it replaces the WebKitGTK edition.
 - Tracker protection: DuckDuckGo's rules evaluated as DuckDuckGo evaluates them, a stricter layer for advertising and analytics trackers, a local gate that refuses connections a page opens before any request, and protection data downloaded on first start and kept current. Measured on 12 popular sites: 5 trackers against 6 for the WebKitGTK edition, 8 for Brave and 109 for Chrome.

@@ -27,6 +27,12 @@
   </provides>
   <content_rating type="oars-1.1"/>
   <releases>
+    <release version="1.2.3" date="2026-11-05">
+      <description>
+        <p>Cookie dialogs are rejected at once with DuckDuckGo's autoconsent library, Facebook's included, and never accepted. A site whose shield you switched off is left alone.</p>
+        <p>Fixed: the page scripts were not applied, so DuckDuckGo offered a browser extension the browser does not install and Guard hid no page elements.</p>
+      </description>
+    </release>
     <release version="1.2.2" date="2026-11-05">
       <description>
         <p>InDuckGo now runs on QtWebEngine (Chromium) with a Qt Quick interface, replacing WebKitGTK.</p>

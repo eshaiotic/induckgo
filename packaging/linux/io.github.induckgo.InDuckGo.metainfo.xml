@@ -32,6 +32,12 @@
   </provides>
   <content_rating type="oars-1.1"/>
   <releases>
+    <release version="1.2.1" date="2026-11-05">
+      <description>
+        <p>The WebKitGTK browser behaves as in 1.2.0. The shared core gained tab placement, window button style and profile tile preferences for the upcoming Qt edition, which is not packaged yet.</p>
+        <p>Interface texts for the new features were added to all translations.</p>
+      </description>
+    </release>
     <release version="1.2.0" date="2026-11-05">
       <description>
         <p>The WebKitGTK browser behaves as in 1.1.2. The shared core gained the groundwork of the upcoming Qt edition, which is not packaged yet.</p>

@@ -5,7 +5,7 @@
 %global debug_package %{nil}
 
 Name:           induckgo
-Version:        1.2.0
+Version:        1.2.1
 Release:        1%{?dist}
 Summary:        Privacy-first WebKitGTK browser built on DuckDuckGo's open-source tracker protections
 License:        GPL-3.0-or-later
@@ -56,6 +56,10 @@ install -Dm0644 assets/icons/io.github.induckgo.InDuckGo.svg -t %{buildroot}%{_d
 %{_datadir}/icons/hicolor/scalable/apps/io.github.induckgo.InDuckGo.svg
 
 %changelog
+* Thu Nov 05 2026 Michał Ligus <eshaiotic@eshaiotic.io> - 1.2.1-1
+- The WebKitGTK browser is unchanged in behaviour; the shared core gained tab placement, window button style and profile tile preferences for the Qt edition (QtWebEngine), which is not packaged yet.
+- Interface texts for the new features were added to all 66 translations.
+
 * Thu Nov 05 2026 Michał Ligus <eshaiotic@eshaiotic.io> - 1.2.0-1
 - The WebKitGTK browser is unchanged from 1.1.2 in behaviour; the shared core gained the groundwork of the Qt edition (QtWebEngine), which is not packaged yet.
 - Interface texts for the new Qt features were added to all 66 translations.

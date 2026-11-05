@@ -879,7 +879,7 @@ dependencies = [
 
 [[package]]
 name = "induckgo"
-version = "1.2.0"
+version = "1.2.1"
 dependencies = [
  "futures-channel",
  "gdk4",
@@ -897,14 +897,14 @@ dependencies = [
 
 [[package]]
 name = "induckgo-bench"
-version = "1.2.0"
+version = "1.2.1"
 dependencies = [
  "serde_json",
 ]
 
 [[package]]
 name = "induckgo-core"
-version = "1.2.0"
+version = "1.2.1"
 dependencies = [
  "adblock",
  "form_urlencoded",
@@ -917,7 +917,7 @@ dependencies = [
 
 [[package]]
 name = "induckgo-engine-qt"
-version = "1.2.0"
+version = "1.2.1"
 dependencies = [
  "cxx",
  "cxx-qt",
@@ -927,7 +927,7 @@ dependencies = [
 
 [[package]]
 name = "induckgo-qt"
-version = "1.2.0"
+version = "1.2.1"
 dependencies = [
  "base64",
  "cxx",
@@ -943,7 +943,7 @@ dependencies = [
 
 [[package]]
 name = "induckgo-test-report"
-version = "1.2.0"
+version = "1.2.1"
 dependencies = [
  "roxmltree",
  "serde_json",

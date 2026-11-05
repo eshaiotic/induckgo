@@ -6,11 +6,15 @@
 //! A packaged InDuckGo already owns the entry system-wide and is left alone.
 //!
 //! The entry makes the desktop run the AppImage file whenever the person clicks it, so it is written only for a
-//! file that nobody but its owner can replace (neither the file nor its folder is writable by the group or by
-//! others: `/tmp` is not), and an entry the person wrote themselves is never overwritten.
+//! file that nobody else can replace: the path is resolved first (the entry names the real file), and the file
+//! and every folder above it belong to root or to the person and are not writable by the group or by others.
+//! The one exception is a sticky folder of root's (`/tmp`) above the file's own folder, where others cannot rename
+//! what they do not own. A file directly in `/tmp` does not qualify: after a clean-up anyone could put a file
+//! of that name in its place. An entry the person wrote themselves is never overwritten.
 
 use std::fs;
 use std::io;
+use std::os::unix::fs::MetadataExt;
 use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
 use std::path::PathBuf;
@@ -21,6 +25,8 @@ use crate::installation_directories::InstallationDirectories;
 
 pub struct AppImageIntegration {
     applications: PathBuf,
+    /// The owner of the person's data directory, who is trusted to own the AppImage and its folders (root is too).
+    person: u32,
     icons: PathBuf,
     system_data_directories: Vec<PathBuf>,
 }
@@ -33,15 +39,17 @@ impl AppImageIntegration {
     const ICON: &'static str = include_str!("../../../assets/icons/io.github.induckgo.InDuckGo.svg");
     /// The group-write and other-write permission bits.
     const WRITABLE_BY_OTHERS: u32 = 0o022;
+    const STICKY: u32 = 0o1000;
+    const ROOT: u32 = 0;
     const DEFAULT_SYSTEM_DATA_DIRECTORIES: &'static str = "/usr/local/share:/usr/share";
 
     #[must_use]
     pub fn new(directories: &InstallationDirectories, system_data_directories: Vec<PathBuf>) -> Self {
-        Self {
-            applications: directories.applications_directory().to_path_buf(),
-            icons: directories.application_icons_directory(),
-            system_data_directories,
-        }
+        let applications = directories.applications_directory().to_path_buf();
+        // The data directory may not exist yet: its first existing parent belongs to the same person.
+        let person =
+            applications.ancestors().find_map(|folder| fs::metadata(folder).ok()).map_or(0, |folder| folder.uid());
+        Self { applications, person, icons: directories.application_icons_directory(), system_data_directories }
     }
 
     /// Looks for an installed package in `$XDG_DATA_DIRS`, or in the specification's default directories.
@@ -58,15 +66,13 @@ impl AppImageIntegration {
     /// Returns the I/O error when the person's data directory cannot be written.
     pub fn install(&self, appimage: &Path) -> io::Result<()> {
         let entry_file = self.applications.join(Self::ENTRY_FILE);
-        if self.is_installed_system_wide()
-            || !Self::is_safe_to_run_later(appimage)
-            || Self::is_written_by_hand(&entry_file)
-        {
+        let Some(appimage) = self.trusted_file(appimage) else { return Ok(()) };
+        if self.is_installed_system_wide() || Self::is_written_by_hand(&entry_file) {
             return Ok(());
         }
         let icon = self.icons.join(Self::ICON_FILE);
         Self::write_when_changed(&icon, Self::ICON)?;
-        let entry = AppImageMenuEntry::new(Self::PACKAGED_ENTRY, appimage, &icon).render();
+        let entry = AppImageMenuEntry::new(Self::PACKAGED_ENTRY, &appimage, &icon).render();
         Self::write_when_changed(&entry_file, &entry)
     }
 
@@ -75,14 +81,27 @@ impl AppImageIntegration {
         fs::read_to_string(entry_file).is_ok_and(|text| !text.lines().any(|line| line == AppImageMenuEntry::MARKER))
     }
 
-    /// A file that exists and that only its owner can write, in a folder only its owner can write to.
-    fn is_safe_to_run_later(appimage: &Path) -> bool {
-        let is_closed = |path: &Path| {
-            fs::metadata(path).is_ok_and(|metadata| metadata.permissions().mode() & Self::WRITABLE_BY_OTHERS == 0)
-        };
-        fs::metadata(appimage).is_ok_and(|metadata| metadata.is_file())
-            && is_closed(appimage)
-            && appimage.parent().is_some_and(is_closed)
+    /// The real path of `appimage` when nobody but root and the person could replace it, else nothing.
+    fn trusted_file(&self, appimage: &Path) -> Option<PathBuf> {
+        let real = fs::canonicalize(appimage).ok()?;
+        let file = fs::metadata(&real).ok().filter(fs::Metadata::is_file)?;
+        let folders_are_closed = real.ancestors().skip(1).enumerate().all(|(level, folder)| {
+            let is_own_folder = level == 0;
+            fs::metadata(folder)
+                .is_ok_and(|metadata| self.is_closed(&metadata) || (!is_own_folder && Self::is_root_sticky(&metadata)))
+        });
+        (self.is_closed(&file) && folders_are_closed).then_some(real)
+    }
+
+    /// Owned by root or the person, and not writable by the group or by others.
+    fn is_closed(&self, metadata: &fs::Metadata) -> bool {
+        let is_trusted_owner = metadata.uid() == Self::ROOT || metadata.uid() == self.person;
+        is_trusted_owner && metadata.permissions().mode() & Self::WRITABLE_BY_OTHERS == 0
+    }
+
+    /// A shared folder like `/tmp`: others may create files in it, but cannot rename or delete the ones of others.
+    fn is_root_sticky(metadata: &fs::Metadata) -> bool {
+        metadata.uid() == Self::ROOT && metadata.permissions().mode() & Self::STICKY != 0
     }
 
     fn is_installed_system_wide(&self) -> bool {

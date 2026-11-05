@@ -14,7 +14,7 @@ jej kod zostaje w tym repozytorium, dopóki edycja Qt nie ma wszystkiego, co mia
 
 [![tests](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml/badge.svg)](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml)
 [![release](https://img.shields.io/github/v/release/eshaiotic/induckgo?color=6A5ACD)](https://github.com/eshaiotic/induckgo/releases/latest)
-![cargo nextest](https://img.shields.io/badge/cargo%20nextest-876%20test%C3%B3w-success)
+![cargo nextest](https://img.shields.io/badge/cargo%20nextest-880%20test%C3%B3w-success)
 ![stack](https://img.shields.io/badge/stack-Rust%20%E2%80%A2%20Qt%206%20%E2%80%A2%20QtWebEngine-8E7FE8)
 ![telemetria](https://img.shields.io/badge/telemetria-brak-FFB300)
 [![licencja](https://img.shields.io/badge/licencja-GPL--3.0--or--later-2E1A87)](LICENSE)
@@ -172,7 +172,7 @@ WebKitGTK i edycja Qt; czego edycji Qt jeszcze brakuje, wymienia [tabela ochron]
 
 Każda lista i zestaw danych jest pobierany, nigdy dołączany, a przed użyciem ograniczany rozmiarem i
 walidowany. Lista filtrów może tylko blokować albo ukrywać: konwersja nie zachowuje skryptletów, więc złośliwa
-lista mogłaby zepsuć stronę, ale nigdy nie uruchomi w niej kodu. Cały zestaw (`./run-tests`, 876 testów razem z testami Qt, oraz
+lista mogłaby zepsuć stronę, ale nigdy nie uruchomi w niej kodu. Cały zestaw (`./run-tests`, 880 testów razem z testami Qt, oraz
 clippy i `cargo audit` w CI) uruchamia się przy każdym wypchnięciu.
 
 ### Dowody
@@ -262,8 +262,9 @@ silnika dostaje tylko z nowym wydaniem InDuckGo. Nie wymaga instalacji:
 `chmod +x InDuckGo-*-x86_64.AppImage && ./InDuckGo-*-x86_64.AppImage`. Pulpity z Waylandem biorą ikonę okna z
 zainstalowanego pliku `.desktop`, którego AppImage nie ma, więc przy starcie zapisuje go sobie sam
 (`~/.local/share/applications/io.github.induckgo.InDuckGo.desktop` i ikonę obok, wskazujące plik AppImage; po
-przeniesieniu pliku uruchom go jeszcze raz). Wpis menu uruchamia ten plik później, więc powstaje tylko dla pliku
-i katalogu, do których grupa i inni nie mogą pisać (nie `/tmp`), nigdy nie nadpisuje wpisu napisanego przez Ciebie
+przeniesieniu pliku uruchom go jeszcze raz). Wpis menu uruchamia ten plik później, więc wskazuje prawdziwy plik
+(po rozwiązaniu dowiązań) i powstaje tylko wtedy, gdy ten plik i każdy katalog nad nim należą do roota lub do Ciebie
+i grupa ani inni nie mogą do nich pisać (plik leżący wprost w `/tmp` odpada), nigdy nie nadpisuje wpisu napisanego przez Ciebie
 (wygenerowany ma `X-InDuckGo-AppImage=true`) i w ogóle nie powstaje przy zainstalowanej paczce. Edycja Qt nie ma jeszcze okna
 Tor, więc żadna paczka nie dociąga Tora.
 
@@ -319,8 +320,8 @@ Zainstalowane aplikacje webowe uruchamia się z menu aplikacji pulpitu (`induckg
 
 ## Testy
 
-Stos: **cargo-nextest** — 876 obiektowych scenariuszy Given/When/Then: 674 dla domeny w
-`crates/induckgo-core/tests/` (81 plików, jeden na typ domenowy), 132 dla edycji Qt i jej adaptera silnika, 61 dla
+Stos: **cargo-nextest** — 880 obiektowych scenariuszy Given/When/Then: 674 dla domeny w
+`crates/induckgo-core/tests/` (81 plików, jeden na typ domenowy), 136 dla edycji Qt i jej adaptera silnika, 61 dla
 narzędzia raportu w `crates/induckgo-test-report/tests/` i 9 dla narzędzia benchmarków w
 `crates/induckgo-bench/tests/`. CI uruchamia je wszystkie w kontenerze Arch z Qt 6, testy Qt pod Xvfb z Mesą (QtWebEngine potrzebuje kontekstu
 OpenGL nawet bez okna); same testy Qt uruchom przez

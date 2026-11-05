@@ -6,6 +6,7 @@
 
 use std::fs;
 use std::os::unix::fs::PermissionsExt;
+use std::os::unix::fs::symlink;
 use std::path::Path;
 use std::path::PathBuf;
 
@@ -62,6 +63,32 @@ impl IntegrationScenario {
         let folder = self.appimage.parent().expect("folder");
         fs::set_permissions(folder, fs::Permissions::from_mode(0o775)).expect("folder mode");
         self
+    }
+
+    fn with_the_appimage_folder_open_to_everyone_like_a_shared_temporary_folder(self) -> Self {
+        let folder = self.appimage.parent().expect("folder");
+        fs::set_permissions(folder, fs::Permissions::from_mode(0o1777)).expect("folder mode");
+        self
+    }
+
+    fn with_a_folder_above_the_appimage_folder_writable_by_the_group(self) -> Self {
+        let deeper = Self::appimage_in(&self.roots.path().join("Apps/Versions"), "InDuckGo.AppImage");
+        fs::set_permissions(self.roots.path().join("Apps"), fs::Permissions::from_mode(0o775)).expect("folder mode");
+        Self { appimage: deeper, ..self }
+    }
+
+    /// The path the person started is a link; the file it leads to lies in `target_folder_mode`.
+    fn with_the_appimage_reached_through_a_link_to_a_folder_with_mode(self, target_folder_mode: u32) -> Self {
+        let real = Self::appimage_in(&self.roots.path().join("Shared"), "InDuckGo-1.2.3.AppImage");
+        fs::set_permissions(real.parent().expect("folder"), fs::Permissions::from_mode(target_folder_mode))
+            .expect("folder mode");
+        let link = self.roots.path().join("Apps/InDuckGo.AppImage-link");
+        symlink(&real, &link).expect("link");
+        Self { appimage: link, ..self }
+    }
+
+    fn real_appimage(&self) -> PathBuf {
+        fs::canonicalize(self.roots.path().join("Shared/InDuckGo-1.2.3.AppImage")).expect("real file")
     }
 
     fn with_a_missing_appimage(mut self) -> Self {
@@ -171,4 +198,40 @@ fn should_keep_an_entry_the_person_wrote_themselves() {
         .when_started();
 
     assert_eq!(scenario.entry_text(), "[Desktop Entry]\nName=My browser\n");
+}
+
+#[test]
+fn should_not_run_an_appimage_from_a_shared_folder_where_anyone_could_put_a_file_in_its_place() {
+    let scenario = IntegrationScenario::given_an_appimage_on_a_machine_without_an_installed_package()
+        .with_the_appimage_folder_open_to_everyone_like_a_shared_temporary_folder()
+        .when_started();
+
+    assert!(!scenario.user_file(IntegrationScenario::ENTRY).exists());
+}
+
+#[test]
+fn should_not_run_an_appimage_when_a_folder_above_its_folder_can_be_renamed_by_the_group() {
+    let scenario = IntegrationScenario::given_an_appimage_on_a_machine_without_an_installed_package()
+        .with_a_folder_above_the_appimage_folder_writable_by_the_group()
+        .when_started();
+
+    assert!(!scenario.user_file(IntegrationScenario::ENTRY).exists());
+}
+
+#[test]
+fn should_not_run_an_appimage_whose_link_leads_into_a_folder_the_group_can_write_to() {
+    let scenario = IntegrationScenario::given_an_appimage_on_a_machine_without_an_installed_package()
+        .with_the_appimage_reached_through_a_link_to_a_folder_with_mode(0o775)
+        .when_started();
+
+    assert!(!scenario.user_file(IntegrationScenario::ENTRY).exists());
+}
+
+#[test]
+fn should_name_the_file_a_link_leads_to_instead_of_the_link() {
+    let scenario = IntegrationScenario::given_an_appimage_on_a_machine_without_an_installed_package()
+        .with_the_appimage_reached_through_a_link_to_a_folder_with_mode(0o755)
+        .when_started();
+
+    assert!(scenario.entry_text().contains(&format!("Exec={} %U", scenario.real_appimage().display())));
 }

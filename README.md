@@ -14,7 +14,7 @@ repository, and the packages still contain it, while the Qt edition catches up.
 
 [![tests](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml/badge.svg)](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml)
 [![release](https://img.shields.io/github/v/release/eshaiotic/induckgo?color=6A5ACD)](https://github.com/eshaiotic/induckgo/releases/latest)
-![cargo nextest](https://img.shields.io/badge/cargo%20nextest-801%20tests-success)
+![cargo nextest](https://img.shields.io/badge/cargo%20nextest-860%20tests-success)
 ![stack](https://img.shields.io/badge/stack-Rust%20%E2%80%A2%20Qt%206%20%E2%80%A2%20QtWebEngine-8E7FE8)
 ![telemetry](https://img.shields.io/badge/telemetry-none-FFB300)
 [![licence](https://img.shields.io/badge/licence-GPL--3.0--or--later-2E1A87)](LICENSE)
@@ -29,29 +29,34 @@ On 2026-11-05 fresh profiles of Google Chrome 157, Brave 1.98 (Chromium 156) and
 each in its own window behind a proxy that recorded only host names, for 5 minutes of doing nothing and then
 20 seconds on each of 12 popular sites. Trackers were judged by a neutral list (Disconnect's), each server
 counted once per site. The run was done twice (Chrome and Brave in both, so the two runs show how much a single
-run varies), because InDuckGo's Qt edition needs protection data that it does not download itself yet.
+run varies). The two Qt columns were measured again the same day, with the same harness, after the protection work
+described in [Tracker protection in the Qt edition](docs/en/architecture/qt-protection.md); the other columns are
+from the earlier run.
 
 | | Chrome | Brave | InDuckGo Qt, fresh profile | InDuckGo Qt, protection data on disk | InDuckGo GTK (versions before 1.2.0) |
 |---|---|---|---|---|---|
-| Trackers let through on 12 sites | 111 / 109 | 9 / 8 | 90 | 31 | **6** |
-| … of which ad servers | 90 / 88 | 7 / 7 | 73 | 31 | **5** |
-| Connections in the first 5 minutes | 35 / 36 to 14 hosts | 47 / 53 to 12 hosts | **2 to 2 hosts** | **2 to 2 hosts** | 27 to 8 hosts |
+| Trackers let through on 12 sites | 111 / 109 | 9 / 8 | **5** | **5** | 6 |
+| … of which ad servers | 90 / 88 | 7 / 7 | **5** | **5** | 5 |
+| Connections in the first 5 minutes | 35 / 36 to 14 hosts | 47 / 53 to 12 hosts | 13 to 8 hosts | 13 to 8 hosts | 27 to 8 hosts |
 
 Two numbers per Chrome and Brave cell are the first and the second run.
 
-**How to read it.** The Qt edition, which is what InDuckGo is now built on, blocks much less than the WebKitGTK
-edition it replaces. With a fresh profile it blocks almost nothing, because it has no downloader of its own for
-DuckDuckGo's tracker list and Guard's filter lists yet (it reads what the GTK edition left in the cache). With the
-data on disk it blocks about four trackers in five (31, against Chrome's 109), and still lets through advertising
-servers that the GTK edition stopped (on bbc.com, 8 against 1). That gap is a defect to close, tracked in the
-[migration plan](docs/en/plans/2026-11-04-qtwebengine-migration-plan.md) (Tasks 8 and 9), and the table is here so
-that nobody has to take the project's word for it. Idle traffic is the strong side: the Qt edition contacted only
-the DuckDuckGo start page and its ping host; Chrome contacted Google and Brave its own servers (usage ping, P3A).
-The GTK edition's 27 connections are its first-run downloads of protection data. Fingerprinting was not measured
-again: the Qt edition has no fingerprint protection yet, and the GTK edition's result (noise that differs per
-site and per session, measured 2026-11-02) is in the [tracking comparison](docs/en/reports/tracking-comparison.md).
-Chrome 157 and Brave 1.98 are different Chromium versions, 157 and 156. One run from one country on one network
-is not a ranking; method and limits are in the report.
+**How to read it.** The Qt edition, which is what InDuckGo is now built on, lets through the fewest trackers of the
+five, with a fresh profile and with the protection data already on disk alike: 5 on 12 sites, against 6 for the
+WebKitGTK edition it replaces, 8 or 9 for Brave and 109 or 111 for Chrome. The pages still load (allegro.pl and
+forbes.com, which a first, cruder version broke, work). It gets there with DuckDuckGo's own rules, evaluated as
+DuckDuckGo evaluates them, a stricter layer for advertising and analytics trackers, a local gate that refuses the
+connections a page opens before it sends any request (`preconnect`, which request filters never see), and a
+downloader that fetches the rules on first start. The five that remain are Google's sign-in prompt
+(`accounts.google.com`, `www.google.com`) and `m.stripe.network`, which DuckDuckGo allows because blocking them breaks
+sign-in and payments. The cost of the downloader shows in idle traffic: the Qt edition contacted the DuckDuckGo start
+page and its ping host plus the six hosts that serve the protection data (13 connections to 8 hosts); Chrome
+contacted Google and Brave its own servers (usage ping, P3A). The GTK edition's 27 connections are its first-run
+downloads. Fingerprinting was not measured again: the Qt edition has no fingerprint protection yet, and the GTK
+edition's result (noise that differs per site and per session, measured 2026-11-02) is in the
+[tracking comparison](docs/en/reports/tracking-comparison.md). Chrome 157 and Brave 1.98 are different Chromium
+versions, 157 and 156. One run from one country on one network is not a ranking, and 5 against 6 is within what two
+runs of the same browser can differ by; method and limits are in the report.
 
 [tracking-summary.html](docs/en/reports/tracking-summary.html) is a one-page summary for non-technical readers
 (download it and open it in a browser).
@@ -70,13 +75,13 @@ DuckDuckGo, Brave and Chrome on desktop and does not test InDuckGo.
 | | DuckDuckGo's browser says | InDuckGo (Qt) today |
 |---|---|---|
 | **Tracking scripts** | | |
-| Blocks 3rd-party trackers from loading | yes, from its tracker list | yes, by the same list and by Guard's filter lists, on a site's own requests too; **only when the protection data is on disk** (no downloader in the Qt edition yet) |
-| Blocks 3rd-party tracker cookies | yes | tracker-list cookies are refused when the data is on disk; the *Strict* profile (no interface yet) refuses all of them |
+| Blocks 3rd-party trackers from loading | yes, from its tracker list | yes, by the same list and by Guard's filter lists, on a site's own requests too; the rules are downloaded on first start and kept current (the window waits for them once) |
+| Blocks 3rd-party tracker cookies | yes | tracker-list cookies are refused; the *Strict* profile (no interface yet) refuses all of them |
 | Expires 1st-party cookies | macOS: 24 hours or 7 days; Windows: roadmap | no |
 | Prevents fingerprint tracking | listed scripts blocked, listed APIs overridden; canvas and audio defences off on macOS | **not yet** in the Qt edition (the GTK edition had it, with noise per site and session) |
-| Protects against CNAME cloaking | a subset of its list on macOS | by the tracker list's cloaked host names, when the data is on disk |
+| Protects against CNAME cloaking | a subset of its list on macOS | by the tracker list's cloaked host names |
 | Protects against referrer tracking | referrer cut to the host name | Chromium's own default only |
-| Blocks link tracking | first navigation only on macOS; Windows: roadmap | every top-level navigation, when the data is on disk |
+| Blocks link tracking | first navigation only on macOS; Windows: roadmap | every top-level navigation |
 | Blocks Google's AMP tracking | macOS: AMP links replaced | no |
 | Blocks Google's sign-in pop-ups | yes | no |
 | Blocks embedded Facebook content | yes | Facebook is on the tracker list; no click-to-load placeholder |
@@ -112,12 +117,12 @@ built for the WebKitGTK edition; the last column says how far the Qt edition has
 
 | Protection | How it works | In the Qt edition |
 |---|---|---|
-| Third-party trackers | DuckDuckGo's Tracker Data Set decides, request by request, which third-party requests are refused (port of `TrackerRadarKit`). | works once the data is on disk; no downloader yet |
+| Third-party trackers | DuckDuckGo's Tracker Data Set decides, request by request, which third-party requests are refused (port of `TrackerRadarKit`). | works; downloaded on first start, refreshed every 6 hours |
 | Breakage | DuckDuckGo's privacy configuration supplies per-site exceptions so sites keep working; the shield button (in a web app: *Protect This Site* in its menu) switches protection off for one site. | works |
 | Fingerprinting, GPC | DuckDuckGo Content Scope Scripts run in every frame; InDuckGo Guard switches on the canvas, audio, screen and referrer defences DuckDuckGo leaves off, and sends the `Sec-GPC: 1` header. | not yet |
-| Ads, trackers, cookie notices | InDuckGo Guard downloads EasyList, EasyPrivacy, uBlock Origin's, Peter Lowe's, Polish and cookie-notice filter lists and applies them to a site's own requests too. | works once the lists are on disk; no downloader yet |
-| Cross-site cookies | Third-party cookies on the tracker list are refused; the *Strict* profile, which refuses all of them, exists in the code but has no interface yet. | works with data |
-| Tracking links | A navigation carrying `utm_*`, `fbclid`, `gclid`, ... is stopped before it leaves the machine and reloaded without them. | works with data |
+| Ads, trackers, cookie notices | InDuckGo Guard downloads EasyList, EasyPrivacy, uBlock Origin's, Peter Lowe's, Polish and cookie-notice filter lists and applies them to a site's own requests too. | works; downloaded with the rest of the data |
+| Cross-site cookies | Third-party cookies on the tracker list are refused; the *Strict* profile, which refuses all of them, exists in the code but has no interface yet. | works |
+| Tracking links | A navigation carrying `utm_*`, `fbclid`, `gclid`, ... is stopped before it leaves the machine and reloaded without them. | works |
 | Plain HTTP | Navigations are upgraded to HTTPS. | works |
 | Leftover data | The Burn button erases the profile's cookies, storage, cache and favicons in one click. | works |
 | Mixing identities | Every profile and every installed web app runs as its own process with its own cookies and storage. | works |
@@ -156,8 +161,8 @@ Qt edition still lacks is listed in the [protection table](#what-it-protects-you
 
 | Way of following you | What InDuckGo does | Code (`crates/induckgo-core/src`) | Checked by |
 |---|---|---|---|
-| The browser reports to its maker | There is no telemetry code at all: no usage ping, crash reporter, experiment seed or account. The only connections the program makes on its own are plain `GET`s for protection data, with no cookie jar and no identifier. | `protection/`, `guard/` (downloads only) | Idle traffic measured at host level: the Qt edition contacts 2 hosts, the DuckDuckGo start page and its ping host ([report §4.1](docs/en/reports/tracking-comparison.md) for the GTK edition) |
-| Third-party trackers | DuckDuckGo's Tracker Data Set decides each request (WebKit content-blocking rules in the GTK edition, a request interceptor in the Qt edition), with DuckDuckGo's per-site exceptions so pages keep working. | `protection/tracker_data_set.rs`, `protection/content_blocker_rules_builder.rs`, `network/tracker_request_policy.rs` | Scenario tests `tracker_data_set`, `content_blocker_rules_builder`, `rule_exceptions` |
+| The browser reports to its maker | There is no telemetry code at all: no usage ping, crash reporter, experiment seed or account. The only connections the program makes on its own are plain `GET`s for protection data, with no cookie jar and no identifier. | `protection/`, `guard/` (downloads only) | Idle traffic measured at host level: the Qt edition contacts 8 hosts, the DuckDuckGo start page, its ping host and the six that serve the protection data ([report §4.1](docs/en/reports/tracking-comparison.md) for the GTK edition) |
+| Third-party trackers | DuckDuckGo's Tracker Data Set decides each request (WebKit content-blocking rules in the GTK edition, a request interceptor in the Qt edition, plus a local connection gate that refuses `preconnect` hints), with DuckDuckGo's per-site exceptions so pages keep working. The Qt edition adds a stricter layer for advertising and analytics trackers. | `protection/tracker_data_set.rs`, `protection/content_blocker_rules_builder.rs`, `network/content_blocker_request_policy.rs`, `network/advertising_tracker_request_policy.rs`, `network/connection_gate.rs` | Scenario tests `tracker_data_set`, `content_blocker_rules_builder`, `content_blocker_request_policy`, `advertising_tracker_request_policy`, `connection_gate`, `rule_exceptions`; Qt: `gate_proxy`, `tracker_blocking` ([architecture](docs/en/architecture/qt-protection.md)) |
 | Ads and trackers the first list misses | Guard downloads nine community lists (EasyList, EasyPrivacy, uBlock Origin, Peter Lowe's, Polish and cookie-notice lists), compiles them and applies them to a site's own requests too. Cookie notices are hidden. | `guard/guard_engine.rs`, `guard/guard_rule_list.rs`, `network/guard_request_policy.rs` | Tests `guard_engine`, `guard_rule_list`, `guard_request_policy`; GTK edition: 6 trackers on 12 sites against Chrome's 109 (above) |
 | Cookies and stored identifiers | Third-party cookies on the tracker list are refused (the GTK edition also had WebKit's Intelligent Tracking Prevention), every profile and web app is its own process with its own storage, and Burn erases a profile in one click. | `storage/cookie_policy.rs`, `storage/tracker_cookie_policy.rs`, `storage/burn_planner.rs` | Tests `cookie_policies`, `burn_planner` |
 | Identifiers in links | `utm_*`, `fbclid`, `gclid` and DuckDuckGo's other parameters are stripped from every top-level navigation before the request leaves the machine. | `protection/tracking_parameter_remover.rs`, `network/link_cleaning_request_policy.rs` | Tests `tracking_parameter_remover`, `link_cleaning_request_policy` |
@@ -166,7 +171,7 @@ Qt edition still lacks is listed in the [protection table](#what-it-protects-you
 
 Every list and data set is downloaded, never bundled, and size-limited and validated before use. A filter list
 can only block or hide: the conversion keeps no scriptlets, so a hostile list could break a site but never run
-code in it. The whole suite (`./run-tests`, 694 tests in CI plus the 107 Qt tests run locally, clippy and `cargo audit`) runs on every push.
+code in it. The whole suite (`./run-tests`, 736 tests in CI plus the 124 Qt tests run locally, clippy and `cargo audit`) runs on every push.
 
 ### The evidence
 
@@ -174,11 +179,11 @@ The measurement behind the [first table](#measured-against-chrome-and-brave-comp
 Brave 1.98 and InDuckGo side by side on 2026-11-05, with fresh profiles, a window each, and a proxy that logs host
 names only. Its numbers, repeated here so they sit next to the mechanisms:
 
-- **Trackers reached on 12 sites:** Chrome 111 and 109 in two runs, Brave 9 and 8, InDuckGo's Qt edition 90 on a
-  fresh profile and 31 with the protection data on disk, its GTK edition 6, judged by Disconnect's list, which none
+- **Trackers reached on 12 sites:** Chrome 111 and 109 in two runs, Brave 9 and 8, InDuckGo's Qt edition 5 on a
+  fresh profile and 5 with the protection data on disk, its GTK edition 6, judged by Disconnect's list, which none
   of them uses.
 - **Sent to the browser's own maker in 5 idle minutes:** Chrome contacted only Google (14 hosts), Brave mostly its
-  own servers (usage ping, P3A), the Qt edition only the DuckDuckGo start page and its ping host (2 hosts).
+  own servers (usage ping, P3A), the Qt edition the DuckDuckGo start page, its ping host and the six hosts that serve the protection data (8 hosts).
 - **Fingerprint (GTK edition, 2026-11-02):** the same canvas and audio values on every site in Chrome; different per
   site, but equal after a restart, in Brave; different per site *and* per session in InDuckGo.
 - **Method, limits and a script-level recipe to repeat it:** [tracking comparison](docs/en/reports/tracking-comparison.md), §3 and §8.
@@ -189,8 +194,10 @@ The measurement supports "InDuckGo gives its own maker nothing to work with, and
 place, trackers little". It does not support "InDuckGo is more anonymous than Brave or DuckDuckGo", and the
 project does not claim it.
 
-- **The Qt edition blocks less than Brave today** (31 trackers against 8, and 90 on a fresh profile against 9).
-  Closing that gap, which the GTK edition had closed (6), is the next piece of work.
+- **5 against 8 is a margin on one sample, not a law.** The Qt edition blocks harder than Brave here because it
+  applies a stricter layer to advertising and analytics trackers and because it refuses `preconnect`; that same
+  strictness can break a page that Brave's more lenient shields leave working, and the per-site shield switch is the
+  remedy. Sign-in prompts and payment trackers are deliberately left to DuckDuckGo's exceptions.
 - **One run on 12 sites is not a ranking.** Chrome's two runs differ by 2, Brave's by 1; pages change between loads.
 - **DuckDuckGo's browser was not measured**, because it does not exist for Linux. The
   [feature table](#compared-with-duckduckgos-own-browser) compares documented behaviour, not traffic.
@@ -209,7 +216,7 @@ project does not claim it.
 Usable work in progress, on QtWebEngine: browsing with tabs (placed top, bottom, left or right), profiles of
 isolated data with a Chrome-like popup of tiles, installed web apps and their tile page, downloads with a folder of your choice, zoom per site,
 find-in-page, per-site protection switch, Burn, 68 interface languages. Not built yet in the Qt edition: the
-protection-data downloader, fingerprint and GPC protection, the Tor window,
+fingerprint and GPC protection, the Tor window,
 automatic rejection of cookie pop-ups, permission prompts, session restore, bookmarks and history. The full list
 with reasons is in the architecture document and the migration plan.
 
@@ -304,10 +311,10 @@ Installed web apps start from the desktop's application menu (`induckgo-qt --web
 
 ## Testing
 
-Stack: **cargo-nextest** — 801 object-oriented Given/When/Then scenarios: 624 for the domain in
-`crates/induckgo-core/tests/` (75 files, one per domain type), 107 for the Qt edition and its engine adapter,
+Stack: **cargo-nextest** — 860 object-oriented Given/When/Then scenarios: 666 for the domain in
+`crates/induckgo-core/tests/` (80 files, one per domain type), 124 for the Qt edition and its engine adapter,
 61 for the report tool in `crates/induckgo-test-report/tests/` and 9 for the benchmark tool in
-`crates/induckgo-bench/tests/`. The Qt crates need Qt 6, so CI runs the other 694; run the Qt ones with
+`crates/induckgo-bench/tests/`. The Qt crates need Qt 6, so CI runs the other 736; run the Qt ones with
 `QT_QPA_PLATFORM=offscreen cargo test -p induckgo-qt -p induckgo-engine-qt`.
 
 ```sh

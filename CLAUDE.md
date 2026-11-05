@@ -20,6 +20,8 @@ This file is an index; the content lives in the linked documents.
 - [Płynne przewijanie kółkiem (PL)](docs/pl/architecture/smooth-wheel-scrolling.md) — polish mirror of the smooth-wheel-scrolling document.
 - [Web apps (Qt edition)](docs/en/architecture/web-apps-qt.md) — install a site as an app: icon pipeline, desktop identity, single instance, app window.
 - [Aplikacje internetowe (PL)](docs/pl/architecture/web-apps-qt.md) — polish mirror of the web-apps document.
+- [Tracker protection (Qt edition)](docs/en/architecture/qt-protection.md) — faithful DuckDuckGo rule evaluation, stricter ad overlay, connection gate (local proxy against preconnect), protection feed and first start.
+- [Ochrona przed trackerami (Qt, PL)](docs/pl/architecture/qt-protection.md) — polish mirror of the Qt tracker-protection document.
 - `docs/assets/diagrams/` — SVG + PNG diagrams, one file per language (`.en` / `.pl`).
 
 ## Reports
@@ -35,7 +37,7 @@ This file is an index; the content lives in the linked documents.
 
 ## Code map
 
-- `crates/induckgo-core` — domain logic without GTK/WebKit: protection rules, Guard filter lists, profiles, web apps, zoom, launch, Tor.
+- `crates/induckgo-core` — domain logic without GTK/WebKit: protection rules, request policies, connection gate, protection feed, Guard filter lists, profiles, web apps, zoom, launch, Tor.
 - `crates/induckgo-core/tests` — one OO scenario test file per domain type.
 - `crates/induckgo-test-report` — dev tool behind `./run-tests`: nextest JUnit + llvm-cov → HTML test report (not packaged).
 - `crates/induckgo` — GTK 4 + libadwaita app: adapters that carry out core decisions in WebKitGTK/libsoup/GIO.
@@ -60,3 +62,4 @@ This file is an index; the content lives in the linked documents.
 - Changing Guard's list conversion (or upgrading `adblock`): bump `GuardRuleList::CONVERSION_REVISION`, else old compiled lists stay.
 - Manual GUI runs: isolate `XDG_DATA_HOME`/`XDG_CACHE_HOME`/`XDG_CONFIG_HOME` so the user's real profiles stay untouched.
 - Tor window (`--tor`): never let it load before Tor is connected or fall back to a direct connection (architecture §4.1).
+- Qt edition: every Chromium connection goes through the in-process gate proxy (`--proxy-server`), so `--host-resolver-rules` does nothing; a test or tool that must reach a fake host names it through `http_proxy`/`https_proxy` (see `tests/tracker_blocking.rs`).

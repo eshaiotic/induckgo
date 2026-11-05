@@ -3,6 +3,10 @@
 Measured on 2 November 2026 (21:53–22:10 CET) on one Linux machine in Poland. Policy facts were checked
 against vendor sources the same day; each one links its source.
 
+**Which InDuckGo this measures.** Sections 1–8 measured the WebKitGTK edition (the versions before 1.2.0). InDuckGo
+is now built on QtWebEngine; its results from 5 November 2026 are in [§4.4](#44-the-qt-edition-5-november-2026), and
+the mechanisms behind them in [Tracker protection in the Qt edition](../architecture/qt-protection.md).
+
 ## 1. What this report answers
 
 A browser can expose its user in three ways. This report measures each of them in all three browsers.
@@ -216,6 +220,37 @@ A fingerprint that stays the same across sites lets two unrelated sites recognis
   and the session.
 - **No browser hid the installed fonts.**
 - WebGL could not be compared: Chromium blocks it on a virtual display without a GPU.
+
+### 4.4 The Qt edition, 5 November 2026
+
+The same 12 sites, 20 seconds each, with the same host-name-logging proxy and the same judge (Disconnect's list, each
+server counted once per site), on the QtWebEngine edition. Chrome 157 and Brave 1.98 were measured in the run of the
+same day before the Qt protection work (Chrome 111 / 109 trackers, Brave 9 / 8 in two runs); the Qt edition was
+measured again after it, twice: with a fresh profile (no protection data, so the browser downloads it on first start)
+and with the data already on disk.
+
+| Site | Qt, fresh profile | Qt, data on disk |
+|---|---|---|
+| onet.pl, wp.pl, interia.pl, gazeta.pl, o2.pl, allegro.pl, olx.pl | 0 | 0 |
+| edition.cnn.com | 4 | 4 |
+| theguardian.com, bbc.com, forbes.com | 0 | 0 |
+| weather.com | 1 | 1 |
+| **Total trackers** | **5** | **5** |
+| All hosts contacted | 139 | 138 |
+| Idle, 5 minutes | 13 connections to 8 hosts | 13 connections to 8 hosts |
+
+- **The 5:** `accounts.google.com`, `google.com` and `www.google.com` (Google's sign-in prompt, on edition.cnn.com
+  and weather.com) and `m.stripe.network` (payments, on edition.cnn.com). DuckDuckGo's rules allow them on purpose,
+  because blocking them breaks signing in and paying.
+- **Idle traffic** is the DuckDuckGo start page, its ping host and the six hosts that serve the protection data
+  (`staticcdn.duckduckgo.com`, `easylist.to`, `secure.fanboy.co.nz`, `ublockorigin.github.io`, `pgl.yoyo.org`,
+  `raw.githubusercontent.com`). The earlier Qt result of 2 hosts was the cache of the GTK edition, with no downloader.
+- **Why the fresh profile equals the profile with data:** the first start downloads the data before the window opens
+  ([§6 of the architecture document](../architecture/qt-protection.md)), so there is never an unprotected page.
+- **Pages still load:** allegro.pl (7 hosts) and forbes.com (5), which an earlier Qt build left blank, load.
+- **Limits.** Different days' runs of Chrome and Brave, one machine, one network; 5 against the GTK edition's 6 is
+  within the variation of two runs. Fingerprinting was not measured for the Qt edition, which has no protection
+  against it yet.
 
 ## 5. Defaults and policies
 

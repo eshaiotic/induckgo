@@ -4,6 +4,10 @@ Pomiar wykonany 2 listopada 2026 (21:53–22:10 CET) na jednym komputerze z Linu
 ustawieniach domyślnych i politykach producentów sprawdzono tego samego dnia w ich źródłach. Każdy fakt ma
 link.
 
+**Którego InDuckGo dotyczy pomiar.** Sekcje 1–8 mierzyły edycję WebKitGTK (wersje przed 1.2.0). InDuckGo jest teraz
+zbudowany na QtWebEngine; jego wyniki z 5 listopada 2026 są w [§4.4](#44-edycja-qt-5-listopada-2026), a mechanizmy,
+które za nimi stoją, w [Ochronie przed trackerami w edycji Qt](../architecture/qt-protection.md).
+
 ## 1. Na jakie pytanie odpowiada raport
 
 Przeglądarka może wystawiać użytkownika na śledzenie na trzy sposoby. Raport mierzy każdy z nich we
@@ -223,6 +227,39 @@ osobę.
   witrynami, jak i między sesjami.
 - **Żadna przeglądarka nie ukryła zainstalowanych czcionek.**
 - WebGL nie dało się porównać, bo Chromium blokuje go na wirtualnym ekranie bez GPU.
+
+### 4.4 Edycja Qt, 5 listopada 2026
+
+Te same 12 serwisów, po 20 sekund każdy, tym samym proxy zapisującym nazwy hostów i tym samym sędzią (lista Disconnect,
+każdy serwer liczony raz na serwis), na edycji QtWebEngine. Chrome 157 i Brave 1.98 zmierzono w przebiegu z tego samego
+dnia, przed pracami nad ochroną w Qt (Chrome 111 / 109 trackerów, Brave 9 / 8 w dwóch przebiegach); edycję Qt zmierzono
+ponownie po nich, dwa razy: ze świeżym profilem (bez danych ochrony, więc przeglądarka pobiera je przy pierwszym
+uruchomieniu) i z danymi już na dysku.
+
+| Serwis | Qt, świeży profil | Qt, dane na dysku |
+|---|---|---|
+| onet.pl, wp.pl, interia.pl, gazeta.pl, o2.pl, allegro.pl, olx.pl | 0 | 0 |
+| edition.cnn.com | 4 | 4 |
+| theguardian.com, bbc.com, forbes.com | 0 | 0 |
+| weather.com | 1 | 1 |
+| **Trackery razem** | **5** | **5** |
+| Wszystkie kontaktowane hosty | 139 | 138 |
+| Bezczynność, 5 minut | 13 połączeń z 8 hostami | 13 połączeń z 8 hostami |
+
+- **Te 5:** `accounts.google.com`, `google.com` i `www.google.com` (okno logowania Google, na edition.cnn.com i
+  weather.com) oraz `m.stripe.network` (płatności, na edition.cnn.com). Reguły DuckDuckGo dopuszczają je celowo, bo ich
+  zablokowanie psuje logowanie i płacenie.
+- **Ruch w bezczynności** to strona startowa DuckDuckGo, jej host pingu i sześć hostów serwujących dane ochrony
+  (`staticcdn.duckduckgo.com`, `easylist.to`, `secure.fanboy.co.nz`, `ublockorigin.github.io`, `pgl.yoyo.org`,
+  `raw.githubusercontent.com`). Wcześniejszy wynik Qt, 2 hosty, wynikał z pamięci podręcznej edycji GTK, bo Qt nie miało
+  pobierania.
+- **Dlaczego świeży profil równa się profilowi z danymi:** pierwszy start pobiera dane przed otwarciem okna
+  ([§6 dokumentu architektury](../architecture/qt-protection.md)), więc nigdy nie ma niechronionej strony.
+- **Strony nadal się wczytują:** allegro.pl (7 hostów) i forbes.com (5), które wcześniejsza wersja Qt zostawiała puste,
+  ładują się.
+- **Ograniczenia.** Przebiegi Chrome i Brave z innego momentu, jeden komputer, jedna sieć; 5 wobec 6 w edycji GTK mieści
+  się w rozrzucie dwóch przebiegów. Odcisku przeglądarki nie mierzono dla edycji Qt, która nie ma jeszcze ochrony przed
+  nim.
 
 ## 5. Ustawienia domyślne i polityki
 

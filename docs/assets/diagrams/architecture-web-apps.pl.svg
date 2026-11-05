@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="520" viewBox="0 0 1000 520" font-family="Inter, DejaVu Sans, sans-serif">
+<defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#374151"/></marker></defs>
+<rect width="1000" height="520" fill="#ffffff"/>
+<text x="30" y="44" font-size="22" font-weight="700" fill="#111827">Zainstaluj stronę jako aplikację (edycja Qt)</text>
+<rect x="30" y="90" width="300" height="110" rx="12" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<text x="46" y="128" font-size="17" font-weight="700" fill="#111827">1. Strona na ekranie</text>
+<text x="46" y="154" font-size="14" fill="#374151">skrypt zbiera tytuł, manifest i</text>
+<text x="46" y="174" font-size="14" fill="#374151">ikony</text>
+<rect x="350" y="90" width="300" height="110" rx="12" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<text x="366" y="128" font-size="17" font-weight="700" fill="#111827">2. Pobranie bez ciasteczek</text>
+<text x="366" y="154" font-size="14" fill="#374151">manifest i ikony, limit rozmiaru,</text>
+<text x="366" y="174" font-size="14" fill="#374151">najlepsza pierwsza</text>
+<rect x="670" y="90" width="300" height="110" rx="12" fill="#fee2e2" stroke="#b91c1c" stroke-width="3"/>
+<text x="686" y="128" font-size="17" font-weight="700" fill="#111827">3. Sprawdzenie i decyzja</text>
+<text x="686" y="154" font-size="14" fill="#374151">nazwa, nagłówek PNG, Qt koduje</text>
+<text x="686" y="174" font-size="14" fill="#374151">PNG od nowa</text>
+<rect x="30" y="260" width="300" height="110" rx="12" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+<text x="46" y="298" font-size="17" font-weight="700" fill="#111827">4. Zapis aplikacji</text>
+<text x="46" y="324" font-size="14" fill="#374151">web-apps.json, icon.png,</text>
+<text x="46" y="344" font-size="14" fill="#374151">&lt;id&gt;.desktop</text>
+<rect x="350" y="260" width="300" height="110" rx="12" fill="#dcfce7" stroke="#15803d" stroke-width="1.5"/>
+<text x="366" y="298" font-size="17" font-weight="700" fill="#111827">5. Uruchomienie aplikacji</text>
+<text x="366" y="324" font-size="14" fill="#374151">induckgo-qt --web-app ID, własny</text>
+<text x="366" y="344" font-size="14" fill="#374151">profil</text>
+<rect x="670" y="260" width="300" height="110" rx="12" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+<text x="686" y="298" font-size="17" font-weight="700" fill="#111827">6. Pulpit dopasowuje okno</text>
+<text x="686" y="324" font-size="14" fill="#374151">app_id = nazwa pliku,</text>
+<text x="686" y="344" font-size="14" fill="#374151">StartupWMClass, Icon=</text>
+<path d="M330,145 L350,145" stroke="#374151" stroke-width="2" marker-end="url(#a)"/>
+<path d="M650,145 L670,145" stroke="#374151" stroke-width="2" marker-end="url(#a)"/>
+<path d="M820,200 L820,230 L180,230 L180,260" fill="none" stroke="#374151" stroke-width="2" marker-end="url(#a)"/>
+<path d="M330,315 L350,315" stroke="#374151" stroke-width="2" marker-end="url(#a)"/>
+<path d="M650,315 L670,315" stroke="#374151" stroke-width="2" marker-end="url(#a)"/>
+<rect x="30" y="430" width="22" height="22" rx="5" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<text x="62" y="447" font-size="13" fill="#374151">Interfejs (QML)</text>
+<rect x="500" y="430" width="22" height="22" rx="5" fill="#dcfce7" stroke="#15803d" stroke-width="1.5"/>
+<text x="532" y="447" font-size="13" fill="#374151">Rust (induckgo-qt)</text>
+<rect x="30" y="470" width="22" height="22" rx="5" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+<text x="62" y="487" font-size="13" fill="#374151">Pliki czytane przez pulpit</text>
+<rect x="500" y="470" width="22" height="22" rx="5" fill="#fee2e2" stroke="#b91c1c" stroke-width="3"/>
+<text x="532" y="487" font-size="13" fill="#374151">Największe ryzyko: bajty ze strony</text>
+</svg>

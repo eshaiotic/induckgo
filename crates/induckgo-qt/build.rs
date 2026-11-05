@@ -12,6 +12,7 @@ fn main() {
         "qml/DownloadsManager.qml",
         "qml/DownloadsPopover.qml",
         "qml/FindBar.qml",
+        "qml/InstallAppDialog.qml",
         "qml/IconButton.qml",
         "qml/MainMenu.qml",
         "qml/PreferencesDialog.qml",
@@ -19,10 +20,11 @@ fn main() {
         "qml/PreferencesRow.qml",
         "qml/TabStrip.qml",
         "qml/TintedIcon.qml",
+        "qml/WebAppInstallation.qml",
         "qml/WindowControls.qml",
     ]))
     .qrc("icons.qrc")
-    .files(["src/browser_bridge.rs", "src/guard_bridge.rs"])
+    .files(["src/browser_bridge.rs", "src/guard_bridge.rs", "src/web_app_bridge.rs"])
     .qt_module("Quick")
     .qt_module("Gui")
     .build();

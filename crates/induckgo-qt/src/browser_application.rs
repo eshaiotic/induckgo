@@ -16,7 +16,6 @@ use induckgo_core::engine::window_kind::WindowKind;
 use induckgo_core::guard::shared_guard_engine::SharedGuardEngine;
 use induckgo_core::network::site_allow_list::SiteAllowList;
 use induckgo_core::profile::profile_directories::ProfileLocation;
-use induckgo_core::profile::profile_id::ProfileId;
 use induckgo_engine_qt::qt_web_engine::QtWebEngine;
 use serde_json::Value;
 
@@ -27,11 +26,14 @@ use crate::guard_lists::GuardLists;
 use crate::installation_directories::InstallationDirectories;
 use crate::interface_catalogue::InterfaceCatalogue;
 use crate::interface_language_setting::InterfaceLanguageSetting;
+use crate::launch_context::LaunchContext;
 use crate::profile_policies::ProfilePolicies;
 use crate::profile_policies::ProfileStrictness;
 use crate::profile_preferences::ProfilePreferences;
 use crate::profile_session::ProfileSession;
 use crate::protection_documents::ProtectionDocuments;
+use crate::single_instance::Instance;
+use crate::single_instance::SingleInstance;
 use crate::site_protection::SiteProtection;
 use crate::site_zoom_store::SiteZoomStore;
 use crate::startup_notice::StartupNotice;
@@ -47,17 +49,38 @@ impl BrowserApplication {
     #[must_use]
     pub fn run() -> ExitCode {
         let directories = InstallationDirectories::from_environment();
+        let arguments: Vec<String> = std::env::args().skip(1).collect();
+        let launch = match LaunchContext::resolve(&arguments, &directories) {
+            Ok(launch) => launch,
+            Err(error) => {
+                eprintln!("induckgo: {error}");
+                return ExitCode::from(2);
+            }
+        };
+        match SingleInstance::acquire(&directories.runtime_directory(), &launch.application_id(), launch.addresses()) {
+            Ok(Instance::Forwarded) => return ExitCode::SUCCESS,
+            Ok(Instance::Primary(primary)) => LaunchContext::hold(primary),
+            Err(error) => eprintln!("induckgo: cannot listen for later launches: {error}"),
+        }
         InterfaceCatalogue::choose(&directories);
         QtWebEngine::initialize();
 
         let mut application = QGuiApplication::new();
+        let identity = launch.web_app().map_or_else(|| Self::DESKTOP_ENTRY.to_owned(), |_| launch.application_id());
         if let Some(mut application) = application.as_mut() {
-            application.as_mut().set_application_name(&QString::from("InDuckGo"));
+            let name = if launch.web_app().is_some() { identity.as_str() } else { "InDuckGo" };
+            application.as_mut().set_application_name(&QString::from(name));
             Self::use_desktop_font(application);
         }
-        QGuiApplication::set_desktop_file_name(&QString::from(Self::DESKTOP_ENTRY));
-        QtWebEngine::set_window_icon(Self::WINDOW_ICON);
-        Self::install_policies(&directories);
+        // The desktop matches the window to the `.desktop` file of this name, and takes its icon from there.
+        QGuiApplication::set_desktop_file_name(&QString::from(identity.as_str()));
+        let icon = launch
+            .window_icon()
+            .map_or_else(|| Self::WINDOW_ICON.to_owned(), |path| path.to_string_lossy().into_owned());
+        QtWebEngine::set_window_icon(&icon);
+        let profile = directories.profile(&launch.profile_id());
+        launch.install();
+        Self::install_policies(&directories, &profile);
         Self::check_engine_version();
 
         let mut engine = QQmlApplicationEngine::new();
@@ -80,10 +103,9 @@ impl BrowserApplication {
         }
     }
 
-    fn install_policies(directories: &InstallationDirectories) {
-        let profile = directories.profile(&ProfileId::default_profile());
+    fn install_policies(directories: &InstallationDirectories, profile: &ProfileLocation) {
         let guard = Arc::new(SharedGuardEngine::default());
-        let session = Self::open_session(directories, &profile, &guard);
+        let session = Self::open_session(directories, profile, &guard);
         GuardLists::in_cache(&directories.protection_cache()).build_into(guard);
         let documents = ProtectionDocuments::from_cache(&directories.protection_cache());
         let allow_list = Self::read_json(&profile.data.join("site-allow-list.json"))

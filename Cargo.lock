@@ -929,6 +929,7 @@ dependencies = [
 name = "induckgo-qt"
 version = "1.2.0"
 dependencies = [
+ "base64",
  "cxx",
  "cxx-qt",
  "cxx-qt-build",

@@ -5,6 +5,7 @@
     <file alias="apps.svg">icons/adwaita/view-app-grid-symbolic.svg</file>
     <file alias="back.svg">icons/adwaita/go-previous-symbolic.svg</file>
     <file alias="chevron-right.svg">icons/adwaita/pan-end-symbolic.svg</file>
+    <file alias="check.svg">icons/adwaita/object-select-symbolic.svg</file>
     <file alias="close.svg">icons/adwaita/window-close-symbolic.svg</file>
     <file alias="down.svg">icons/adwaita/pan-down-symbolic.svg</file>
     <file alias="download.svg">icons/adwaita/folder-download-symbolic.svg</file>

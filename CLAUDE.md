@@ -18,6 +18,8 @@ This file is an index; the content lives in the linked documents.
 - [Pobieranie plików (PL)](docs/pl/architecture/downloads.md) — polish mirror of the downloads document.
 - [Smooth wheel scrolling](docs/en/architecture/smooth-wheel-scrolling.md) — Chromium-like animation of each mouse-wheel step: page script, core curves, preference, measurements.
 - [Płynne przewijanie kółkiem (PL)](docs/pl/architecture/smooth-wheel-scrolling.md) — polish mirror of the smooth-wheel-scrolling document.
+- [Web apps (Qt edition)](docs/en/architecture/web-apps-qt.md) — install a site as an app: icon pipeline, desktop identity, single instance, app window.
+- [Aplikacje internetowe (PL)](docs/pl/architecture/web-apps-qt.md) — polish mirror of the web-apps document.
 - `docs/assets/diagrams/` — SVG + PNG diagrams, one file per language (`.en` / `.pl`).
 
 ## Reports

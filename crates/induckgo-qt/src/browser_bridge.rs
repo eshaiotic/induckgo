@@ -158,6 +158,7 @@ use induckgo_core::navigation::address_bar_input::AddressBarInput;
 use induckgo_core::navigation::search_engine::SearchEngine;
 use induckgo_core::page_zoom::zoom_level::ZoomLevel;
 use induckgo_core::scrolling::smooth_wheel_scroll::SmoothWheelScroll;
+use induckgo_core::web_app::desktop_entry::DesktopEntry;
 use induckgo_engine_qt::qt_web_engine::QtWebEngine;
 use url::Url;
 
@@ -166,6 +167,7 @@ use induckgo_core::about::about_content::AboutContent;
 use crate::burn_restart::BurnRestart;
 use crate::interface_catalogue::InterfaceCatalogue;
 use crate::interface_language_setting::InterfaceLanguageSetting;
+use crate::launch_context::LaunchContext;
 use crate::profile_session::ProfileSession;
 use crate::startup_notice::StartupNotice;
 
@@ -365,7 +367,12 @@ impl ffi::BrowserBridge {
 
     fn burn_and_restart(&self) -> QString {
         let Some(session) = ProfileSession::current() else { return QString::from("no profile") };
-        let started = session.burn.request().and_then(|()| BurnRestart::start_new_instance(&[]));
+        // A web app starts again as itself, not as the browser.
+        let arguments: Vec<String> = LaunchContext::current()
+            .and_then(LaunchContext::web_app)
+            .map(|app| vec![DesktopEntry::WEB_APP_SWITCH.to_owned(), app.id.to_string()])
+            .unwrap_or_default();
+        let started = session.burn.request().and_then(|()| BurnRestart::start_new_instance(&arguments));
         match started {
             Ok(()) => QString::default(),
             Err(error) => QString::from(

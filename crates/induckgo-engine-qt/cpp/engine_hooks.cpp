@@ -1,9 +1,11 @@
 #include "engine_hooks.h"
 #include "induckgo-engine-qt/src/engine_bridge.cxx.h"
 
+#include <QBuffer>
 #include <QFile>
 #include <QGuiApplication>
 #include <QIcon>
+#include <QImage>
 #include <QQuickWebEngineProfile>
 #include <QWebEngineCookieStore>
 #include <QWebEngineUrlRequestInfo>
@@ -75,4 +77,21 @@ rust::String read_qt_resource(rust::Str path) {
         return rust::String();
     }
     return rust::String(QString::fromUtf8(file.readAll()).toStdString());
+}
+
+rust::Vec<std::uint8_t> reencode_png(rust::Slice<const std::uint8_t> bytes) {
+    rust::Vec<std::uint8_t> encoded;
+    QImage image;
+    if (!image.loadFromData(bytes.data(), static_cast<int>(bytes.size()), "PNG")) {
+        return encoded;
+    }
+    QByteArray png;
+    QBuffer buffer(&png);
+    if (!buffer.open(QIODevice::WriteOnly) || !image.save(&buffer, "PNG")) {
+        return encoded;
+    }
+    for (const char byte : png) {
+        encoded.push_back(static_cast<std::uint8_t>(byte));
+    }
+    return encoded;
 }

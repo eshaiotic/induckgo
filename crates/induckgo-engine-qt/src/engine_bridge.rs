@@ -22,6 +22,7 @@ pub mod ffi {
         fn chromium_version() -> String;
         fn set_window_icon(resource_path: &str);
         fn read_qt_resource(path: &str) -> String;
+        fn reencode_png(bytes: &[u8]) -> Vec<u8>;
     }
 }
 

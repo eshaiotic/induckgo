@@ -15,12 +15,18 @@ pub mod guard_page_hiding;
 pub mod installation_directories;
 pub mod interface_catalogue;
 pub mod interface_language_setting;
+pub mod launch_context;
 pub mod profile_policies;
 pub mod profile_preferences;
 pub mod profile_session;
 pub mod protection_documents;
+pub mod single_instance;
 pub mod site_protection;
 pub mod site_zoom_store;
 pub mod startup_notice;
 pub mod system_downloads_folder;
 pub mod system_locales;
+// `cxx-qt` bridge, like `browser_bridge`.
+#[allow(unsafe_code, clippy::unnecessary_box_returns)]
+pub mod web_app_bridge;
+pub mod web_app_installer;

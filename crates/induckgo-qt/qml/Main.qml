@@ -14,9 +14,15 @@ ApplicationWindow {
     // The toolbar is the title bar (as the GTK edition's header bar was); the window draws its own rounded top.
     flags: Qt.Window | Qt.FramelessWindowHint
     color: "transparent"
-    title: currentTab && currentTab.title ? currentTab.title + " — InDuckGo" : "InDuckGo"
+    title: isWebApp ? (currentTab && currentTab.title ? currentTab.title : launch.webApp.name)
+         : currentTab && currentTab.title ? currentTab.title + " — InDuckGo" : "InDuckGo"
 
     BrowserBridge { id: bridge }
+    WebAppBridge { id: webApps }
+
+    // How this process was launched: the browser, or one installed web app with its own window and profile.
+    readonly property var launch: JSON.parse(webApps.launch_json()) || ({ webApp: null, addresses: [] })
+    readonly property bool isWebApp: launch.webApp !== null
 
     readonly property bool isFramed: visibility !== Window.Maximized && visibility !== Window.FullScreen
     readonly property int cornerRadius: isFramed ? 12 : 0
@@ -53,7 +59,7 @@ ApplicationWindow {
 
     property var tabList: []
     property int currentIndex: 0
-    readonly property var currentTab: tabList.length > 0 ? tabList[currentIndex] : null
+    readonly property var currentTab: tabList[currentIndex] || null
     readonly property string currentHost: currentTab ? bridge.host_of(currentTab.address) : ""
     readonly property int currentZoom: currentTab ? bridge.zoom_percent(currentTab.address) : 100
 
@@ -110,6 +116,11 @@ ApplicationWindow {
         }
     }
 
+    // Whether the page on screen can become an app: a web page, in the browser (an app is one already).
+    readonly property bool installable: !isWebApp && currentTab !== null && /^https?:\/\//.test(currentTab.address)
+
+    function installAsApp() { installation.offer(currentTab) }
+
     function burn() {
         const error = bridge.burn_and_restart()
         if (error === "") Qt.quit(); else toast(error)
@@ -146,6 +157,39 @@ ApplicationWindow {
             if (downloadsPopover.opened) downloadsPopover.close()
             else if (Date.now() - downloadsPopover.closedAt > 250) downloadsPopover.open()
         }
+    }
+    Action {
+        id: installAppAction
+        text: bridge.message("Install Site as App…")
+        icon.source: "qrc:/icons/install-app.svg"
+        icon.color: window.palette.windowText
+        enabled: window.installable
+        onTriggered: window.installAsApp()
+    }
+    Action {
+        id: protectSiteAction
+        text: bridge.message("Protect This Site")
+        icon.source: "qrc:/icons/shield-on.svg"
+        icon.color: window.palette.windowText
+        enabled: window.currentHost !== ""
+        onTriggered: {
+            bridge.set_site_protected(window.currentHost, !bridge.is_site_protected(window.currentHost))
+            window.currentTab.reload()
+        }
+    }
+    Action {
+        id: openInBrowserAction
+        text: bridge.message("Open Page in Browser")
+        icon.source: "qrc:/icons/open.svg"
+        icon.color: window.palette.windowText
+        onTriggered: if (window.currentTab && webApps.open_in_browser(window.currentTab.address)) window.close()
+    }
+    Action {
+        id: clearAppDataAction
+        text: bridge.message("Clear App Data…")
+        icon.source: "qrc:/icons/fire.svg"
+        icon.color: window.palette.windowText
+        onTriggered: clearAppDataDialog.open()
     }
     Action {
         id: findInPage
@@ -221,32 +265,64 @@ ApplicationWindow {
                 spacing: 6
 
                 IconButton {
-                    visible: window.shows("backAndForward")
+                    visible: window.shows("backAndForward") || window.isWebApp
                     iconName: "back"
                     tip: bridge.message("Back")
                     enabled: window.currentTab && window.currentTab.canGoBack
                     onClicked: window.currentTab.goBack()
                 }
                 IconButton {
-                    visible: window.shows("backAndForward")
+                    visible: window.shows("backAndForward") && !window.isWebApp
                     iconName: "forward"
                     tip: bridge.message("Forward")
                     enabled: window.currentTab && window.currentTab.canGoForward
                     onClicked: window.currentTab.goForward()
                 }
                 IconButton {
-                    visible: window.shows("reload")
+                    visible: window.shows("reload") || window.isWebApp
                     iconName: window.currentTab && window.currentTab.isLoading ? "stop" : "reload"
                     tip: window.currentTab && window.currentTab.isLoading ? bridge.message("Load the page again, or stop loading it") : bridge.message("Reload")
                     onClicked: window.currentTab.isLoading ? window.currentTab.stop() : window.currentTab.reload()
                 }
             }
 
+            // A web app has no address bar: its name (the page's title) over the host of the page on screen, the
+            // host flagged when the page is not on the app's own site.
+            Column {
+                id: appTitle
+                visible: window.isWebApp
+                anchors.centerIn: parent
+                width: Math.max(160, rightGroup.x - leftGroup.x - leftGroup.width - 48)
+                readonly property bool onOwnSite: !window.currentTab || webApps.is_app_page(window.currentTab.address)
+                Label {
+                    width: parent.width
+                    horizontalAlignment: Text.AlignHCenter
+                    elide: Text.ElideRight
+                    text: window.title
+                    font.bold: true
+                    textFormat: Text.PlainText
+                }
+                Label {
+                    width: parent.width
+                    horizontalAlignment: Text.AlignHCenter
+                    elide: Text.ElideRight
+                    text: window.currentHost
+                    font.pixelSize: 11
+                    color: appTitle.onOwnSite ? Qt.alpha(palette.windowText, 0.6) : (window.isDark ? "#f8e45c" : "#9c6e03")
+                    textFormat: Text.PlainText
+                    ToolTip.visible: !appTitle.onOwnSite && hoverArea.containsMouse
+                    ToolTip.text: window.isWebApp ? bridge.message("This page is on another site, not part of {name}").replace("{name}", window.launch.webApp.name) : ""
+                    MouseArea { id: hoverArea; anchors.fill: parent; hoverEnabled: true; acceptedButtons: Qt.NoButton }
+                }
+            }
+
             RowLayout {
                 id: addressGroup
                 anchors.verticalCenter: parent.verticalCenter
-                x: Math.max(leftGroup.x + leftGroup.width + 12, (parent.width - width) / 2)
-                width: Math.min(550, parent.width - 2 * Math.max(leftGroup.width + 6, rightGroup.width + 6) - 24)
+                visible: !window.isWebApp
+                // The address takes all the room the two groups of buttons leave.
+                x: leftGroup.x + leftGroup.width + 12
+                width: Math.max(160, rightGroup.x - 12 - x)
                 spacing: 6
 
                 Rectangle {
@@ -284,6 +360,25 @@ ApplicationWindow {
                             onAccepted: window.navigate(text)
                             onActiveFocusChanged: if (activeFocus) selectAll()
                         }
+                        // The icon at the end of the address bar: this page as an app of its own.
+                        AbstractButton {
+                            id: installButton
+                            readonly property bool offered: window.shows("installApp") && window.installable
+                            visible: offered
+                            Layout.preferredWidth: 26
+                            Layout.preferredHeight: 26
+                            onClicked: window.installAsApp()
+                            Accessible.name: bridge.message("Install Site as App")
+                            ToolTip.visible: hovered
+                            ToolTip.delay: 500
+                            ToolTip.text: bridge.message("Install Site as App")
+                            background: Rectangle {
+                                radius: 7
+                                color: installButton.down ? Qt.alpha(palette.windowText, 0.16)
+                                     : installButton.hovered ? Qt.alpha(palette.windowText, 0.1) : "transparent"
+                            }
+                            contentItem: Item { TintedIcon { anchors.centerIn: parent; name: "install-app"; size: 16 } }
+                        }
                     }
                     ProgressBar {
                         anchors.bottom: parent.bottom
@@ -319,7 +414,7 @@ ApplicationWindow {
 
                 IconButton {
                     id: shieldButton
-                    visible: window.shows("protections")
+                    visible: window.shows("protections") && !window.isWebApp
                     checkable: true
                     enabled: window.currentHost !== ""
                     checked: window.currentHost === "" || bridge.is_site_protected(window.currentHost)
@@ -331,13 +426,13 @@ ApplicationWindow {
                     }
                 }
                 IconButton {
-                    visible: window.shows("burnData")
+                    visible: window.shows("burnData") && !window.isWebApp
                     iconName: "fire"
                     tip: bridge.message("Burn Browsing Data")
                     onClicked: burnAction.trigger()
                 }
                 IconButton {
-                    visible: window.shows("newTab")
+                    visible: window.shows("newTab") && !window.isWebApp
                     iconName: "new-tab"
                     tip: bridge.message("New Tab")
                     onClicked: newTab.trigger()
@@ -346,7 +441,7 @@ ApplicationWindow {
                     id: downloadsButton
                     checked: downloadsPopover.opened
                     tipHidden: downloadsPopover.opened
-                    visible: window.shows("downloads")
+                    visible: window.shows("downloads") && !window.isWebApp
                     iconName: "download"
                     tip: bridge.message("Downloads")
                     onClicked: showDownloads.trigger()
@@ -371,6 +466,12 @@ ApplicationWindow {
                         findInPage: findInPage
                         preferences: preferencesAction
                         about: aboutAction
+                        installApp: installAppAction
+                        protectSite: protectSiteAction
+                        openInBrowser: openInBrowserAction
+                        clearAppData: clearAppDataAction
+                        webApp: window.isWebApp
+                        installable: window.installable
                     }
                 }
 
@@ -381,7 +482,7 @@ ApplicationWindow {
 
         TabStrip {
             Layout.fillWidth: true
-            visible: window.tabList.length > 1
+            visible: window.tabList.length > 1 && !window.isWebApp
             Layout.preferredHeight: visible ? 38 : 0
             tabs: window.tabList
             currentIndex: window.currentIndex
@@ -429,6 +530,8 @@ ApplicationWindow {
             smoothWheelSource: bridge.smooth_wheel_script()
             extensionPromptSource: bridge.duckduckgo_extension_prompt_script()
             guardSource: window.guardSource
+            appBridge: webApps
+            keepsToSite: window.isWebApp
         }
     }
 
@@ -456,6 +559,48 @@ ApplicationWindow {
         onFailed: function(message) { window.toast(message) }
     }
     DownloadsManager { id: downloadsManager; hub: downloads; bridge: bridge }
+
+    WebAppInstallation {
+        id: installation
+        bridge: bridge
+        webApps: webApps
+        onNotice: function(text, actionText, action) { window.toast(text, actionText, action) }
+        onInstalled: function(id, name, installedFrom) {
+            const message = bridge.message("Installed {name}").replace("{name}", name)
+            if (webApps.start(id)) {
+                window.handOver(id, installedFrom)
+                window.toast(message)
+            } else {
+                window.toast(message, bridge.message("Open"), function() { webApps.start(id) })
+            }
+        }
+    }
+
+    // Once the app runs, the browser lets go of the site: the tabs that showed it close.
+    function handOver(id, installedFrom) {
+        const leaving = tabList.filter(function(tab) { return tab === installedFrom || webApps.owns_page(id, tab.address) })
+        if (leaving.length === tabList.length) openTab("")
+        leaving.forEach(function(tab) { closeTab(tabList.indexOf(tab)) })
+    }
+
+    Dialog {
+        id: clearAppDataDialog
+        title: window.isWebApp ? bridge.message("Clear Data of {name}?").replace("{name}", window.launch.webApp.name) : ""
+        modal: true
+        padding: 20
+        anchors.centerIn: parent
+        width: Math.min(460, window.width - 48)
+        footer: DialogButtonBox {
+            Button { text: window.plain("_Cancel"); DialogButtonBox.buttonRole: DialogButtonBox.RejectRole }
+            Button { text: window.plain("C_lear"); highlighted: true; DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole }
+        }
+        onAccepted: window.burn()
+        Label {
+            width: parent.width
+            wrapMode: Text.Wrap
+            text: bridge.message("Signs you out and deletes this app's cookies, site data and cache. Nothing else is affected.")
+        }
+    }
 
     Dialog {
         id: burnDialog
@@ -551,7 +696,23 @@ ApplicationWindow {
     Timer { id: toastTimer; interval: 4000; onTriggered: toastPopup.close() }
 
     Component.onCompleted: {
-        const typed = Qt.application.arguments.length > 1 ? bridge.destination(Qt.application.arguments[1]) : ""
-        window.openTab(typed)
+        if (window.isWebApp) { window.openTab(window.launch.webApp.startUrl); return }
+        if (window.launch.addresses.length === 0) { window.openTab(""); return }
+        window.launch.addresses.forEach(function(typed) { window.openTab(bridge.destination(typed)) })
+    }
+
+    // Later launches of this process's identity hand their requests here: open the addresses, or just come forward.
+    Timer {
+        interval: 400
+        running: true
+        repeat: true
+        onTriggered: {
+            for (const addresses of JSON.parse(webApps.take_forwarded_json())) {
+                if (!window.isWebApp) addresses.forEach(function(address) { window.openTab(address) })
+                window.show()
+                window.raise()
+                window.requestActivate()
+            }
+        }
     }
 }

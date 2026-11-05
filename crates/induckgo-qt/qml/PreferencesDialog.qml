@@ -36,7 +36,8 @@ Dialog {
         { id: "protections", title: "Protection Shield", subtitle: "Switch tracker protection off or on for the site" },
         { id: "burnData", title: "Burn Browsing Data", subtitle: "Delete this profile's cookies, site data and cache" },
         { id: "downloads", title: "Downloads", subtitle: "The five latest downloads, and the download folder" },
-        { id: "newTab", title: "New Tab", subtitle: "Open a new tab" }
+        { id: "newTab", title: "New Tab", subtitle: "Open a new tab" },
+        { id: "installApp", title: "Install Site as App", subtitle: "The icon at the end of the address bar" }
     ]
 
     contentItem: ColumnLayout {

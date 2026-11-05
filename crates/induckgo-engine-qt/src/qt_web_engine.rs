@@ -46,6 +46,12 @@ impl QtWebEngine {
         Some(ffi::read_qt_resource(path)).filter(|text| !text.is_empty())
     }
 
+    /// The PNG `bytes` decoded and encoded again by Qt; `None` when Qt cannot decode them.
+    #[must_use]
+    pub fn reencode_png(bytes: &[u8]) -> Option<Vec<u8>> {
+        Some(ffi::reencode_png(bytes)).filter(|png| !png.is_empty())
+    }
+
     /// The Chromium version inside the installed `QtWebEngine`; `None` if it cannot be read.
     #[must_use]
     pub fn chromium_version() -> Option<EngineVersion> {

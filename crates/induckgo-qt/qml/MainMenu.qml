@@ -13,6 +13,17 @@ Popup {
     required property Action findInPage
     required property Action preferences
     required property Action about
+    required property Action installApp
+    required property Action protectSite
+    required property Action openInBrowser
+    required property Action clearAppData
+    /// The window is an installed web app's: it offers the app's own menu, not the browser's.
+    property bool webApp: false
+    /// The page on screen can be installed as an app.
+    property bool installable: false
+    /// Whether protections are on for the page's site, read when the menu opens.
+    property bool siteProtected: true
+    onAboutToShow: siteProtected = window.currentHost === "" || bridge.is_site_protected(window.currentHost)
 
     padding: 8
     width: 343
@@ -37,6 +48,8 @@ Popup {
         id: entry
         property Action command
         property string iconName: command ? command.icon.source.toString().replace("qrc:/icons/", "").replace(".svg", "") : ""
+        /// A ticked row (a setting that is on) shows a check mark where a shortcut would be.
+        property bool marked: false
         property string shortcutText: command && command.shortcut ? String(command.shortcut) : ""
         text: command ? command.text : ""
         Layout.fillWidth: true
@@ -50,6 +63,7 @@ Popup {
             spacing: 12
             TintedIcon { Layout.leftMargin: 8; name: entry.iconName; size: 16; visible: entry.iconName !== "" }
             Label { Layout.fillWidth: true; text: entry.text; elide: Text.ElideRight }
+            TintedIcon { Layout.rightMargin: 8; visible: entry.marked; name: "check"; size: 16 }
             Label {
                 Layout.rightMargin: 8
                 visible: text !== ""
@@ -71,11 +85,11 @@ Popup {
     contentItem: ColumnLayout {
         spacing: 0
 
-        Entry { command: menu.newTab }
-        Entry { command: menu.newWindow }
-        Separator { }
-        Entry { command: menu.showDownloads }
-        Entry { command: menu.findInPage }
+        Entry { visible: !menu.webApp; command: menu.newTab }
+        Entry { visible: !menu.webApp; command: menu.newWindow }
+        Separator { visible: !menu.webApp }
+        Entry { visible: !menu.webApp; command: menu.showDownloads }
+        Entry { visible: !menu.webApp; command: menu.findInPage }
 
         // Zoom: smaller, actual size, larger, in one rounded bar.
         Rectangle {
@@ -119,8 +133,13 @@ Popup {
             }
         }
 
+        Separator { visible: menu.webApp || menu.installable }
+        Entry { visible: menu.webApp; command: menu.protectSite; marked: menu.siteProtected }
+        Entry { visible: menu.webApp; command: menu.openInBrowser }
+        Entry { visible: menu.webApp; command: menu.clearAppData }
+        Entry { visible: !menu.webApp && menu.installable; command: menu.installApp }
         Separator { }
-        Entry { command: menu.preferences }
+        Entry { visible: !menu.webApp; command: menu.preferences }
         Entry { command: menu.about }
     }
 }

@@ -2,17 +2,22 @@
 //! protection data carry over.
 
 use std::env;
+use std::path::Path;
 use std::path::PathBuf;
 
 use induckgo_core::profile::profile_directories::ProfileDirectories;
 use induckgo_core::profile::profile_directories::ProfileLocation;
 use induckgo_core::profile::profile_id::ProfileId;
+use induckgo_core::web_app::web_app_id::WebAppId;
 
 use crate::system_downloads_folder::SystemDownloadsFolder;
 
+#[derive(Debug, Clone)]
 pub struct InstallationDirectories {
     data_root: PathBuf,
     cache_root: PathBuf,
+    /// Where the desktop looks for `.desktop` files of the person's own applications.
+    applications: PathBuf,
 }
 
 impl InstallationDirectories {
@@ -25,7 +30,17 @@ impl InstallationDirectories {
         let home = env::var_os("HOME").map(PathBuf::from).unwrap_or_default();
         let data_home = Self::directory_from("XDG_DATA_HOME").unwrap_or_else(|| home.join(".local/share"));
         let cache_home = Self::directory_from("XDG_CACHE_HOME").unwrap_or_else(|| home.join(".cache"));
-        Self { data_root: data_home.join(Self::DIRECTORY), cache_root: cache_home.join(Self::DIRECTORY) }
+        Self::under(&data_home, &cache_home)
+    }
+
+    /// The layout below the given XDG data and cache homes.
+    #[must_use]
+    pub fn under(data_home: &Path, cache_home: &Path) -> Self {
+        Self {
+            data_root: data_home.join(Self::DIRECTORY),
+            cache_root: cache_home.join(Self::DIRECTORY),
+            applications: data_home.join("applications"),
+        }
     }
 
     /// An XDG variable counts only when it is an absolute path, as the specification requires.
@@ -41,6 +56,32 @@ impl InstallationDirectories {
     #[must_use]
     pub fn interface_language_file(&self) -> PathBuf {
         self.data_root.join("interface.json")
+    }
+
+    /// Where the sockets that hand a second launch to the running process live: the session's runtime
+    /// directory, else a folder of the cache.
+    #[must_use]
+    pub fn runtime_directory(&self) -> PathBuf {
+        Self::directory_from("XDG_RUNTIME_DIR")
+            .map_or_else(|| self.cache_root.join("run"), |runtime| runtime.join(Self::DIRECTORY))
+    }
+
+    /// The sites installed as web apps, shared with the GTK edition.
+    #[must_use]
+    pub fn web_app_catalog(&self) -> PathBuf {
+        self.data_root.join("web-apps.json")
+    }
+
+    /// The folder holding one installed web app's icon.
+    #[must_use]
+    pub fn web_app_icon_directory(&self, id: &WebAppId) -> PathBuf {
+        self.data_root.join("web-apps").join(id.as_str())
+    }
+
+    /// Where the `.desktop` file of an installed web app goes, so the application menu lists it.
+    #[must_use]
+    pub fn applications_directory(&self) -> &Path {
+        &self.applications
     }
 
     /// The folder the desktop calls "Downloads".

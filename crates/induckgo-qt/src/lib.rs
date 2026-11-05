@@ -5,10 +5,13 @@ pub mod browser_application;
 #[allow(unsafe_code, clippy::unnecessary_box_returns)]
 pub mod browser_bridge;
 pub mod burn_restart;
+pub mod desktop_font;
 pub mod download_center;
 pub mod installation_directories;
 pub mod interface_catalogue;
+pub mod interface_language_setting;
 pub mod profile_policies;
+pub mod profile_preferences;
 pub mod profile_session;
 pub mod protection_documents;
 pub mod site_protection;

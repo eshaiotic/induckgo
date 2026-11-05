@@ -4,6 +4,7 @@ use std::fs;
 use std::path::Path;
 use std::process::ExitCode;
 
+use cxx_qt_lib::QFont;
 use cxx_qt_lib::QGuiApplication;
 use cxx_qt_lib::QQmlApplicationEngine;
 use cxx_qt_lib::QString;
@@ -18,11 +19,14 @@ use induckgo_engine_qt::qt_web_engine::QtWebEngine;
 use serde_json::Value;
 
 use crate::burn_restart::BurnRestart;
+use crate::desktop_font::DesktopFont;
 use crate::download_center::DownloadCenter;
 use crate::installation_directories::InstallationDirectories;
 use crate::interface_catalogue::InterfaceCatalogue;
+use crate::interface_language_setting::InterfaceLanguageSetting;
 use crate::profile_policies::ProfilePolicies;
 use crate::profile_policies::ProfileStrictness;
+use crate::profile_preferences::ProfilePreferences;
 use crate::profile_session::ProfileSession;
 use crate::protection_documents::ProtectionDocuments;
 use crate::site_protection::SiteProtection;
@@ -33,6 +37,9 @@ pub struct BrowserApplication;
 
 impl BrowserApplication {
     const WINDOW: &'static str = "qrc:/qt/qml/io/induckgo/browser/qml/Main.qml";
+    /// The name of the installed desktop entry; Wayland compositors take the window's icon and grouping from it.
+    const DESKTOP_ENTRY: &'static str = "io.github.induckgo.InDuckGo";
+    const WINDOW_ICON: &'static str = ":/icons/app.svg";
 
     #[must_use]
     pub fn run() -> ExitCode {
@@ -43,7 +50,10 @@ impl BrowserApplication {
         let mut application = QGuiApplication::new();
         if let Some(mut application) = application.as_mut() {
             application.as_mut().set_application_name(&QString::from("InDuckGo"));
+            Self::use_desktop_font(application);
         }
+        QGuiApplication::set_desktop_file_name(&QString::from(Self::DESKTOP_ENTRY));
+        QtWebEngine::set_window_icon(Self::WINDOW_ICON);
         Self::install_policies(&directories);
         Self::check_engine_version();
 
@@ -54,6 +64,16 @@ impl BrowserApplication {
         match application.as_mut() {
             Some(application) => ExitCode::from(u8::try_from(application.exec()).unwrap_or(1)),
             None => ExitCode::FAILURE,
+        }
+    }
+
+    /// Draws the interface in the font the desktop chose, as the GTK edition did.
+    fn use_desktop_font(application: std::pin::Pin<&mut QGuiApplication>) {
+        let mut font = QFont::default();
+        let wanted = DesktopFont::from_desktop()
+            .description(&font.family().map(|family| family.to_string()).unwrap_or_default());
+        if font.from_string(&QString::from(wanted.as_str())) {
+            application.set_application_font(&font);
         }
     }
 
@@ -87,7 +107,14 @@ impl BrowserApplication {
                     .text_with("Some data could not be deleted: {error}", &[("error", &error.to_string())]),
             );
         }
-        ProfileSession::new(profile, SiteProtection::open(&profile.data), downloads, SiteZoomStore::open(&profile.data))
+        ProfileSession::new(
+            profile,
+            SiteProtection::open(&profile.data),
+            downloads,
+            SiteZoomStore::open(&profile.data),
+            ProfilePreferences::open(&profile.data),
+            InterfaceLanguageSetting::open(&directories.interface_language_file()),
+        )
     }
 
     fn check_engine_version() {

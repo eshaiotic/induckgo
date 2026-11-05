@@ -6,6 +6,7 @@ WebEngineView {
     id: view
     property string startAddress
     property string smoothWheelSource
+    property string extensionPromptSource
     readonly property string address: url.toString()
     readonly property bool isLoading: loading
 
@@ -18,13 +19,22 @@ WebEngineView {
     settings.localContentCanAccessFileUrls: false
     settings.localContentCanAccessRemoteUrls: false
 
-    userScripts.collection: smoothWheelSource === "" ? [] : [ {
-        name: "induckgo-smooth-wheel",
-        sourceCode: smoothWheelSource,
-        injectionPoint: WebEngineScript.DocumentCreation,
-        worldId: WebEngineScript.ApplicationWorld,
-        runsOnSubFrames: true
-    } ]
+    userScripts.collection: {
+        const scripts = []
+        if (smoothWheelSource !== "") scripts.push(userScript("induckgo-smooth-wheel", smoothWheelSource))
+        if (extensionPromptSource !== "") scripts.push(userScript("induckgo-duckduckgo-extension-prompt", extensionPromptSource))
+        return scripts
+    }
+
+    function userScript(scriptName, source) {
+        return {
+            name: scriptName,
+            sourceCode: source,
+            injectionPoint: WebEngineScript.DocumentCreation,
+            worldId: WebEngineScript.ApplicationWorld,
+            runsOnSubFrames: true
+        }
+    }
 
     onNewWindowRequested: function(request) {
         if (request.userInitiated) view.openInNewTab(request.requestedUrl.toString())

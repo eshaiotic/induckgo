@@ -8,3 +8,6 @@ void initialize_web_engine();
 void install_hooks(rust::Str storage_path, rust::Str cache_path);
 /// Version of the Chromium inside QtWebEngine, such as `140.0.7339.207`.
 rust::String chromium_version();
+/// Gives every window the icon at `resource_path` (a Qt resource such as `:/icons/app.svg`); on Wayland and X11
+/// alike this is what the window's title bar and the task bar show when no installed desktop entry names one.
+void set_window_icon(rust::Str resource_path);

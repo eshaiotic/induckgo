@@ -26,6 +26,36 @@ pub mod ffi {
         #[qinvokable]
         fn smooth_wheel_script(self: &BrowserBridge) -> QString;
 
+        /// The script that hides DuckDuckGo's offer of an extension, which this browser neither needs nor runs.
+        #[qinvokable]
+        fn duckduckgo_extension_prompt_script(self: &BrowserBridge) -> QString;
+
+        /// Whether the toolbar shows the button stored as `id` (`reload`).
+        #[qinvokable]
+        fn toolbar_shows(self: &BrowserBridge, id: &QString) -> bool;
+
+        #[qinvokable]
+        fn set_toolbar_shown(self: &BrowserBridge, id: &QString, is_shown: bool);
+
+        /// Whether the mouse wheel scrolls smoothly.
+        #[qinvokable]
+        fn smooth_wheel(self: &BrowserBridge) -> bool;
+
+        #[qinvokable]
+        fn set_smooth_wheel(self: &BrowserBridge, is_enabled: bool);
+
+        /// The interface languages as a JSON array of names; the first is the system's language.
+        #[qinvokable]
+        fn language_names_json(self: &BrowserBridge) -> QString;
+
+        /// The position in `language_names_json` of the chosen language.
+        #[qinvokable]
+        fn language_position(self: &BrowserBridge) -> i32;
+
+        /// Chooses a language for the next start; returns whether it changed.
+        #[qinvokable]
+        fn set_language_position(self: &BrowserBridge, position: i32) -> bool;
+
         /// A notice to show when the window opens, or empty.
         #[qinvokable]
         fn startup_notice(self: &BrowserBridge) -> QString;
@@ -112,6 +142,7 @@ use std::process::Command;
 use cxx_qt_lib::QString;
 use induckgo_core::download::download_history::DownloadHistory;
 use induckgo_core::download::download_history::DownloadId;
+use induckgo_core::engine::duckduckgo_extension_prompt_script::DuckDuckGoExtensionPromptScript;
 use induckgo_core::engine::smooth_wheel_page_script::SmoothWheelPageScript;
 use induckgo_core::language::message_catalogue::MessageCatalogue;
 use induckgo_core::navigation::address_bar_input::AddressBarInput;
@@ -122,6 +153,7 @@ use url::Url;
 
 use crate::burn_restart::BurnRestart;
 use crate::interface_catalogue::InterfaceCatalogue;
+use crate::interface_language_setting::InterfaceLanguageSetting;
 use crate::profile_session::ProfileSession;
 use crate::startup_notice::StartupNotice;
 
@@ -142,7 +174,55 @@ impl ffi::BrowserBridge {
     }
 
     fn smooth_wheel_script(&self) -> QString {
-        QString::from(SmoothWheelPageScript::source_for(&SmoothWheelScroll::chromium_like()).as_str())
+        let is_smooth = ProfileSession::current().is_none_or(|session| session.preferences().smooth_wheel());
+        if is_smooth {
+            QString::from(SmoothWheelPageScript::source_for(&SmoothWheelScroll::chromium_like()).as_str())
+        } else {
+            QString::default()
+        }
+    }
+
+    fn toolbar_shows(&self, id: &QString) -> bool {
+        ProfileSession::current().is_none_or(|session| session.preferences().shows_toolbar_button(&id.to_string()))
+    }
+
+    fn set_toolbar_shown(&self, id: &QString, is_shown: bool) {
+        if let Some(session) = ProfileSession::current() {
+            session.preferences().set_toolbar_button_shown(&id.to_string(), is_shown);
+        }
+    }
+
+    fn smooth_wheel(&self) -> bool {
+        ProfileSession::current().is_none_or(|session| session.preferences().smooth_wheel())
+    }
+
+    fn set_smooth_wheel(&self, is_enabled: bool) {
+        if let Some(session) = ProfileSession::current() {
+            session.preferences().set_smooth_wheel(is_enabled);
+        }
+    }
+
+    fn language_names_json(&self) -> QString {
+        let system_entry = InterfaceCatalogue::current().text_with(
+            "System default ({language})",
+            &[("language", InterfaceLanguageSetting::system_language().endonym())],
+        );
+        QString::from(serde_json::json!(InterfaceLanguageSetting::names(&system_entry)).to_string().as_str())
+    }
+
+    fn language_position(&self) -> i32 {
+        ProfileSession::current()
+            .and_then(|session| i32::try_from(session.language().position()).ok())
+            .unwrap_or_default()
+    }
+
+    fn set_language_position(&self, position: i32) -> bool {
+        let position = usize::try_from(position).unwrap_or_default();
+        ProfileSession::current().is_some_and(|session| session.language().choose_position(position))
+    }
+
+    fn duckduckgo_extension_prompt_script(&self) -> QString {
+        QString::from(DuckDuckGoExtensionPromptScript::source())
     }
 
     fn startup_notice(&self) -> QString {

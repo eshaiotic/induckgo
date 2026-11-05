@@ -20,6 +20,7 @@ pub mod ffi {
         fn initialize_web_engine();
         fn install_hooks(storage_path: &str, cache_path: &str);
         fn chromium_version() -> String;
+        fn set_window_icon(resource_path: &str);
     }
 }
 

@@ -4,6 +4,7 @@ use cxx_qt_build::QmlModule;
 fn main() {
     CxxQtBuilder::new_qml_module(QmlModule::new("io.induckgo.browser").qml_files([
         "qml/Main.qml",
+        "qml/AdwaitaSwitch.qml",
         "qml/BrowserTab.qml",
         "qml/DownloadRow.qml",
         "qml/DownloadsHub.qml",
@@ -11,8 +12,13 @@ fn main() {
         "qml/DownloadsPopover.qml",
         "qml/FindBar.qml",
         "qml/IconButton.qml",
+        "qml/MainMenu.qml",
+        "qml/PreferencesDialog.qml",
+        "qml/PreferencesGroup.qml",
+        "qml/PreferencesRow.qml",
         "qml/TabStrip.qml",
         "qml/TintedIcon.qml",
+        "qml/WindowControls.qml",
     ]))
     .qrc("icons.qrc")
     .files(["src/browser_bridge.rs"])

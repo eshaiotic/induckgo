@@ -11,6 +11,8 @@ use induckgo_core::profile::profile_directories::ProfileLocation;
 
 use crate::burn_restart::BurnRestart;
 use crate::download_center::DownloadCenter;
+use crate::interface_language_setting::InterfaceLanguageSetting;
+use crate::profile_preferences::ProfilePreferences;
 use crate::site_protection::SiteProtection;
 use crate::site_zoom_store::SiteZoomStore;
 
@@ -19,6 +21,8 @@ pub struct ProfileSession {
     pub burn: BurnRestart,
     downloads: Mutex<DownloadCenter>,
     zoom: Mutex<SiteZoomStore>,
+    preferences: Mutex<ProfilePreferences>,
+    language: Mutex<InterfaceLanguageSetting>,
 }
 
 static CURRENT: OnceLock<ProfileSession> = OnceLock::new();
@@ -30,12 +34,16 @@ impl ProfileSession {
         protection: SiteProtection,
         downloads: DownloadCenter,
         zoom: SiteZoomStore,
+        preferences: ProfilePreferences,
+        language: InterfaceLanguageSetting,
     ) -> Self {
         Self {
             protection,
             burn: BurnRestart::new(location.clone()),
             downloads: Mutex::new(downloads),
             zoom: Mutex::new(zoom),
+            preferences: Mutex::new(preferences),
+            language: Mutex::new(language),
         }
     }
 
@@ -51,6 +59,14 @@ impl ProfileSession {
 
     pub fn zoom(&self) -> MutexGuard<'_, SiteZoomStore> {
         self.zoom.lock().unwrap_or_else(std::sync::PoisonError::into_inner)
+    }
+
+    pub fn preferences(&self) -> MutexGuard<'_, ProfilePreferences> {
+        self.preferences.lock().unwrap_or_else(std::sync::PoisonError::into_inner)
+    }
+
+    pub fn language(&self) -> MutexGuard<'_, InterfaceLanguageSetting> {
+        self.language.lock().unwrap_or_else(std::sync::PoisonError::into_inner)
     }
 
     pub fn downloads(&self) -> MutexGuard<'_, DownloadCenter> {

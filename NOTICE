@@ -23,6 +23,10 @@ usr/share/doc/induckgo/third-party. crates/induckgo-core/src/tor/built_in_bridge
 bridge lines of Tor Browser (tor-browser-build, BSD-3-Clause). "Tor" is a trademark of The Tor Project, Inc.;
 InDuckGo is not affiliated with or endorsed by The Tor Project.
 
+The Qt window (crates/induckgo-qt/icons/adwaita) draws the symbolic icons of GNOME's Adwaita icon theme,
+dual-licensed CC BY-SA 3.0 or LGPL-3.0-only (we use them under LGPL-3.0-only, compatible with GPL-3.0). The
+source of one icon is a rendered copy; the pictures are unchanged apart from colouring at run time.
+
 Data downloaded at run time, not distributed with InDuckGo:
 
   - DuckDuckGo Tracker Data Set, licensed CC BY-NC-SA 4.0 (non-commercial use only);

@@ -34,6 +34,12 @@ impl QtWebEngine {
         is_first
     }
 
+    /// Gives every window the icon stored at `resource_path` in the Qt resources. Call it once the application
+    /// exists.
+    pub fn set_window_icon(resource_path: &str) {
+        ffi::set_window_icon(resource_path);
+    }
+
     /// The Chromium version inside the installed `QtWebEngine`; `None` if it cannot be read.
     #[must_use]
     pub fn chromium_version() -> Option<EngineVersion> {

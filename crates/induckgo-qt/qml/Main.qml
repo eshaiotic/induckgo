@@ -10,20 +10,42 @@ ApplicationWindow {
     width: 1280
     height: 860
     visible: true
+    // The toolbar is the title bar (as the GTK edition's header bar was); the window draws its own rounded top.
+    flags: Qt.Window | Qt.FramelessWindowHint
+    color: "transparent"
     title: currentTab && currentTab.title ? currentTab.title + " — InDuckGo" : "InDuckGo"
 
     BrowserBridge { id: bridge }
 
+    readonly property bool isFramed: visibility !== Window.Maximized && visibility !== Window.FullScreen
+    readonly property int cornerRadius: isFramed ? 12 : 0
+    background: Rectangle {
+        color: palette.window
+        topLeftRadius: window.cornerRadius
+        topRightRadius: window.cornerRadius
+        border.width: window.isFramed ? 1 : 0
+        border.color: Qt.alpha(palette.windowText, 0.25)
+    }
+
+    // Which toolbar buttons the person chose to show; `toolbarVersion` makes the buttons re-read the choice.
+    property int toolbarVersion: 0
+    function shows(button) { return toolbarVersion >= 0 && bridge.toolbar_shows(button) }
+    property string downloadFolder: bridge.download_folder()
+
     // Controls follow the desktop's colour scheme even where the style's own palette stays light.
     readonly property bool isDark: Qt.styleHints.colorScheme === Qt.Dark
-    palette.window: isDark ? "#2b2b2b" : "#f2f2f2"
-    palette.windowText: isDark ? "#e8e8e8" : "#1c1c1c"
-    palette.base: isDark ? "#1e1e1e" : "#ffffff"
-    palette.text: isDark ? "#e8e8e8" : "#1c1c1c"
-    palette.button: isDark ? "#3a3a3a" : "#e6e6e6"
-    palette.buttonText: isDark ? "#e8e8e8" : "#1c1c1c"
-    palette.placeholderText: isDark ? "#9a9a9a" : "#707070"
+    // libadwaita's colours, so the window looks as the GTK edition did: light #fafafb with 80 % black text,
+    // dark #222226 with white text; cards, popovers and fields are lighter than the window.
+    palette.window: isDark ? "#222226" : "#fafafb"
+    palette.windowText: isDark ? "#ffffff" : "#2e2e32"
+    palette.base: isDark ? "#343438" : "#ffffff"
+    palette.text: isDark ? "#ffffff" : "#2e2e32"
+    palette.button: isDark ? "#3d3d41" : "#ebebed"
+    palette.buttonText: isDark ? "#ffffff" : "#2e2e32"
+    palette.placeholderText: isDark ? Qt.rgba(1, 1, 1, 0.55) : Qt.rgba(0, 0, 0, 0.55)
     palette.mid: isDark ? "#666666" : "#a0a0a0"
+    palette.highlight: isDark ? "#78aeed" : "#3584e4"
+    palette.highlightedText: isDark ? "#1d1d20" : "#ffffff"
 
     property var tabList: []
     property int currentIndex: 0
@@ -50,6 +72,12 @@ ApplicationWindow {
         tabList = tabList.filter(function(_, position) { return position !== index })
         currentIndex = Math.min(index < currentIndex ? currentIndex - 1 : currentIndex, tabList.length - 1)
         tab.destroy()
+    }
+
+    // Another window of the same profile: it shares the process, the protections and the downloads.
+    function openWindow() {
+        const created = Qt.createComponent("qrc:/qt/qml/io/induckgo/browser/qml/Main.qml")
+        if (created.status === Component.Ready) created.createObject(null)
     }
 
     function applyZoom(tab) { tab.zoomFactor = bridge.zoom_percent(tab.address) / 100 }
@@ -81,10 +109,17 @@ ApplicationWindow {
     Action {
         id: newTab
         text: bridge.message("New Tab")
-        icon.source: "qrc:/icons/add.svg"
+        icon.source: "qrc:/icons/new-tab.svg"
         icon.color: window.palette.windowText
         shortcut: "Ctrl+T"
         onTriggered: window.openTab("")
+    }
+    Action {
+        id: newWindow
+        text: bridge.message("New Window")
+        icon.source: "qrc:/icons/window.svg"
+        shortcut: "Ctrl+N"
+        onTriggered: window.openWindow()
     }
     Action {
         id: closeTabAction
@@ -140,6 +175,7 @@ ApplicationWindow {
         text: bridge.message("Preferences…")
         icon.source: "qrc:/icons/settings.svg"
         icon.color: window.palette.windowText
+        shortcut: "Ctrl+,"
         onTriggered: preferencesDialog.open()
     }
 
@@ -147,55 +183,73 @@ ApplicationWindow {
         spacing: 0
 
         ToolBar {
+            id: headerBar
             Layout.fillWidth: true
-            Layout.preferredHeight: 52
+            Layout.preferredHeight: 50
+            padding: 0
             background: Rectangle {
                 color: palette.window
-                Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Qt.alpha(palette.windowText, 0.12) }
+                topLeftRadius: window.cornerRadius
+                topRightRadius: window.cornerRadius
+                // Empty parts of the bar move the window; a double click maximises it, as a title bar does.
+                DragHandler { target: null; onActiveChanged: if (active) window.startSystemMove() }
+                TapHandler {
+                    onDoubleTapped: window.visibility === Window.Maximized ? window.showNormal() : window.showMaximized()
+                }
             }
 
+            // Navigation on the left, the page's tools and the window buttons on the right, the address in the
+            // middle of the window whatever the two sides hold (as a GNOME header bar centres its title).
             RowLayout {
-                anchors.fill: parent
-                anchors.leftMargin: 8
-                anchors.rightMargin: 8
-                spacing: 2
+                id: leftGroup
+                anchors.left: parent.left
+                anchors.leftMargin: 6
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 6
 
                 IconButton {
+                    visible: window.shows("backAndForward")
                     iconName: "back"
                     tip: bridge.message("Back")
                     enabled: window.currentTab && window.currentTab.canGoBack
                     onClicked: window.currentTab.goBack()
                 }
                 IconButton {
+                    visible: window.shows("backAndForward")
                     iconName: "forward"
                     tip: bridge.message("Forward")
                     enabled: window.currentTab && window.currentTab.canGoForward
                     onClicked: window.currentTab.goForward()
                 }
                 IconButton {
-                    iconName: window.currentTab && window.currentTab.isLoading ? "close" : "reload"
+                    visible: window.shows("reload")
+                    iconName: window.currentTab && window.currentTab.isLoading ? "stop" : "reload"
                     tip: window.currentTab && window.currentTab.isLoading ? bridge.message("Load the page again, or stop loading it") : bridge.message("Reload")
                     onClicked: window.currentTab.isLoading ? window.currentTab.stop() : window.currentTab.reload()
                 }
+            }
 
-                Item { Layout.preferredWidth: 6 }
+            RowLayout {
+                id: addressGroup
+                anchors.verticalCenter: parent.verticalCenter
+                x: Math.max(leftGroup.x + leftGroup.width + 12, (parent.width - width) / 2)
+                width: Math.min(550, parent.width - 2 * Math.max(leftGroup.width + 6, rightGroup.width + 6) - 24)
+                spacing: 6
 
                 Rectangle {
                     id: addressField
                     Layout.fillWidth: true
-                    Layout.maximumWidth: 900
-                    Layout.alignment: Qt.AlignHCenter
-                    Layout.preferredHeight: 36
-                    radius: 18
-                    color: palette.base
-                    border.width: addressBar.activeFocus ? 2 : 1
-                    border.color: addressBar.activeFocus ? palette.highlight : Qt.alpha(palette.windowText, 0.22)
+                    Layout.preferredHeight: 34
+                    radius: 9
+                    color: addressBar.activeFocus ? palette.base : Qt.alpha(palette.windowText, 0.08)
+                    border.width: addressBar.activeFocus ? 2 : 0
+                    border.color: palette.highlight
                     clip: true
 
                     RowLayout {
                         anchors.fill: parent
-                        anchors.leftMargin: 12
-                        anchors.rightMargin: 6
+                        anchors.leftMargin: 10
+                        anchors.rightMargin: 8
                         spacing: 6
 
                         TintedIcon {
@@ -204,27 +258,18 @@ ApplicationWindow {
                             Layout.preferredHeight: 16
                             visible: scheme === "https" || scheme === "http"
                             name: scheme === "https" ? "lock" : "warning"
-                            opacity: 0.75
+                            opacity: 0.6
                         }
                         TextField {
                             id: addressBar
                             Layout.fillWidth: true
                             background: null
+                            padding: 0
                             selectByMouse: true
                             placeholderText: bridge.message("Search {engine} or enter address").replace("{engine}", "DuckDuckGo")
                             text: window.currentTab ? window.currentTab.address : ""
                             onAccepted: window.navigate(text)
                             onActiveFocusChanged: if (activeFocus) selectAll()
-                        }
-                        Button {
-                            id: zoomBadge
-                            visible: window.currentZoom !== 100 && window.zoomVersion >= 0
-                            flat: true
-                            text: window.currentZoom + "%"
-                            implicitHeight: 26
-                            ToolTip.visible: hovered
-                            ToolTip.text: bridge.message("Reset Zoom")
-                            onClicked: window.changeZoom(0)
                         }
                     }
                     ProgressBar {
@@ -237,11 +282,31 @@ ApplicationWindow {
                         background: null
                     }
                 }
+                Button {
+                    id: zoomBadge
+                    visible: window.currentZoom !== 100 && window.zoomVersion >= 0
+                    flat: true
+                    text: window.currentZoom + "%"
+                    font.bold: true
+                    implicitHeight: 34
+                    implicitWidth: 68
+                    background: Rectangle { radius: 9; color: Qt.alpha(palette.windowText, zoomBadge.hovered ? 0.14 : 0.08) }
+                    ToolTip.visible: hovered
+                    ToolTip.text: bridge.message("Reset Zoom")
+                    onClicked: window.changeZoom(0)
+                }
+            }
 
-                Item { Layout.preferredWidth: 6 }
+            RowLayout {
+                id: rightGroup
+                anchors.right: parent.right
+                anchors.rightMargin: 12
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 6
 
                 IconButton {
                     id: shieldButton
+                    visible: window.shows("protections")
                     checkable: true
                     enabled: window.currentHost !== ""
                     checked: window.currentHost === "" || bridge.is_site_protected(window.currentHost)
@@ -253,17 +318,20 @@ ApplicationWindow {
                     }
                 }
                 IconButton {
+                    visible: window.shows("burnData")
                     iconName: "fire"
                     tip: bridge.message("Burn Browsing Data")
                     onClicked: burnAction.trigger()
                 }
                 IconButton {
-                    iconName: "add"
+                    visible: window.shows("newTab")
+                    iconName: "new-tab"
                     tip: bridge.message("New Tab")
                     onClicked: newTab.trigger()
                 }
                 IconButton {
                     id: downloadsButton
+                    visible: window.shows("downloads")
                     iconName: "download"
                     tip: bridge.message("Downloads")
                     onClicked: showDownloads.trigger()
@@ -280,43 +348,23 @@ ApplicationWindow {
                 IconButton {
                     iconName: "menu"
                     tip: bridge.message("Main Menu")
-                    onClicked: mainMenu.popup(x, y + height)
+                    onClicked: mainMenu.opened ? mainMenu.close() : mainMenu.open()
 
-                    Menu {
+                    MainMenu {
                         id: mainMenu
-                        width: 300
-                        background: Rectangle {
-                            radius: 8
-                            color: palette.window
-                            border.color: Qt.alpha(palette.windowText, 0.25)
-                        }
-                        MenuItem { action: newTab }
-                        MenuItem { action: showDownloads }
-                        MenuItem { action: findInPage }
-                        MenuSeparator { }
-                        Item {
-                            width: parent.width
-                            height: 44
-                            RowLayout {
-                                anchors.centerIn: parent
-                                spacing: 8
-                                IconButton { iconName: "minus"; tip: bridge.message("Zoom Out"); onClicked: window.changeZoom(-1) }
-                                Button {
-                                    flat: true
-                                    implicitWidth: 72
-                                    text: window.currentZoom + "%"
-                                    ToolTip.visible: hovered
-                                    ToolTip.text: bridge.message("Reset Zoom")
-                                    onClicked: window.changeZoom(0)
-                                }
-                                IconButton { iconName: "add"; tip: bridge.message("Zoom In"); onClicked: window.changeZoom(1) }
-                            }
-                        }
-                        MenuSeparator { }
-                        MenuItem { action: preferencesAction }
-                        MenuItem { action: aboutAction }
+                        window: window
+                        bridge: bridge
+                        newTab: newTab
+                        newWindow: newWindow
+                        showDownloads: showDownloads
+                        findInPage: findInPage
+                        preferences: preferencesAction
+                        about: aboutAction
                     }
                 }
+
+                Item { Layout.preferredWidth: 1 }
+                WindowControls { window: window }
             }
         }
 
@@ -343,9 +391,33 @@ ApplicationWindow {
         }
     }
 
+    // The frameless window is resized from its edges and corners.
+    component ResizeEdge: MouseArea {
+        required property int edges
+        visible: window.isFramed
+        z: 1000
+        hoverEnabled: true
+        cursorShape: edges === Qt.LeftEdge || edges === Qt.RightEdge ? Qt.SizeHorCursor
+                   : edges === Qt.TopEdge || edges === Qt.BottomEdge ? Qt.SizeVerCursor
+                   : edges === (Qt.TopEdge | Qt.LeftEdge) || edges === (Qt.BottomEdge | Qt.RightEdge) ? Qt.SizeFDiagCursor
+                   : Qt.SizeBDiagCursor
+        onPressed: window.startSystemResize(edges)
+    }
+    ResizeEdge { edges: Qt.LeftEdge; anchors { left: parent.left; top: parent.top; bottom: parent.bottom; topMargin: 8; bottomMargin: 8 } width: 5 }
+    ResizeEdge { edges: Qt.RightEdge; anchors { right: parent.right; top: parent.top; bottom: parent.bottom; topMargin: 8; bottomMargin: 8 } width: 5 }
+    ResizeEdge { edges: Qt.TopEdge; anchors { top: parent.top; left: parent.left; right: parent.right; leftMargin: 8; rightMargin: 8 } height: 5 }
+    ResizeEdge { edges: Qt.BottomEdge; anchors { bottom: parent.bottom; left: parent.left; right: parent.right; leftMargin: 8; rightMargin: 8 } height: 5 }
+    ResizeEdge { edges: Qt.TopEdge | Qt.LeftEdge; anchors { top: parent.top; left: parent.left } width: 8; height: 8 }
+    ResizeEdge { edges: Qt.TopEdge | Qt.RightEdge; anchors { top: parent.top; right: parent.right } width: 8; height: 8 }
+    ResizeEdge { edges: Qt.BottomEdge | Qt.LeftEdge; anchors { bottom: parent.bottom; left: parent.left } width: 8; height: 8 }
+    ResizeEdge { edges: Qt.BottomEdge | Qt.RightEdge; anchors { bottom: parent.bottom; right: parent.right } width: 8; height: 8 }
+
     Component {
         id: tabComponent
-        BrowserTab { smoothWheelSource: bridge.smooth_wheel_script() }
+        BrowserTab {
+            smoothWheelSource: bridge.smooth_wheel_script()
+            extensionPromptSource: bridge.duckduckgo_extension_prompt_script()
+        }
     }
 
     StackLayout {
@@ -403,44 +475,22 @@ ApplicationWindow {
         }
     }
 
-    Dialog {
+    PreferencesDialog {
         id: preferencesDialog
-        title: bridge.message("Preferences")
-        modal: true
-        padding: 20
-        anchors.centerIn: parent
-        width: Math.min(520, window.width - 48)
-        standardButtons: Dialog.Close
-        ColumnLayout {
-            width: parent.width
-            spacing: 10
-            Label { text: bridge.message("Downloads"); font.bold: true }
-            Switch {
-                text: bridge.message("Ask Where to Save Each File")
-                checked: bridge.asks_where_to_save()
-                onToggled: bridge.set_asks_where_to_save(checked)
-            }
-            Label {
-                Layout.fillWidth: true
-                wrapMode: Text.Wrap
-                color: palette.placeholderText
-                text: bridge.message("Otherwise files go straight to the download folder")
-            }
-            RowLayout {
-                Layout.fillWidth: true
-                Label { text: bridge.message("Download Folder"); Layout.fillWidth: true }
-                Button {
-                    text: bridge.download_folder().split("/").pop()
-                    onClicked: folderDialog.open()
-                }
-            }
-        }
+        bridge: bridge
+        downloadFolder: window.downloadFolder
+        onToolbarChanged: window.toolbarVersion++
+        onNotice: function(text) { window.toast(text) }
+        onFolderRequested: folderDialog.open()
     }
 
     FolderDialog {
         id: folderDialog
         title: bridge.message("Choose Folder")
-        onAccepted: bridge.set_download_folder(decodeURIComponent(selectedFolder.toString().replace("file://", "")))
+        onAccepted: {
+            bridge.set_download_folder(decodeURIComponent(selectedFolder.toString().replace("file://", "")))
+            window.downloadFolder = bridge.download_folder()
+        }
     }
 
     Popup {

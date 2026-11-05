@@ -1,6 +1,8 @@
 #include "engine_hooks.h"
 #include "induckgo-engine-qt/src/engine_bridge.cxx.h"
 
+#include <QGuiApplication>
+#include <QIcon>
 #include <QQuickWebEngineProfile>
 #include <QWebEngineCookieStore>
 #include <QWebEngineUrlRequestInfo>
@@ -59,4 +61,9 @@ void install_hooks(rust::Str storage_path, rust::Str cache_path) {
 
 rust::String chromium_version() {
     return rust::String(qWebEngineChromiumVersion());
+}
+
+void set_window_icon(rust::Str resource_path) {
+    QGuiApplication::setWindowIcon(
+        QIcon(QString::fromUtf8(resource_path.data(), static_cast<int>(resource_path.size()))));
 }

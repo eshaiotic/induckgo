@@ -803,3 +803,12 @@ msgstr "Bred adressfält"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "Adressfältet fyller hela utrymmet i verktygsfältet; avstängt förblir det kort och centrerat"
+
+msgid "No apps installed yet"
+msgstr "Inga appar är installerade ännu"
+
+msgid "Uninstall {name}?"
+msgstr "Avinstallera {name}?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "Tar bort appen med dess cookies, inloggningar och data. Det går inte att ångra."

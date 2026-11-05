@@ -803,3 +803,12 @@ msgstr "પહોળી સરનામા પટ્ટી"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "સરનામા પટ્ટી ટૂલબારની બધી જગ્યા ભરે છે; બંધ હોય ત્યારે તે ટૂંકી અને વચ્ચે રહે છે"
+
+msgid "No apps installed yet"
+msgstr "હજુ સુધી કોઈ એપ ઇન્સ્ટોલ કરેલ નથી"
+
+msgid "Uninstall {name}?"
+msgstr "{name} અનઇન્સ્ટોલ કરીએ?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "એપને તેની કૂકીઓ, લોગિન અને ડેટા સાથે કાઢી નાખે છે. આ પાછું લઈ શકાશે નહીં."

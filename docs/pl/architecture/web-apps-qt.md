@@ -67,8 +67,20 @@ banku nie mogła pokazać strony wyłudzającej dane pod nazwą banku.
 - **Gniazdo Unix dla jednej instancji, nie D-Bus.** Gniazdo nie wymaga demona ani biblioteki; leży w katalogu
   uruchomieniowym `0700` i przyjmuje tylko adresy `http(s)`.
 
-## 6. Jeszcze nie zrobione
+## 6. Strona zainstalowanych aplikacji
+
+*Zainstalowane aplikacje…* w menu głównym otwierają kartę z zainstalowanymi aplikacjami jako kafelkami (ikona, nazwa,
+host, *Otwórz* i *Odinstaluj*), jak strony aplikacji w innych przeglądarkach. Strona to statyczny HTML budowany przez
+`InstalledAppsPage` z rdzenia na podstawie katalogu i wczytywany jako tekst pod adresem `induckgo://apps`; każda ikona
+jest wstawiona jako adres `data:`, więc strona nie potrzebuje dostępu do plików, a Content-Security-Policy nie pozwala
+na skrypty ani sieć. Jej linki używają dwóch prywatnych schematów (`induckgo-app-open:<id>`,
+`induckgo-app-uninstall:<id>`), które `BrowserTab` obsługuje zamiast nawigować, i to tylko gdy ta karta pokazuje stronę
+aplikacji, więc żadna inna strona ich nie wywoła. Odinstalowanie najpierw pyta, potem usuwa wpis katalogu, wpis pulpitu,
+ikonę oraz ciasteczka i dane aplikacji (`InstalledWebApps::uninstall`); odmawia, gdy okno aplikacji jest otwarte, co
+rozpoznaje przez sondowanie gniazda pojedynczej instancji aplikacji. Otwarcie, instalacja i odinstalowanie aplikacji
+odświeżają otwartą stronę aplikacji.
+
+## 7. Jeszcze nie zrobione
 
 Okna wyskakujące, które otwiera aplikacja (OAuth, potwierdzenie płatności), otwierają się w widoku samej aplikacji, a nie
-w małym oknie powiązanym z otwierającym; brakuje też menedżera „Zainstalowane aplikacje…” (lista, otwarcie,
-odinstalowanie) oraz okna Tor. Do uzupełnienia przy zakończeniu zadania o aplikacjach w planie Qt (zadanie 12).
+w małym oknie powiązanym z otwierającym; brakuje też okna Tor. Do uzupełnienia przy zakończeniu zadania o aplikacjach w planie Qt (zadanie 12).

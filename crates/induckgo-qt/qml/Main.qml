@@ -70,10 +70,48 @@ ApplicationWindow {
         const tab = tabComponent.createObject(tabStack, { startAddress: address || bridge.home_page() })
         tab.openInNewTab.connect(function(target) { window.openTab(target) })
         tab.urlChanged.connect(function() { window.applyZoom(tab) })
+        tab.appsLinkClicked.connect(window.answerAppsLink)
         tabList = tabList.concat([tab])
         currentIndex = tabList.length - 1
         if (!address) addressBar.forceActiveFocus()
         return tab
+    }
+
+    // The page of installed apps, as tiles: shown in a tab of its own, refreshed when an app comes or goes.
+    function showAppsIn(tab) { tab.showApps(webApps.apps_page_html(window.isDark), webApps.apps_page_address()) }
+
+    function openInstalledApps() {
+        const shown = tabList.find(function(tab) { return tab.showsApps })
+        if (shown) {
+            currentIndex = tabList.indexOf(shown)
+            showAppsIn(shown)
+        } else {
+            showAppsIn(openTab("about:blank"))
+        }
+    }
+
+    function refreshAppsPages() { tabList.filter(function(tab) { return tab.showsApps }).forEach(showAppsIn) }
+
+    property string pendingUninstallId
+    property string pendingUninstallHeading
+    property string pendingUninstallBody
+
+    function answerAppsLink(address) {
+        const link = JSON.parse(webApps.apps_link_json(address) || "{}")
+        if (link.kind === "open") {
+            webApps.start(link.id)
+        } else if (link.kind === "uninstall") {
+            pendingUninstallId = link.id
+            pendingUninstallHeading = link.heading
+            pendingUninstallBody = link.body
+            uninstallDialog.open()
+        }
+    }
+
+    function uninstallPendingApp() {
+        const problem = webApps.uninstall(pendingUninstallId)
+        if (problem !== "") toast(problem)
+        refreshAppsPages()
     }
 
     function closeTab(index) {
@@ -165,6 +203,13 @@ ApplicationWindow {
         icon.color: window.palette.windowText
         enabled: window.installable
         onTriggered: window.installAsApp()
+    }
+    Action {
+        id: installedAppsAction
+        text: bridge.message("Installed Apps…")
+        icon.source: "qrc:/icons/apps.svg"
+        icon.color: window.palette.windowText
+        onTriggered: window.openInstalledApps()
     }
     Action {
         id: protectSiteAction
@@ -471,6 +516,7 @@ ApplicationWindow {
                         preferences: preferencesAction
                         about: aboutAction
                         installApp: installAppAction
+                        installedApps: installedAppsAction
                         protectSite: protectSiteAction
                         openInBrowser: openInBrowserAction
                         clearAppData: clearAppDataAction
@@ -571,6 +617,7 @@ ApplicationWindow {
         onNotice: function(text, actionText, action) { window.toast(text, actionText, action) }
         onInstalled: function(id, name, installedFrom) {
             const message = bridge.message("Installed {name}").replace("{name}", name)
+            window.refreshAppsPages()
             if (webApps.start(id)) {
                 window.handOver(id, installedFrom)
                 window.toast(message)
@@ -594,6 +641,15 @@ ApplicationWindow {
         body: bridge.message("Signs you out and deletes this app's cookies, site data and cache. Nothing else is affected.")
         confirmLabel: "C_lear"
         onConfirmed: window.burn()
+    }
+
+    ConfirmDialog {
+        id: uninstallDialog
+        bridge: bridge
+        heading: window.pendingUninstallHeading
+        body: window.pendingUninstallBody
+        confirmLabel: "Uninstall"
+        onConfirmed: window.uninstallPendingApp()
     }
 
     ConfirmDialog {

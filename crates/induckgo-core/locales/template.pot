@@ -223,6 +223,9 @@ msgstr ""
 msgid "Delete this profile's cookies, site data and cache"
 msgstr ""
 
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr ""
+
 msgid "Details"
 msgstr ""
 
@@ -428,6 +431,9 @@ msgid "New identity"
 msgstr ""
 
 msgid "New profile name"
+msgstr ""
+
+msgid "No apps installed yet"
 msgstr ""
 
 msgid "No downloads yet"
@@ -701,6 +707,9 @@ msgid "Turns InDuckGo Guard's filter lists into WebKit rules. Source: https://gi
 msgstr ""
 
 msgid "Uninstall"
+msgstr ""
+
+msgid "Uninstall {name}?"
 msgstr ""
 
 msgid "Unknown bridge transport: {name}"

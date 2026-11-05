@@ -14,6 +14,7 @@ pub mod guard_bridge;
 pub mod guard_lists;
 pub mod guard_page_hiding;
 pub mod installation_directories;
+pub mod installed_web_apps;
 pub mod interface_catalogue;
 pub mod interface_language_setting;
 pub mod launch_context;

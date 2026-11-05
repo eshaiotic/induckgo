@@ -803,3 +803,12 @@ msgstr "Široka adresna traka"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "Adresna traka popunjava sav prostor na alatnoj traci; kad je isključeno, ostaje kratka i centrirana"
+
+msgid "No apps installed yet"
+msgstr "Još nema instaliranih aplikacija"
+
+msgid "Uninstall {name}?"
+msgstr "Deinstalirati {name}?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "Briše aplikaciju zajedno s njezinim kolačićima, prijavama i podacima. To se ne može poništiti."

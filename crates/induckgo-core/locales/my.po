@@ -803,3 +803,12 @@ msgstr "အကျယ်လိပ်စာဘား"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "လိပ်စာဘားသည် ကိရိယာဘားရှိ နေရာအားလုံးကို ယူသည်၊ ပိတ်ထားပါက တိုပြီး အလယ်တွင် ရှိနေမည်"
+
+msgid "No apps installed yet"
+msgstr "အက်ပ် မည်သည့်အရာမျှ မထည့်သွင်းရသေးပါ"
+
+msgid "Uninstall {name}?"
+msgstr "{name} ကို ဖယ်ရှားမလား။"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "အက်ပ်ကို ၎င်း၏ ကွတ်ကီးများ၊ လော့ဂ်အင်များနှင့် ဒေတာများနှင့်အတူ ဖျက်ပစ်သည်။ ၎င်းကို ပြန်ပြင်၍ မရပါ။"

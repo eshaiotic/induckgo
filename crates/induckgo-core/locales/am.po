@@ -803,3 +803,12 @@ msgstr "ሰፊ የአድራሻ አሞሌ"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "የአድራሻ አሞሌው በመሣሪያ አሞሌው ውስጥ ያለውን ቦታ ሁሉ ይሞላል፤ ሲጠፋ አጭርና መሃል ላይ ይቆያል"
+
+msgid "No apps installed yet"
+msgstr "እስካሁን ምንም መተግበሪያ አልተጫነም"
+
+msgid "Uninstall {name}?"
+msgstr "{name}ን ማራገፍ?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "መተግበሪያውን ከኩኪዎቹ፣ ከመግቢያዎቹ እና ከውሂቡ ጋር ይሰርዛል። ይህ መመለስ አይችልም።"

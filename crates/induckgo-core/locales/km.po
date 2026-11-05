@@ -803,3 +803,12 @@ msgstr "របារអាសយដ្ឋានធំ"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "របារអាសយដ្ឋានបំពេញទំហំទាំងអស់នៅលើរបារឧបករណ៍ ប្រសិនបើបិទ វានៅខ្លី និងនៅកណ្តាល"
+
+msgid "No apps installed yet"
+msgstr "មិនទាន់មានកម្មវិធីណាត្រូវបានដំឡើងនៅឡើយ"
+
+msgid "Uninstall {name}?"
+msgstr "លុប {name} ចេញ?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "លុបកម្មវិធីជាមួយខូគី ការចូលគណនី និងទិន្នន័យរបស់វា។ សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។"

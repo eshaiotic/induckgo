@@ -803,3 +803,12 @@ msgstr "Malapad na address bar"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "Pinupunan ng address bar ang buong espasyo sa toolbar; kapag naka-off, nananatili itong maikli at nasa gitna"
+
+msgid "No apps installed yet"
+msgstr "Wala pang naka-install na app"
+
+msgid "Uninstall {name}?"
+msgstr "I-uninstall ang {name}?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "Binubura ang app kasama ang mga cookie, login at data nito. Hindi na ito mababawi."

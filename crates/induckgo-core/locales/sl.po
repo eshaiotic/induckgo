@@ -803,3 +803,12 @@ msgstr "Širok naslovni trak"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "Naslovni trak zapolni ves prostor v orodni vrstici; ko je izklopljeno, ostane kratek in na sredini"
+
+msgid "No apps installed yet"
+msgstr "Nameščenih ni še nobenih aplikacij"
+
+msgid "Uninstall {name}?"
+msgstr "Odstraniti {name}?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "Izbriše aplikacijo skupaj z njenimi piškotki, prijavami in podatki. Tega ni mogoče razveljaviti."

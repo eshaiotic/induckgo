@@ -803,3 +803,12 @@ msgstr "شريط عنوان عريض"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "يملأ شريط العناوين كل المساحة المتاحة في شريط الأدوات؛ وعند إيقافه يبقى قصيرًا في المنتصف"
+
+msgid "No apps installed yet"
+msgstr "لم يتم تثبيت أي تطبيق بعد"
+
+msgid "Uninstall {name}?"
+msgstr "هل تريد إزالة {name}؟"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "يحذف التطبيق مع ملفات تعريف الارتباط وتسجيلات الدخول والبيانات الخاصة به. لا يمكن التراجع عن ذلك."

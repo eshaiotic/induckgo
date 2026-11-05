@@ -803,3 +803,12 @@ msgstr "چوڑی ایڈریس بار"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "ایڈریس بار ٹول بار کی ساری جگہ بھر لیتی ہے؛ بند ہونے پر یہ چھوٹی اور درمیان میں رہتی ہے"
+
+msgid "No apps installed yet"
+msgstr "ابھی تک کوئی ایپ انسٹال نہیں ہوئی"
+
+msgid "Uninstall {name}?"
+msgstr "{name} ان انسٹال کریں؟"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "ایپ کو اس کی کوکیز، لاگ اِنز اور ڈیٹا سمیت حذف کر دیتا ہے۔ اسے واپس نہیں کیا جا سکتا۔"

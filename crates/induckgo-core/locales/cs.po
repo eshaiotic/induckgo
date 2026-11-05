@@ -803,3 +803,12 @@ msgstr "Široký adresní řádek"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "Adresní řádek zabere všechno místo na panelu nástrojů; vypnuto zůstane krátký a uprostřed"
+
+msgid "No apps installed yet"
+msgstr "Zatím není nainstalována žádná aplikace"
+
+msgid "Uninstall {name}?"
+msgstr "Odinstalovat {name}?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "Smaže aplikaci spolu s jejími cookies, přihlášeními a daty. Tuto akci nelze vrátit zpět."

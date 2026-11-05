@@ -803,3 +803,12 @@ msgstr "Bar alamat lebar"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "Bar alamat memenuhi semua ruang dalam bar alat; jika dimatikan, ia kekal pendek dan di tengah"
+
+msgid "No apps installed yet"
+msgstr "Belum ada apl dipasang"
+
+msgid "Uninstall {name}?"
+msgstr "Nyahpasang {name}?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "Memadam apl bersama kuki, log masuk dan datanya. Ini tidak boleh dibatalkan."

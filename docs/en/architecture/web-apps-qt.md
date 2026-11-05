@@ -67,8 +67,20 @@ colour, so a bank app cannot show a phishing page under the bank's name.
 - **A Unix socket for single instance, not D-Bus.** The socket needs no daemon and no extra library; it lives in the
   `0700` runtime directory and accepts only `http(s)` addresses.
 
-## 6. Not built yet
+## 6. The installed apps page
+
+*Installed Apps…* in the main menu opens a tab with the installed apps as tiles (icon, name, host, *Open* and
+*Uninstall*), as other browsers' apps pages do. The page is static HTML built by core's `InstalledAppsPage` from the
+catalogue and loaded as text under `induckgo://apps`; each icon is inlined as a `data:` address, so the page needs no
+file access, and a Content-Security-Policy allows no script and no network. Its links use two private schemes
+(`induckgo-app-open:<id>`, `induckgo-app-uninstall:<id>`) that `BrowserTab` answers instead of navigating, and only while
+that tab shows the apps page, so no other page can trigger them. Uninstalling asks first, then removes the catalogue
+entry, the desktop entry, the icon and the app's cookies and storage (`InstalledWebApps::uninstall`); it refuses while the
+app's window is open, which it finds by probing the app's single-instance socket. Opening, installing or uninstalling an
+app refreshes an open apps page.
+
+## 7. Not built yet
 
 Pop-up windows an app opens (OAuth, payment confirmation) open in the app's own view instead of a small window that
-keeps its opener; the "Installed Apps…" manager (list, open, uninstall) and the Tor window are still to come.
+keeps its opener, and the Tor window is still to come.
 Revisit when the web-app plan task (Task 12 of the Qt plan) is finished.

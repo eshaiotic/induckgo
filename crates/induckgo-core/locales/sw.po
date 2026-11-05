@@ -803,3 +803,12 @@ msgstr "Upau mpana wa anwani"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "Upau wa anwani hujaza nafasi yote kwenye upau wa zana; ukizimwa, unabaki mfupi na katikati"
+
+msgid "No apps installed yet"
+msgstr "Bado hakuna programu iliyosakinishwa"
+
+msgid "Uninstall {name}?"
+msgstr "Ondoa {name}?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "Hufuta programu pamoja na vidakuzi, kuingia na data yake. Haiwezi kutenduliwa."

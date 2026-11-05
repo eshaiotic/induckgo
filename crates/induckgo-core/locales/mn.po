@@ -803,3 +803,12 @@ msgstr "Өргөн хаягийн мөр"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "Хаягийн мөр хэрэгслийн мөрийн бүх чөлөөт зайг эзэлнэ; унтраавал богино, голд байрлана"
+
+msgid "No apps installed yet"
+msgstr "Одоогоор суулгасан апп алга"
+
+msgid "Uninstall {name}?"
+msgstr "{name}-г устгах уу?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "Аппыг түүний күүки, нэвтрэлт, өгөгдлийн хамт устгана. Үүнийг буцаах боломжгүй."

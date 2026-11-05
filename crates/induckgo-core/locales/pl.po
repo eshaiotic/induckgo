@@ -803,3 +803,12 @@ msgstr "Szeroki pasek adresu"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "Pasek adresu wypełnia całe wolne miejsce na pasku narzędzi; wyłączony pozostaje krótki i wyśrodkowany"
+
+msgid "No apps installed yet"
+msgstr "Nie zainstalowano jeszcze żadnych aplikacji"
+
+msgid "Uninstall {name}?"
+msgstr "Odinstalować {name}?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "Usuwa aplikację razem z jej ciasteczkami, logowaniami i danymi. Tej operacji nie można cofnąć."

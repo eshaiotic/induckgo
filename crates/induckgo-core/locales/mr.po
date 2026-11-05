@@ -803,3 +803,12 @@ msgstr "रुंद पत्ता पट्टी"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "पत्ता पट्टी टूलबारमधील सर्व जागा व्यापते; बंद केल्यास ती लहान आणि मध्यभागी राहते"
+
+msgid "No apps installed yet"
+msgstr "अद्याप कोणतेही अ‍ॅप स्थापित केलेले नाही"
+
+msgid "Uninstall {name}?"
+msgstr "{name} विस्थापित करायचे?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "अ‍ॅप त्याच्या कुकीज, लॉगिन आणि डेटासह हटवते. हे पूर्ववत करता येणार नाही."

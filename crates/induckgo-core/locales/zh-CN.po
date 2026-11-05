@@ -803,3 +803,12 @@ msgstr "宽地址栏"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "地址栏占满工具栏中的全部空位；关闭后保持较短并居中"
+
+msgid "No apps installed yet"
+msgstr "尚未安装任何应用"
+
+msgid "Uninstall {name}?"
+msgstr "要卸载 {name} 吗？"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "将删除该应用及其 Cookie、登录信息和数据。此操作无法撤销。"

@@ -803,3 +803,12 @@ msgstr "Barra d'adreces ampla"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "La barra d'adreces ocupa tot l'espai de la barra d'eines; desactivat, es manté curta i centrada"
+
+msgid "No apps installed yet"
+msgstr "Encara no hi ha cap aplicació instal·lada"
+
+msgid "Uninstall {name}?"
+msgstr "Voleu desinstal·lar {name}?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "Suprimeix l'aplicació amb les seves galetes, inicis de sessió i dades. Aquesta acció no es pot desfer."

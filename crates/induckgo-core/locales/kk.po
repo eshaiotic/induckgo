@@ -803,3 +803,12 @@ msgstr "Кең мекенжай жолағы"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "Мекенжай жолағы құралдар тақтасындағы бүкіл бос орынды алады; өшірулі болса, қысқа және ортада қалады"
+
+msgid "No apps installed yet"
+msgstr "Әзірге орнатылған қолданба жоқ"
+
+msgid "Uninstall {name}?"
+msgstr "{name} қолданбасын жою керек пе?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "Қолданбаны оның cookie файлдарымен, кіру деректерімен және мәліметтерімен бірге жояды. Мұны қайтару мүмкін емес."

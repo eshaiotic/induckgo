@@ -803,3 +803,12 @@ msgstr "Shirit i gjerë adresash"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "Shiriti i adresës mbush të gjithë hapësirën në shiritin e veglave; i çaktivizuar mbetet i shkurtër dhe në qendër"
+
+msgid "No apps installed yet"
+msgstr "Ende nuk është instaluar asnjë aplikacion"
+
+msgid "Uninstall {name}?"
+msgstr "Të çinstalohet {name}?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "Fshin aplikacionin me cookie-t, hyrjet dhe të dhënat e tij. Kjo nuk mund të zhbëhet."

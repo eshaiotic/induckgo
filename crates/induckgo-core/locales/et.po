@@ -803,3 +803,12 @@ msgstr "Lai aadressiriba"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "Aadressiriba täidab kogu tööriistariba ruumi; väljalülitatuna jääb see lühikeseks ja keskele"
+
+msgid "No apps installed yet"
+msgstr "Rakendusi pole veel installitud"
+
+msgid "Uninstall {name}?"
+msgstr "Kas desinstallida {name}?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "Kustutab rakenduse koos selle küpsiste, sisselogimiste ja andmetega. Seda ei saa tagasi võtta."

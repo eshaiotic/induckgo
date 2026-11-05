@@ -70,6 +70,23 @@ pub mod ffi {
         #[qinvokable]
         fn is_app_page(self: &WebAppBridge, address: &QString) -> bool;
 
+        /// The page that lists the installed apps as tiles, in the light or dark scheme of the window.
+        #[qinvokable]
+        fn apps_page_html(self: &WebAppBridge, is_dark: bool) -> QString;
+
+        /// The address the apps page is shown under.
+        #[qinvokable]
+        fn apps_page_address(self: &WebAppBridge) -> QString;
+
+        /// What a link of the apps page asks for, as `{"kind": "open" | "uninstall", "id", "heading", "body"}`; empty when
+        /// `address` is not such a link.
+        #[qinvokable]
+        fn apps_link_json(self: &WebAppBridge, address: &QString) -> QString;
+
+        /// Removes the installed app `id` with its data; empty on success, else the message to show.
+        #[qinvokable]
+        fn uninstall(self: &WebAppBridge, id: &QString) -> QString;
+
         /// The requests later launches made since the last call, as a JSON array of address arrays.
         #[qinvokable]
         fn take_forwarded_json(self: &WebAppBridge) -> QString;
@@ -90,6 +107,8 @@ use induckgo_core::launch::program_location::ProgramLocation;
 use induckgo_core::network::public_suffix_lookup::PublicSuffixLookup;
 use induckgo_core::storage::owned_json_file::OwnedJsonFile;
 use induckgo_core::web_app::desktop_entry::DesktopEntry;
+use induckgo_core::web_app::installed_apps_page::InstalledAppsLink;
+use induckgo_core::web_app::installed_apps_page::InstalledAppsPage;
 use induckgo_core::web_app::page_metadata::PageMetadata;
 use induckgo_core::web_app::web_app_catalog::WebAppCatalog;
 use induckgo_core::web_app::web_app_id::WebAppId;
@@ -101,6 +120,8 @@ use serde_json::Value;
 use serde_json::json;
 use url::Url;
 
+use crate::installed_web_apps::InstalledWebApps;
+use crate::installed_web_apps::UninstallError;
 use crate::interface_catalogue::InterfaceCatalogue;
 use crate::launch_context::LaunchContext;
 use crate::web_app_installer::IconPng;
@@ -165,6 +186,11 @@ fn installed_catalog(launch: &LaunchContext) -> WebAppCatalog {
 // QML invokes these on the object, so they take `&self` even where they do not read it.
 #[allow(clippy::unused_self)]
 impl ffi::WebAppBridge {
+    fn installed_apps() -> Option<InstalledWebApps<'static>> {
+        let directories = LaunchContext::current()?.directories();
+        Some(InstalledWebApps::new(directories, directories.runtime_directory()))
+    }
+
     fn launch_json(&self) -> QString {
         let Some(launch) = LaunchContext::current() else { return text(&Value::Null) };
         let web_app = launch
@@ -263,6 +289,50 @@ impl ffi::WebAppBridge {
         LaunchContext::current().and_then(LaunchContext::web_app).is_some_and(|app| {
             WebAppNavigationPolicy::new(&app.start_url, &PublicSuffixLookup).is_app_page(&address.to_string())
         })
+    }
+
+    fn apps_page_html(&self, is_dark: bool) -> QString {
+        let Some(apps) = Self::installed_apps() else { return QString::default() };
+        QString::from(apps.page_html(InterfaceCatalogue::current(), is_dark).as_str())
+    }
+
+    fn apps_page_address(&self) -> QString {
+        QString::from(InstalledAppsPage::ADDRESS)
+    }
+
+    fn apps_link_json(&self, address: &QString) -> QString {
+        let Some(link) = InstalledAppsLink::parse(&address.to_string()) else { return QString::default() };
+        let (kind, id) = match &link {
+            InstalledAppsLink::Open(id) => ("open", id),
+            InstalledAppsLink::Uninstall(id) => ("uninstall", id),
+        };
+        let name = Self::installed_apps()
+            .and_then(|apps| apps.catalog().web_app(id).map(|app| app.name.clone()))
+            .unwrap_or_default();
+        let catalogue = InterfaceCatalogue::current();
+        text(&json!({
+            "kind": kind,
+            "id": id.as_str(),
+            "heading": InstalledAppsPage::uninstall_heading(catalogue, &name),
+            "body": InstalledAppsPage::uninstall_warning(catalogue),
+        }))
+    }
+
+    fn uninstall(&self, id: &QString) -> QString {
+        let (Some(apps), Ok(id)) = (Self::installed_apps(), WebAppId::parse(&id.to_string())) else {
+            return QString::default();
+        };
+        let catalogue = InterfaceCatalogue::current();
+        let message = match apps.uninstall(&id) {
+            Ok(()) => String::new(),
+            Err(UninstallError::StillRunning(name)) => {
+                catalogue.text_with("Close {name} before deleting it", &[("name", &name)])
+            }
+            Err(UninstallError::Incomplete(error)) => {
+                catalogue.text_with("Could not remove everything: {error}", &[("error", &error.to_string())])
+            }
+        };
+        QString::from(message.as_str())
     }
 
     fn take_forwarded_json(&self) -> QString {

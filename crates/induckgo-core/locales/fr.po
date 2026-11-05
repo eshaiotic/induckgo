@@ -803,3 +803,12 @@ msgstr "Barre d'adresse large"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "La barre d'adresse occupe toute la place de la barre d'outils ; désactivée, elle reste courte et centrée"
+
+msgid "No apps installed yet"
+msgstr "Aucune application installée pour le moment"
+
+msgid "Uninstall {name}?"
+msgstr "Désinstaller {name} ?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "Supprime l'application avec ses cookies, ses connexions et ses données. Cette action est irréversible."

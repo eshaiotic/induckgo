@@ -803,3 +803,12 @@ msgstr "వెడల్పైన చిరునామా బార్"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "చిరునామా బార్ టూల్‌బార్‌లోని మొత్తం స్థలాన్ని నింపుతుంది; ఆఫ్ చేస్తే అది చిన్నగా, మధ్యలో ఉంటుంది"
+
+msgid "No apps installed yet"
+msgstr "ఇంకా ఏ యాప్‌లు ఇన్‌స్టాల్ చేయలేదు"
+
+msgid "Uninstall {name}?"
+msgstr "{name}ని అన్‌ఇన్‌స్టాల్ చేయాలా?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "యాప్‌ను దాని కుకీలు, లాగిన్‌లు మరియు డేటాతో పాటు తొలగిస్తుంది. దీన్ని రద్దు చేయలేరు."

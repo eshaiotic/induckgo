@@ -803,3 +803,12 @@ msgstr "広いアドレスバー"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "アドレスバーがツールバーの空きスペースをすべて使います。オフにすると短く中央に配置されます"
+
+msgid "No apps installed yet"
+msgstr "インストールされているアプリはまだありません"
+
+msgid "Uninstall {name}?"
+msgstr "{name} をアンインストールしますか？"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "アプリをそのクッキー、ログイン情報、データとともに削除します。この操作は元に戻せません。"

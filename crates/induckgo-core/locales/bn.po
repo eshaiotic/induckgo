@@ -803,3 +803,12 @@ msgstr "চওড়া ঠিকানা বার"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "ঠিকানা বার টুলবারের সব জায়গা জুড়ে থাকে; বন্ধ থাকলে এটি ছোট ও মাঝখানে থাকে"
+
+msgid "No apps installed yet"
+msgstr "এখনও কোনো অ্যাপ ইনস্টল করা হয়নি"
+
+msgid "Uninstall {name}?"
+msgstr "{name} আনইনস্টল করবেন?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "অ্যাপটি তার কুকি, লগইন ও ডেটাসহ মুছে ফেলা হবে। এটি আর ফেরানো যাবে না।"

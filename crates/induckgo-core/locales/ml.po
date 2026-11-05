@@ -803,3 +803,12 @@ msgstr "വീതിയുള്ള വിലാസ ബാർ"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "വിലാസ ബാർ ടൂൾബാറിലെ മുഴുവൻ സ്ഥലവും നിറയ്ക്കുന്നു; ഓഫ് ആക്കിയാൽ അത് ചെറുതായി മധ്യത്തിൽ നിൽക്കും"
+
+msgid "No apps installed yet"
+msgstr "ഇതുവരെ ആപ്പുകളൊന്നും ഇൻസ്റ്റാൾ ചെയ്തിട്ടില്ല"
+
+msgid "Uninstall {name}?"
+msgstr "{name} അൺഇൻസ്റ്റാൾ ചെയ്യണോ?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "ആപ്പിനെ അതിന്റെ കുക്കികൾ, ലോഗിനുകൾ, ഡാറ്റ എന്നിവയോടൊപ്പം ഇല്ലാതാക്കുന്നു. ഇത് പഴയപടിയാക്കാൻ കഴിയില്ല."

@@ -803,3 +803,12 @@ msgstr "نوار آدرس پهن"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "نوار آدرس تمام فضای نوار ابزار را پر می‌کند؛ در حالت خاموش کوتاه و در مرکز می‌ماند"
+
+msgid "No apps installed yet"
+msgstr "هنوز هیچ برنامه‌ای نصب نشده است"
+
+msgid "Uninstall {name}?"
+msgstr "{name} حذف شود؟"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "برنامه را همراه با کوکی‌ها، ورودها و داده‌هایش حذف می‌کند. این کار قابل بازگشت نیست."

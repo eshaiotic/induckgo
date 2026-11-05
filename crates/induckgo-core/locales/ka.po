@@ -803,3 +803,12 @@ msgstr "განიერი მისამართის ზოლი"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "მისამართის ზოლი იკავებს ხელსაწყოთა ზოლის მთელ თავისუფალ ადგილს; გამორთვისას რჩება მოკლე და ცენტრში"
+
+msgid "No apps installed yet"
+msgstr "აპლიკაციები ჯერ არ არის დაყენებული"
+
+msgid "Uninstall {name}?"
+msgstr "წაიშალოს {name}?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "წაშლის აპლიკაციას მისი ქუქიებით, ავტორიზაციებითა და მონაცემებით. ამის გაუქმება შეუძლებელია."

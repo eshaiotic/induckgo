@@ -803,3 +803,12 @@ msgstr "चौड़ा पता बार"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "पता बार टूलबार की पूरी जगह भर लेता है; बंद करने पर वह छोटा और बीच में रहता है"
+
+msgid "No apps installed yet"
+msgstr "अभी तक कोई ऐप इंस्टॉल नहीं है"
+
+msgid "Uninstall {name}?"
+msgstr "{name} को अनइंस्टॉल करें?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "ऐप को उसकी कुकीज़, लॉगिन और डेटा के साथ हटा देता है। इसे पूर्ववत नहीं किया जा सकता।"

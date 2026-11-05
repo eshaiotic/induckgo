@@ -803,3 +803,12 @@ msgstr "Breite Adressleiste"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "Die Adressleiste füllt den gesamten Platz der Werkzeugleiste; ausgeschaltet bleibt sie kurz und zentriert"
+
+msgid "No apps installed yet"
+msgstr "Noch keine Apps installiert"
+
+msgid "Uninstall {name}?"
+msgstr "{name} deinstallieren?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "Löscht die App mit ihren Cookies, Anmeldungen und Daten. Das kann nicht rückgängig gemacht werden."

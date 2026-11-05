@@ -803,3 +803,12 @@ msgstr "ແຖບທີ່ຢູ່ກວ້າງ"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "ແຖບທີ່ຢູ່ຈະເຕັມພື້ນທີ່ທັງໝົດໃນແຖບເຄື່ອງມື; ຖ້າປິດ ມັນຈະສັ້ນ ແລະ ຢູ່ກາງ"
+
+msgid "No apps installed yet"
+msgstr "ຍັງບໍ່ມີແອັບທີ່ຕິດຕັ້ງ"
+
+msgid "Uninstall {name}?"
+msgstr "ຖອນການຕິດຕັ້ງ {name} ບໍ?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "ລຶບແອັບພ້ອມກັບຄຸກກີ້, ການເຂົ້າສູ່ລະບົບ ແລະ ຂໍ້ມູນຂອງມັນ. ບໍ່ສາມາດຍົກເລີກໄດ້."

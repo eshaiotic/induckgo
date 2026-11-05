@@ -803,3 +803,12 @@ msgstr "පළල ලිපින තීරුව"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "ලිපින තීරුව මෙවලම් තීරුවේ සියලු ඉඩ පුරවයි; අක්‍රිය කළහොත් එය කෙටි වී මැදින් පවතී"
+
+msgid "No apps installed yet"
+msgstr "තවම යෙදුම් ස්ථාපනය කර නැත"
+
+msgid "Uninstall {name}?"
+msgstr "{name} අස්ථාපනය කරන්නද?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "යෙදුම එහි කුකී, පිවිසුම් සහ දත්ත සමඟ මකා දමයි. මෙය ආපසු හැරවිය නොහැක."

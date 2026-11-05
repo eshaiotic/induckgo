@@ -803,3 +803,12 @@ msgstr "Plaša adreses josla"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "Adreses josla aizņem visu rīkjoslas vietu; izslēgta tā paliek īsa un centrēta"
+
+msgid "No apps installed yet"
+msgstr "Vēl nav instalēta neviena lietotne"
+
+msgid "Uninstall {name}?"
+msgstr "Atinstalēt {name}?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "Izdzēš lietotni kopā ar tās sīkdatnēm, pieteikšanās datiem un datiem. To nevar atsaukt."

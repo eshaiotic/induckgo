@@ -803,3 +803,12 @@ msgstr "அகலமான முகவரிப் பட்டி"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "முகவரிப் பட்டி கருவிப்பட்டையின் முழு இடத்தையும் நிரப்பும்; அணைத்தால் அது சிறியதாக நடுவில் இருக்கும்"
+
+msgid "No apps installed yet"
+msgstr "இன்னும் எந்த ஆப்ஸும் நிறுவப்படவில்லை"
+
+msgid "Uninstall {name}?"
+msgstr "{name} ஐ நிறுவல் நீக்கவா?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "ஆப்ஸை அதன் குக்கீகள், உள்நுழைவுகள் மற்றும் தரவுடன் நீக்குகிறது. இதைத் திரும்பப் பெற முடியாது."

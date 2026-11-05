@@ -803,3 +803,12 @@ msgstr "Широка адресна лента"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "Адресната лента го зафаќа целиот простор во лентата со алатки; исклучена останува кратка и центрирана"
+
+msgid "No apps installed yet"
+msgstr "Сè уште нема инсталирани апликации"
+
+msgid "Uninstall {name}?"
+msgstr "Да се деинсталира {name}?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "Ја брише апликацијата заедно со нејзините колачиња, најави и податоци. Ова не може да се врати."

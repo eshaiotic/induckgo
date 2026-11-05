@@ -803,3 +803,12 @@ msgstr "Brede adresbalk"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "De adresbalk vult alle ruimte in de werkbalk; uitgeschakeld blijft hij kort en gecentreerd"
+
+msgid "No apps installed yet"
+msgstr "Nog geen apps geïnstalleerd"
+
+msgid "Uninstall {name}?"
+msgstr "{name} verwijderen?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "Verwijdert de app met zijn cookies, aanmeldingen en gegevens. Dit kan niet ongedaan worden gemaakt."

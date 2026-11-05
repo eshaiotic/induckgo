@@ -803,3 +803,12 @@ msgstr "Széles címsor"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "A címsor kitölti az eszköztár teljes szabad helyét; kikapcsolva rövid és középre igazított marad"
+
+msgid "No apps installed yet"
+msgstr "Még nincs telepített alkalmazás"
+
+msgid "Uninstall {name}?"
+msgstr "Eltávolítja a(z) {name} alkalmazást?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "Törli az alkalmazást a sütikkel, bejelentkezésekkel és adatokkal együtt. Ez nem vonható vissza."

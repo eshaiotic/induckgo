@@ -803,3 +803,12 @@ msgstr "ಅಗಲವಾದ ವಿಳಾಸ ಪಟ್ಟಿ"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "ವಿಳಾಸ ಪಟ್ಟಿ ಟೂಲ್‌ಬಾರ್‌ನ ಎಲ್ಲಾ ಜಾಗವನ್ನು ತುಂಬುತ್ತದೆ; ಆಫ್ ಮಾಡಿದರೆ ಅದು ಚಿಕ್ಕದಾಗಿ ಮತ್ತು ಮಧ್ಯದಲ್ಲಿ ಇರುತ್ತದೆ"
+
+msgid "No apps installed yet"
+msgstr "ಇನ್ನೂ ಯಾವುದೇ ಅಪ್ಲಿಕೇಶನ್ ಸ್ಥಾಪಿಸಲಾಗಿಲ್ಲ"
+
+msgid "Uninstall {name}?"
+msgstr "{name} ಅನ್ನು ಅಸ್ಥಾಪಿಸಬೇಕೆ?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "ಅಪ್ಲಿಕೇಶನ್ ಅನ್ನು ಅದರ ಕುಕೀಗಳು, ಲಾಗಿನ್‌ಗಳು ಮತ್ತು ಡೇಟಾದೊಂದಿಗೆ ಅಳಿಸುತ್ತದೆ. ಇದನ್ನು ಹಿಂತಿರುಗಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ."

@@ -803,3 +803,12 @@ msgstr "Πλατιά γραμμή διευθύνσεων"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "Η γραμμή διευθύνσεων καλύπτει όλο τον χώρο της γραμμής εργαλείων· όταν είναι απενεργοποιημένη, μένει κοντή και κεντραρισμένη"
+
+msgid "No apps installed yet"
+msgstr "Δεν έχει εγκατασταθεί ακόμη καμία εφαρμογή"
+
+msgid "Uninstall {name}?"
+msgstr "Απεγκατάσταση του {name};"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "Διαγράφει την εφαρμογή μαζί με τα cookies, τις συνδέσεις και τα δεδομένα της. Δεν μπορεί να αναιρεθεί."

@@ -803,3 +803,12 @@ msgstr "Bilah alamat lebar"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "Bilah alamat mengisi seluruh ruang di bilah alat; jika dimatikan, bilah tetap pendek dan di tengah"
+
+msgid "No apps installed yet"
+msgstr "Belum ada aplikasi yang terpasang"
+
+msgid "Uninstall {name}?"
+msgstr "Copot {name}?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "Menghapus aplikasi beserta cookie, login, dan datanya. Tindakan ini tidak dapat dibatalkan."

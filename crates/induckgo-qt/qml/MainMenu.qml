@@ -14,6 +14,7 @@ Popup {
     required property Action preferences
     required property Action about
     required property Action installApp
+    required property Action installedApps
     required property Action protectSite
     required property Action openInBrowser
     required property Action clearAppData
@@ -133,11 +134,12 @@ Popup {
             }
         }
 
-        Separator { visible: menu.webApp || menu.installable }
+        Separator { }
         Entry { visible: menu.webApp; command: menu.protectSite; marked: menu.siteProtected }
         Entry { visible: menu.webApp; command: menu.openInBrowser }
         Entry { visible: menu.webApp; command: menu.clearAppData }
         Entry { visible: !menu.webApp && menu.installable; command: menu.installApp }
+        Entry { visible: !menu.webApp; command: menu.installedApps }
         Separator { }
         Entry { visible: !menu.webApp; command: menu.preferences }
         Entry { command: menu.about }

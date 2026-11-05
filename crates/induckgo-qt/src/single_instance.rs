@@ -84,6 +84,13 @@ impl SingleInstance {
         Ok(Instance::Primary(PrimaryInstance { forwarded, socket }))
     }
 
+    /// Whether a process owns `identity` right now. The probe connects and says nothing, which the owner treats as
+    /// a request to bring its window forward.
+    #[must_use]
+    pub fn is_running(runtime_directory: &Path, identity: &str) -> bool {
+        UnixStream::connect(runtime_directory.join(Self::socket_name(identity))).is_ok()
+    }
+
     fn receive(stream: UnixStream, inbox: &Mutex<VecDeque<Vec<String>>>) {
         let _ = stream.set_read_timeout(Some(REQUEST_TIMEOUT));
         let mut text = String::new();

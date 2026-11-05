@@ -803,3 +803,12 @@ msgstr "寬網址列"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "網址列佔滿工具列中的所有空位；關閉後維持較短並置中"
+
+msgid "No apps installed yet"
+msgstr "尚未安裝任何應用程式"
+
+msgid "Uninstall {name}?"
+msgstr "要解除安裝 {name} 嗎？"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "將刪除該應用程式及其 Cookie、登入資訊和資料。此動作無法復原。"

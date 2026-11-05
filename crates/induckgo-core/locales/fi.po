@@ -803,3 +803,12 @@ msgstr "Leveä osoitepalkki"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "Osoitepalkki täyttää kaiken työkalupalkin tilan; pois päältä se pysyy lyhyenä ja keskellä"
+
+msgid "No apps installed yet"
+msgstr "Sovelluksia ei ole vielä asennettu"
+
+msgid "Uninstall {name}?"
+msgstr "Poistetaanko {name}?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "Poistaa sovelluksen evästeineen, kirjautumisineen ja tietoineen. Toimintoa ei voi peruuttaa."

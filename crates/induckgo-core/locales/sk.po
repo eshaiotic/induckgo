@@ -803,3 +803,12 @@ msgstr "Široký panel s adresou"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "Panel s adresou zaberie všetko miesto na paneli nástrojov; vypnutý zostane krátky a v strede"
+
+msgid "No apps installed yet"
+msgstr "Zatiaľ nie sú nainštalované žiadne aplikácie"
+
+msgid "Uninstall {name}?"
+msgstr "Odinštalovať {name}?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "Odstráni aplikáciu spolu s jej súbormi cookie, prihláseniami a údajmi. Túto akciu nie je možné vrátiť späť."

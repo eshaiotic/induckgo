@@ -803,3 +803,12 @@ msgstr "Geniş ünvan çubuğu"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "Ünvan çubuğu alətlər panelindəki bütün boş yeri tutur; söndürülərsə qısa və mərkəzdə qalır"
+
+msgid "No apps installed yet"
+msgstr "Hələ heç bir tətbiq quraşdırılmayıb"
+
+msgid "Uninstall {name}?"
+msgstr "{name} silinsin?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "Tətbiq kukiləri, giriş məlumatları və datası ilə birlikdə silinir. Bu geri qaytarıla bilməz."

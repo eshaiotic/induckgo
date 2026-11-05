@@ -803,3 +803,12 @@ msgstr "שורת כתובת רחבה"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "שורת הכתובת ממלאת את כל המקום בסרגל הכלים; כשהאפשרות כבויה היא נשארת קצרה וממורכזת"
+
+msgid "No apps installed yet"
+msgstr "עדיין לא הותקנו יישומים"
+
+msgid "Uninstall {name}?"
+msgstr "להסיר את {name}?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "מוחק את היישום יחד עם העוגיות, ההתחברויות והנתונים שלו. אי אפשר לבטל פעולה זו."

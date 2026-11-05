@@ -803,3 +803,12 @@ msgstr "Keng manzil paneli"
 
 msgid "The address bar fills all the room in the toolbar; off keeps it short and centred"
 msgstr "Manzil paneli asboblar panelidagi barcha bo‘sh joyni egallaydi; o‘chirilsa, qisqa va o‘rtada qoladi"
+
+msgid "No apps installed yet"
+msgstr "Hali hech qanday ilova o‘rnatilmagan"
+
+msgid "Uninstall {name}?"
+msgstr "{name} o‘chirilsinmi?"
+
+msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr "Ilovani cookie fayllari, kirishlari va ma’lumotlari bilan birga o‘chiradi. Buni qaytarib bo‘lmaydi."

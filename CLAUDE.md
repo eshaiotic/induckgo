@@ -20,7 +20,7 @@ This file is an index; the content lives in the linked documents.
 - [Płynne przewijanie kółkiem (PL)](docs/pl/architecture/smooth-wheel-scrolling.md) — polish mirror of the smooth-wheel-scrolling document.
 - [Web apps (Qt edition)](docs/en/architecture/web-apps-qt.md) — install a site as an app: icon pipeline, desktop identity, single instance, app window.
 - [Aplikacje internetowe (PL)](docs/pl/architecture/web-apps-qt.md) — polish mirror of the web-apps document.
-- [Tracker protection (Qt edition)](docs/en/architecture/qt-protection.md) — faithful DuckDuckGo rule evaluation, stricter ad overlay, connection gate (local proxy against preconnect), protection feed and first start.
+- [Tracker protection (Qt edition)](docs/en/architecture/qt-protection.md) — faithful DuckDuckGo rule evaluation, stricter ad overlay, connection gate (local proxy against preconnect), protection feed, first start and cookie-notice rejection.
 - [Ochrona przed trackerami (Qt, PL)](docs/pl/architecture/qt-protection.md) — polish mirror of the Qt tracker-protection document.
 - `docs/assets/diagrams/` — SVG + PNG diagrams, one file per language (`.en` / `.pl`).
 

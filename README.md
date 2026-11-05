@@ -14,7 +14,7 @@ repository until the Qt edition has everything that one had (see *Status*).
 
 [![tests](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml/badge.svg)](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml)
 [![release](https://img.shields.io/github/v/release/eshaiotic/induckgo?color=6A5ACD)](https://github.com/eshaiotic/induckgo/releases/latest)
-![cargo nextest](https://img.shields.io/badge/cargo%20nextest-887%20tests-success)
+![cargo nextest](https://img.shields.io/badge/cargo%20nextest-899%20tests-success)
 ![stack](https://img.shields.io/badge/stack-Rust%20%E2%80%A2%20Qt%206%20%E2%80%A2%20QtWebEngine-8E7FE8)
 ![telemetry](https://img.shields.io/badge/telemetry-none-FFB300)
 [![licence](https://img.shields.io/badge/licence-GPL--3.0--or--later-2E1A87)](LICENSE)
@@ -86,7 +86,7 @@ DuckDuckGo, Brave and Chrome on desktop and does not test InDuckGo.
 | Blocks Google's sign-in pop-ups | yes | no |
 | Blocks embedded Facebook content | yes | Facebook is on the tracker list; no click-to-load placeholder |
 | **Ads and pop-ups** | | |
-| Blocks cookie pop-ups | closes the pop-ups on its list, choosing the private option | hides them through a filter list, does not answer them; **answering them automatically (rejecting) is the next feature** |
+| Blocks cookie pop-ups | closes the pop-ups on its list, choosing the private option | rejects them at once with DuckDuckGo's autoconsent (Facebook's included) and hides the rest through a filter list; left alone on a site whose shield is off |
 | Blocks targeted and non-tracking ads | says it attempts to block all ads, with a documented Microsoft exception: `bat.bing.com` loads on an advertiser's site after a click on a DuckDuckGo search ad | Guard's filter lists (EasyList, uBlock Origin and others), with no ad-click exception |
 | Watches YouTube without ads | yes (Duck Player) | no |
 | **Control** | | |
@@ -121,6 +121,7 @@ built for the WebKitGTK edition; the last column says how far the Qt edition has
 | Breakage | DuckDuckGo's privacy configuration supplies per-site exceptions so sites keep working; the shield button (in a web app: *Protect This Site* in its menu) switches protection off for one site. | works |
 | Fingerprinting, GPC | DuckDuckGo Content Scope Scripts run in every frame; InDuckGo Guard switches on the canvas, audio, screen and referrer defences DuckDuckGo leaves off, and sends the `Sec-GPC: 1` header. | not yet |
 | Ads, trackers, cookie notices | InDuckGo Guard downloads EasyList, EasyPrivacy, uBlock Origin's, Peter Lowe's, Polish and cookie-notice filter lists and applies them to a site's own requests too. | works; downloaded with the rest of the data |
+| Cookie dialogs | DuckDuckGo's autoconsent library recognises the consent dialogs of hundreds of providers (Facebook's included) and presses *reject* at once; it never accepts. Skipped for a site whose shield is off ([details](docs/en/architecture/qt-protection.md)). | works |
 | Cross-site cookies | Third-party cookies on the tracker list are refused; the *Strict* profile, which refuses all of them, exists in the code but has no interface yet. | works |
 | Tracking links | A navigation carrying `utm_*`, `fbclid`, `gclid`, ... is stopped before it leaves the machine and reloaded without them. | works |
 | Plain HTTP | Navigations are upgraded to HTTPS. | works |
@@ -163,7 +164,7 @@ Qt edition still lacks is listed in the [protection table](#what-it-protects-you
 |---|---|---|---|
 | The browser reports to its maker | There is no telemetry code at all: no usage ping, crash reporter, experiment seed or account. The only connections the program makes on its own are plain `GET`s for protection data, with no cookie jar and no identifier. | `protection/`, `guard/` (downloads only) | Idle traffic measured at host level: the Qt edition contacts 8 hosts, the DuckDuckGo start page, its ping host and the six that serve the protection data ([report §4.1](docs/en/reports/tracking-comparison.md) for the GTK edition) |
 | Third-party trackers | DuckDuckGo's Tracker Data Set decides each request (WebKit content-blocking rules in the GTK edition, a request interceptor in the Qt edition, plus a local connection gate that refuses `preconnect` hints), with DuckDuckGo's per-site exceptions so pages keep working. The Qt edition adds a stricter layer for advertising and analytics trackers. | `protection/tracker_data_set.rs`, `protection/content_blocker_rules_builder.rs`, `network/content_blocker_request_policy.rs`, `network/advertising_tracker_request_policy.rs`, `network/connection_gate.rs` | Scenario tests `tracker_data_set`, `content_blocker_rules_builder`, `content_blocker_request_policy`, `advertising_tracker_request_policy`, `connection_gate`, `rule_exceptions`; Qt: `gate_proxy`, `tracker_blocking` ([architecture](docs/en/architecture/qt-protection.md)) |
-| Ads and trackers the first list misses | Guard downloads nine community lists (EasyList, EasyPrivacy, uBlock Origin, Peter Lowe's, Polish and cookie-notice lists), compiles them and applies them to a site's own requests too. Cookie notices are hidden. | `guard/guard_engine.rs`, `guard/guard_rule_list.rs`, `network/guard_request_policy.rs` | Tests `guard_engine`, `guard_rule_list`, `guard_request_policy`; GTK edition: 6 trackers on 12 sites against Chrome's 109 (above) |
+| Ads and trackers the first list misses | Guard downloads nine community lists (EasyList, EasyPrivacy, uBlock Origin, Peter Lowe's, Polish and cookie-notice lists), compiles them and applies them to a site's own requests too. Cookie notices are rejected (autoconsent) and, failing that, hidden. | `guard/guard_engine.rs`, `guard/guard_rule_list.rs`, `network/guard_request_policy.rs` | Tests `guard_engine`, `guard_rule_list`, `guard_request_policy`; GTK edition: 6 trackers on 12 sites against Chrome's 109 (above) |
 | Cookies and stored identifiers | Third-party cookies on the tracker list are refused (the GTK edition also had WebKit's Intelligent Tracking Prevention), every profile and web app is its own process with its own storage, and Burn erases a profile in one click. | `storage/cookie_policy.rs`, `storage/tracker_cookie_policy.rs`, `storage/burn_planner.rs` | Tests `cookie_policies`, `burn_planner` |
 | Identifiers in links | `utm_*`, `fbclid`, `gclid` and DuckDuckGo's other parameters are stripped from every top-level navigation before the request leaves the machine. | `protection/tracking_parameter_remover.rs`, `network/link_cleaning_request_policy.rs` | Tests `tracking_parameter_remover`, `link_cleaning_request_policy` |
 | Fingerprinting | DuckDuckGo's Content Scope Scripts run in every frame, and Guard switches on the canvas, audio, screen and referrer defences that DuckDuckGo's macOS configuration leaves off. The noise changes per site and per session. | `guard/fingerprint_hardening.rs`, `protection/content_scope_script.rs` | Tests `fingerprint_hardening`, `content_scope_script`; probe page in the report (§4.3) |
@@ -171,7 +172,7 @@ Qt edition still lacks is listed in the [protection table](#what-it-protects-you
 
 Every list and data set is downloaded, never bundled, and size-limited and validated before use. A filter list
 can only block or hide: the conversion keeps no scriptlets, so a hostile list could break a site but never run
-code in it. The whole suite (`./run-tests`, 887 tests including the Qt ones, clippy and `cargo audit`) runs on every push.
+code in it. The whole suite (`./run-tests`, 899 tests including the Qt ones, clippy and `cargo audit`) runs on every push.
 
 ### The evidence
 
@@ -225,8 +226,7 @@ with reasons is in the architecture document and the migration plan.
 Planned, not started, and to be designed before they are built: removal of your personal details from data
 brokers' sites, help restoring your identity if it is stolen, and a VPN, all free. DuckDuckGo sells these three
 in its paid subscription; InDuckGo aims to include them without charge. They need servers or partners and a legal
-set-up, so there is no date. Before them, the cookie pop-up handler: a detector that wakes up after a page loads
-and rejects the consent request on its own (Facebook's, for example), whenever the shield is on.
+set-up, so there is no date.
 
 In the future InDuckGo will ship as part of a new Linux distribution. It stays a standalone project and keeps
 its packages for other distributions.
@@ -319,8 +319,8 @@ Installed web apps start from the desktop's application menu (`induckgo-qt --web
 
 ## Testing
 
-Stack: **cargo-nextest** — 887 object-oriented Given/When/Then scenarios: 676 for the domain in
-`crates/induckgo-core/tests/` (81 files, one per domain type), 141 for the Qt edition and its engine adapter,
+Stack: **cargo-nextest** — 899 object-oriented Given/When/Then scenarios: 683 for the domain in
+`crates/induckgo-core/tests/` (82 files, one per domain type), 146 for the Qt edition and its engine adapter,
 61 for the report tool in `crates/induckgo-test-report/tests/` and 9 for the benchmark tool in
 `crates/induckgo-bench/tests/`. CI runs all of them in an Arch container with Qt 6, the Qt ones under Xvfb with Mesa (QtWebEngine needs an OpenGL
 context even offscreen); run only those with
@@ -364,7 +364,7 @@ crates/induckgo-engine-qt/
 crates/induckgo/         the previous edition: GTK 4 + libadwaita on WebKitGTK (the versions before 1.2.0)
 crates/induckgo-test-report/
                          developer tool behind ./run-tests: the HTML test report (never packaged)
-assets/                  vendored Content Scope Scripts (Apache-2.0), Guard's page script, icons,
+assets/                  vendored Content Scope Scripts (Apache-2.0) and autoconsent (MPL-2.0), Guard's page script, icons,
                          error page template; never the Tracker Data Set or filter lists
 packaging/               PKGBUILD, rpm spec, AppImage build and assembly, desktop entry, AppStream metadata
 docs/en, docs/pl         architecture, engineering rules and reports (English canonical, Polish mirror)
@@ -388,3 +388,5 @@ InDuckGo is free software under the [GNU General Public License, version 3 or la
 - InDuckGo Guard's filter lists — GPL-3.0, CC BY-SA 3.0, CC BY 3.0, CC BY-NC-SA 4.0 or their publisher's terms,
   downloaded at runtime, never committed.
 - adblock-rust 0.13.5 — MPL-2.0, compiled in unmodified (source: <https://github.com/brave/adblock-rust>).
+- autoconsent 18.0.0 — MPL-2.0, bundled with InDuckGo's own entry point in `assets/autoconsent` (licence, entry source and
+  rebuild recipe beside it; library source: <https://github.com/duckduckgo/autoconsent>).

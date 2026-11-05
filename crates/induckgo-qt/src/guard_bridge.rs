@@ -20,6 +20,10 @@ pub mod ffi {
         #[qinvokable]
         fn page_hiding(self: &GuardBridge, address: &QString) -> QString;
 
+        /// Whether the cookie notices of the page at `address` are to be rejected: the shield is on for its site.
+        #[qinvokable]
+        fn rejects_cookie_notices(self: &GuardBridge, address: &QString) -> bool;
+
         /// The generic selectors needed by `{"classes": [...], "ids": [...], "exceptions": [...]}` found on the
         /// page at `address`, as a JSON array.
         #[qinvokable]
@@ -43,6 +47,12 @@ impl ffi::GuardBridge {
         let answer = ProfileSession::current()
             .map(|session| GuardPageHiding::new(&session.guard, &session.protection).for_page(&address.to_string()));
         QString::from(answer.unwrap_or(Value::Null).to_string().as_str())
+    }
+
+    fn rejects_cookie_notices(&self, address: &QString) -> bool {
+        ProfileSession::current().is_some_and(|session| {
+            GuardPageHiding::new(&session.guard, &session.protection).rejects_cookie_notices(&address.to_string())
+        })
     }
 
     fn generic_selectors(&self, address: &QString, found: &QString) -> QString {

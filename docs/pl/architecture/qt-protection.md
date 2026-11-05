@@ -170,7 +170,46 @@ pamięcią podręczną i bez niej). To zwykłe `GET` bez ciasteczek i bez identy
   Google w innych serwisach; płynniejsza obsługa to przyszła decyzja.
 - W edycji Qt wciąż brakuje szumu odcisku przeglądarki, GPC i okna Tor ([plan migracji](../plans/2026-11-04-qtwebengine-migration-plan.md)).
 
-## 9. Testy
+## 9. Okna cookies: odrzucane, nie tylko ukrywane
+
+**Problem.** Serwis, który potrzebuje zgody na zapis zbędnych ciasteczek, pokazuje okno. Ukrycie okna listą filtrów
+(Guard też to robi) zostawia wybór niedokonany: serwis może uznać milczenie za zgodę albo strona zostaje nieużyteczna
+za niewidocznym nakryciem. Osoba używająca przeglądarki chce, żeby wybór brzmiał *odmowa*, składana od razu i bez klikania.
+
+**Słownik.** *Platforma zarządzania zgodami* (CMP) to produkt trzeciej strony, który rysuje okno i zapamiętuje odpowiedź
+(Didomi, Cookiebot, OneTrust, Termly i setki innych; Facebook ma własną). *Autoconsent* to otwartoźródłowa biblioteka
+DuckDuckGo (MPL-2.0), która rozpoznaje takie okna według reguł i naciska ich przycisk *odrzuć*; gdy żadna reguła nie
+pasuje, heurystyka szuka okna, którego przyciski mówią „odrzuć wszystkie", i naciska go.
+
+**Jak to się łączy.**
+
+1. `assets/autoconsent/autoconsent.js` (biblioteka w wersji 18.0.0 plus `induckgo-entry.ts`, zob. README obok) jest
+   wstrzykiwany przez `CookieNoticeScript` do własnego świata strony w każdej ramce przy tworzeniu dokumentu. Na razie
+   tylko nasłuchuje. Działa w świecie strony, bo niektóre reguły wywołują interfejs JavaScript platformy zgód (na przykład
+   `Didomi.setUserDisagreeToAll()`); wszystkie nazwy trzyma w jednym domknięciu i nic nie dopisuje do `window`.
+2. Skrypt Guard (`assets/guard/page-hiding.js`, odizolowany świat z kanałem sieciowym) pyta Rusta
+   `rejects_cookie_notices(adres)`, podając adres **strony najwyższego poziomu** (`location.ancestorOrigins`), bo ramka
+   platformy zgód należy do innego serwisu niż ten, który ogląda osoba.
+3. Rust odpowiada „tak" dokładnie wtedy, gdy tarcza jest włączona dla tego serwisu (`GuardPageHiding::rejects_cookie_notices`).
+   Odpowiedź nie zależy od tego, czy listy filtrów zostały już zbudowane.
+4. Przy „tak" skrypt Guard wysyła na dokumencie zdarzenie `induckgo-reject-cookie-notices`. Zdarzenie to jedyna rzecz,
+   którą odizolowany świat i świat strony dzielą. Biblioteka startuje wtedy raz na dokument: najpierw reguły, potem
+   heurystyka, **zawsze wyłącznie odrzucając** (`autoAction: 'optOut'`, tryb heurystyki `reject`).
+
+Wyłączenie tarczy dla serwisu (przycisk tarczy przeładowuje kartę) zostawia więc jego okna w spokoju, tak jak każdą inną ochronę.
+
+**Odrzucone alternatywy.** *Uruchomienie biblioteki w świecie odizolowanym* uniemożliwiłoby reguły potrzebujące
+interfejsu JavaScript strony bez drugiego pomocnika w świecie strony. *Przekazanie listy niechronionych serwisów do
+skryptu* skopiowałoby reguły dopasowania tarczy do JavaScriptu i się starzało po przełączeniu serwisu. *Zdarzenie z
+ładunkiem* nie działa: `detail` zdarzenia `CustomEvent` nie przechodzi między światami, więc zdarzenie nie niesie danych,
+a o jego wysłaniu decyduje tak/nie z Rusta. Strona może sama wysłać zdarzenie, co tylko uruchamia odrzucanie na stronie,
+która i tak miała pokazać okno zgody.
+
+**Znane ograniczenia.** Reguły są biblioteki; okna, którego nie zna ani nie zaklasyfikuje heurystyka, zostaje widoczne
+(listy Guard mogą je jeszcze ukryć). Pakiet ma około 650 KB na ramkę chronionego serwisu; jego reguły pozostają
+nieparsowanym tekstem do chwili zdarzenia. Odrzucenie wymagające własnej rundy do serwera strony zależy od serwisu.
+
+## 10. Testy
 
 | Przedmiot | Plik testu (`crates/…/tests/`) |
 |---|---|
@@ -183,6 +222,9 @@ pamięcią podręczną i bez niej). To zwykłe `GET` bez ciasteczek i bez identy
 | Proxy (serwery na pętli zwrotnej) | `induckgo-engine-qt/gate_proxy.rs` (8), `upstream_proxy.rs` (7) |
 | Przechwytywacz zatwierdza dopuszczone hosty | `induckgo-engine-qt/policy_decisions.rs` |
 | Cała przeglądarka bez okna: obraz trackera zablokowany, zwykły wczytany | `induckgo-qt/tracker_blocking.rs` |
+| Skrypt okien cookies (gwarancje pakietu) | `induckgo-core/cookie_notice_script.rs` (5), `guard_page_script.rs` |
+| Komu każe się odrzucać | `induckgo-qt/guard_page_hiding.rs` |
+| Cała przeglądarka: okno odrzucone, nigdy zaakceptowane; zostawione, gdy tarcza wyłączona | `induckgo-qt/tracker_blocking.rs` |
 
 Test bez okna uruchamia prawdziwą przeglądarkę z lokalnym serwerem jako jej nadrzędnym proxy HTTP, który odpowiada za każdą
 nazwę `.test`, więc strona, zwykła osoba trzecia i tracker z listy przechodzą przez bramkę.

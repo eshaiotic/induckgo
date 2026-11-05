@@ -644,6 +644,7 @@ ApplicationWindow {
             smoothWheelSource: bridge.smooth_wheel_script()
             extensionPromptSource: bridge.duckduckgo_extension_prompt_script()
             resourceHintSource: bridge.resource_hint_blocking_script()
+            cookieNoticeSource: bridge.cookie_notice_script()
             guardSource: window.guardSource
             appBridge: webApps
             keepsToSite: window.isWebApp

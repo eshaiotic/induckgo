@@ -7,6 +7,10 @@
 //! Page scripts: a page served as `duckduckgo.com` carries DuckDuckGo's offer of its browser extension, which
 //! InDuckGo hides (it has the protections built in and runs no extensions). The page reports whether the offer
 //! is hidden by requesting an image from `hidden.test` or `shown.test`.
+//!
+//! Cookie notices: a page served as `notice.test` carries a consent dialog that the Termly rule of DuckDuckGo's
+//! autoconsent library knows. The dialog reports which button was pressed (`rejected.test` or `accepted.test`),
+//! or, when nobody pressed any, `ignored.test` after a few seconds.
 
 use std::fs;
 use std::io::BufRead;
@@ -25,6 +29,7 @@ use std::time::Duration;
 use std::time::Instant;
 
 use serde_json::json;
+use tempfile::TempDir;
 
 // The browser's Qt bridge lives in this library; the test starts the binary, but links it too.
 use induckgo_qt as _;
@@ -35,43 +40,15 @@ type RequestedHosts = Arc<Mutex<Vec<String>>>;
 struct BrowsingScenario {
     port: u16,
     requested: RequestedHosts,
-    home: tempdir::ScratchDirectory,
-}
-
-mod tempdir {
-    use std::fs;
-    use std::path::Path;
-    use std::path::PathBuf;
-
-    /// A directory under the system's temporary directory that is removed when dropped.
-    pub struct ScratchDirectory {
-        path: PathBuf,
-    }
-
-    impl ScratchDirectory {
-        pub fn new(name: &str) -> Self {
-            let path = std::env::temp_dir().join(format!("{name}-{}", std::process::id()));
-            fs::create_dir_all(&path).expect("scratch directory");
-            Self { path }
-        }
-
-        pub fn path(&self) -> &Path {
-            &self.path
-        }
-    }
-
-    impl Drop for ScratchDirectory {
-        fn drop(&mut self) {
-            let _ = fs::remove_dir_all(&self.path);
-        }
-    }
+    /// Removed when the scenario ends; one per scenario, because scenarios of one test process run side by side.
+    home: TempDir,
 }
 
 impl BrowsingScenario {
     /// Given: `tracker.test` is a tracker the data set blocks by default, and a local server, used as the
     /// browser's upstream HTTP proxy, answers for every `.test` name.
     fn given_a_tracker_listed_in_the_downloaded_data() -> Self {
-        let home = tempdir::ScratchDirectory::new("induckgo-qt-test");
+        let home = TempDir::new().expect("scratch directory");
         Self::write_protection_cache(&home.path().join("cache/induckgo/protections"));
         let listener = TcpListener::bind("127.0.0.1:0").expect("listen");
         let port = listener.local_addr().expect("address").port();
@@ -89,11 +66,21 @@ impl BrowsingScenario {
             "cnames": {}
         });
         // The local server speaks plain HTTP, so the fixture exempts the test names from the HTTPS upgrade.
-        let exceptions: Vec<_> =
-            ["first.test", "other.test", "tracker.test", "duckduckgo.com", "hidden.test", "shown.test"]
-                .iter()
-                .map(|domain| json!({"domain": domain}))
-                .collect();
+        let exceptions: Vec<_> = [
+            "first.test",
+            "other.test",
+            "tracker.test",
+            "duckduckgo.com",
+            "hidden.test",
+            "shown.test",
+            "notice.test",
+            "rejected.test",
+            "accepted.test",
+            "ignored.test",
+        ]
+        .iter()
+        .map(|domain| json!({"domain": domain}))
+        .collect();
         let configuration = json!({"features": {"https": {"state": "enabled", "exceptions": exceptions}}});
         fs::write(directory.join("tracker-data.json"), tracker_data.to_string()).expect("tracker data");
         fs::write(directory.join("configuration.json"), configuration.to_string()).expect("configuration");
@@ -119,6 +106,7 @@ impl BrowsingScenario {
         let port = stream.local_addr().map_or(0, |address| address.port());
         let page = match (path.as_str(), host.as_str()) {
             ("/", "duckduckgo.com") => Self::extension_offer_page(port),
+            ("/", "notice.test") => Self::cookie_notice_page(port),
             ("/", _) => format!(
                 "<html><body>hi<img src=\"http://tracker.test:{port}/pixel.gif\"><img src=\"http://other.test:{port}/pixel.gif\"></body></html>"
             ),
@@ -140,6 +128,17 @@ impl BrowsingScenario {
             var shown = getComputedStyle(document.getElementById('offer')).display !== 'none';\
             new Image().src = 'http://' + (shown ? 'shown' : 'hidden') + '.test:PORT/report.gif';\
             }, 1500)</script></body></html>";
+        PAGE.replace("PORT", &port.to_string())
+    }
+
+    /// A consent dialog marked up as Termly's is, whose buttons report which one was pressed.
+    fn cookie_notice_page(port: u16) -> String {
+        const PAGE: &str = "<html><body><div id=\"termly-code-snippet-support\"><div>We use cookies\
+            <button data-tid=\"banner-accept\" onclick=\"report('accepted')\">Accept</button>\
+            <button data-tid=\"banner-decline\" onclick=\"report('rejected')\">Decline</button></div></div>\
+            <script>var pressed = false;\
+            function report(name) { pressed = true; new Image().src = 'http://' + name + '.test:PORT/report.gif'; }\
+            setTimeout(function () { if (!pressed) report('ignored'); }, 7000)</script></body></html>";
         PAGE.replace("PORT", &port.to_string())
     }
 
@@ -173,6 +172,15 @@ impl BrowsingScenario {
         }
     }
 
+    /// Given: the person switched the shield off for `host`.
+    fn given_protection_switched_off_for(self, host: &str) -> Self {
+        let profile = self.home.path().join("data/induckgo/profiles/default");
+        fs::create_dir_all(&profile).expect("profile directory");
+        fs::write(profile.join("unprotected-sites.json"), json!({"domains": [host]}).to_string())
+            .expect("unprotected sites");
+        self
+    }
+
     fn when_the_page_is_opened_in_the_browser(&self, host: &str) -> BrowserProcess {
         let home = self.home.path();
         let child = Command::new(env!("CARGO_BIN_EXE_induckgo-qt"))
@@ -180,6 +188,9 @@ impl BrowsingScenario {
             .env("QT_QPA_PLATFORM", "offscreen")
             .env("XDG_DATA_HOME", home.join("data"))
             .env("XDG_CACHE_HOME", home.join("cache"))
+            // Without a runtime directory the single-instance socket lives in the scratch cache, so the browsers of
+            // parallel scenarios (and the person's own running browser) never hand their addresses to one another.
+            .env_remove("XDG_RUNTIME_DIR")
             .env("http_proxy", format!("http://127.0.0.1:{}", self.port))
             .env_remove("https_proxy")
             .env_remove("no_proxy")
@@ -231,4 +242,23 @@ fn should_hide_duckduckgos_offer_of_a_browser_extension_because_the_protections_
     let _browser = scenario.when_the_page_is_opened_in_the_browser("duckduckgo.com");
     let hosts = scenario.requested_hosts_after_any_of(&["hidden.test", "shown.test"]);
     assert!(hosts.contains(&"hidden.test".to_owned()), "the extension offer should be hidden: {hosts:?}");
+}
+
+#[test]
+fn should_reject_the_cookie_notice_of_a_protected_site_without_anyone_pressing_a_button() {
+    let scenario = BrowsingScenario::given_a_tracker_listed_in_the_downloaded_data();
+    let _browser = scenario.when_the_page_is_opened_in_the_browser("notice.test");
+    let hosts = scenario.requested_hosts_after_any_of(&["rejected.test", "accepted.test", "ignored.test"]);
+    assert!(hosts.contains(&"rejected.test".to_owned()), "the notice should be rejected: {hosts:?}");
+    assert!(!hosts.contains(&"accepted.test".to_owned()), "the notice must never be accepted: {hosts:?}");
+}
+
+#[test]
+fn should_leave_the_cookie_notice_alone_on_a_site_whose_shield_the_person_switched_off() {
+    let scenario = BrowsingScenario::given_a_tracker_listed_in_the_downloaded_data()
+        .given_protection_switched_off_for("notice.test");
+    let _browser = scenario.when_the_page_is_opened_in_the_browser("notice.test");
+    let hosts = scenario.requested_hosts_after_any_of(&["rejected.test", "accepted.test", "ignored.test"]);
+    assert!(hosts.contains(&"ignored.test".to_owned()), "nobody should have pressed a button: {hosts:?}");
+    assert!(!hosts.contains(&"rejected.test".to_owned()), "the notice should be left alone: {hosts:?}");
 }

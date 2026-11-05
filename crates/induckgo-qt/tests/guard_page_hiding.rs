@@ -77,3 +77,23 @@ fn should_ignore_a_class_name_longer_than_any_real_one() {
     let answer = PageScenario::given_a_built_engine().hiding().generic_for_page("https://news.test/", &report);
     assert_eq!(answer, json!([]));
 }
+
+#[test]
+fn should_reject_the_cookie_notices_of_a_protected_site_even_before_the_engine_is_built() {
+    let profile = TempDir::new().expect("profile");
+    let guard = SharedGuardEngine::default();
+    let protection = SiteProtection::open(profile.path());
+    assert!(GuardPageHiding::new(&guard, &protection).rejects_cookie_notices("https://shop.test/"));
+}
+
+#[test]
+fn should_leave_the_cookie_notices_of_a_site_whose_protection_is_off() {
+    let scenario = PageScenario::given_a_built_engine();
+    scenario.protection.set_protected("shop.test", false);
+    assert!(!scenario.hiding().rejects_cookie_notices("https://shop.test"));
+}
+
+#[test]
+fn should_leave_the_cookie_notices_of_a_page_that_is_not_on_the_web() {
+    assert!(!PageScenario::given_a_built_engine().hiding().rejects_cookie_notices("null"));
+}

@@ -169,7 +169,48 @@ plain `GET`s with no cookie jar and no identifier.
   Google on other sites; a smoother handling is a future decision.
 - Fingerprint noise, GPC and the Tor window are still missing in the Qt edition ([migration plan](../plans/2026-11-04-qtwebengine-migration-plan.md)).
 
-## 9. Tests
+## 9. Cookie notices: rejected, not only hidden
+
+**Problem.** A site that needs the person's consent to store non-essential cookies shows a dialog. Hiding the dialog
+with a filter list (Guard does that too) leaves the choice unmade: the site may treat silence as consent, or the page
+may stay unusable behind an invisible overlay. The person asked for the choice to be *refusing*, made at once and
+without clicks.
+
+**Vocabulary.** A *consent management platform* (CMP) is the third-party product that draws the dialog and stores the
+answer (Didomi, Cookiebot, OneTrust, Termly and hundreds more; Facebook has its own). *Autoconsent* is DuckDuckGo's
+open-source library (MPL-2.0) that recognises those dialogs by rules and presses their *reject* button; where no rule
+fits, a heuristic looks for a dialog whose buttons say "reject all" and presses that.
+
+**How it fits together.**
+
+1. `assets/autoconsent/autoconsent.js` (library version 18.0.0 plus `induckgo-entry.ts`, see the README beside it) is
+   injected by `CookieNoticeScript` into the page's own world of every frame at document creation. It only listens.
+   It runs in the page's world because some rules call the consent manager's JavaScript interface (for example
+   `Didomi.setUserDisagreeToAll()`); it keeps every name in one closure and puts nothing on `window`.
+2. Guard's script (`assets/guard/page-hiding.js`, an isolated world with the web channel) asks Rust
+   `rejects_cookie_notices(address)`, naming the **top page's** address (`location.ancestorOrigins`), because a
+   consent manager's frame belongs to another site than the one the person is looking at.
+3. Rust answers yes exactly when the shield is on for that site (`GuardPageHiding::rejects_cookie_notices`). The answer
+   does not depend on whether the filter lists have been built yet.
+4. On yes, Guard's script dispatches the `induckgo-reject-cookie-notices` event on the document. An event is the one
+   thing the isolated world and the page's world share. The library then starts, once per document: rules first,
+   then the heuristic, **only ever rejecting** (`autoAction: 'optOut'`, heuristic mode `reject`).
+
+Switching the shield off for a site (the shield button reloads the tab) therefore leaves its notices alone, as every
+other protection is left alone.
+
+**Alternatives rejected.** *Running the library in the isolated world* would make its rules that need the page's
+JavaScript interface impossible without a second, page-world helper. *Passing the list of unprotected sites into the
+script* would copy the shield's matching rules into JavaScript and go stale when the person toggles a site. *A page
+event with a payload* does not work: a `CustomEvent`'s `detail` does not cross worlds, so the event carries no data and
+Rust's yes/no decides whether it is sent at all. A page can dispatch the event itself, which only starts the rejection
+on a page that was going to show a consent dialog.
+
+**Known limits.** The rules are the library's; a dialog it does not know and the heuristic cannot classify stays
+visible (Guard's lists may still hide it). The bundle is about 650 KB per frame of a protected site; its rules stay an
+unparsed string until the event arrives. A rejection that needs a page's own server round trip depends on the site.
+
+## 10. Tests
 
 | Subject | Test file (`crates/…/tests/`) |
 |---|---|
@@ -182,6 +223,9 @@ plain `GET`s with no cookie jar and no identifier.
 | The proxy (loopback servers) | `induckgo-engine-qt/gate_proxy.rs` (8), `upstream_proxy.rs` (7) |
 | Interceptor approves allowed hosts | `induckgo-engine-qt/policy_decisions.rs` |
 | Whole browser, headless: tracker image blocked, ordinary one loaded | `induckgo-qt/tracker_blocking.rs` |
+| Cookie-notice script (the bundle's guarantees) | `induckgo-core/cookie_notice_script.rs` (5), `guard_page_script.rs` |
+| Who is asked to reject | `induckgo-qt/guard_page_hiding.rs` |
+| Whole browser: notice rejected, never accepted; left alone when the shield is off | `induckgo-qt/tracker_blocking.rs` |
 
 The headless test runs the real browser with a local server as its upstream HTTP proxy that answers for every `.test`
 name, so the page, an ordinary third party and a listed tracker all travel the gate.

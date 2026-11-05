@@ -54,6 +54,13 @@ impl<'a> GuardPageHiding<'a> {
         json!(engine.generic_selectors(&classes, &ids, &exceptions))
     }
 
+    /// Whether the cookie notices of the page at `address` (the top page, when asked from a frame) are rejected:
+    /// they are wherever the shield is on, with or without Guard's lists, and never on a site it is off for.
+    #[must_use]
+    pub fn rejects_cookie_notices(&self, address: &str) -> bool {
+        self.is_protected_page(address)
+    }
+
     fn is_protected_page(&self, address: &str) -> bool {
         Url::parse(address)
             .ok()

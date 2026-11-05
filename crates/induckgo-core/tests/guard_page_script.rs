@@ -2,6 +2,7 @@
 
 use induckgo_core::engine::injection_point::InjectionPoint;
 use induckgo_core::engine::script_world::ScriptWorld;
+use induckgo_core::guard::cookie_notice_script::CookieNoticeScript;
 use induckgo_core::guard::guard_page_script::GuardPageScript;
 
 #[test]
@@ -23,4 +24,16 @@ fn should_check_every_selector_before_inserting_it_as_a_rule_of_its_own() {
     let source = GuardPageScript::source();
     assert!(source.contains("CSS.supports(`selector(${selector})`)"));
     assert!(source.contains("sheet.insertRule("));
+}
+
+#[test]
+fn should_tell_the_cookie_notice_script_of_the_page_world_when_the_shield_is_on() {
+    let source = GuardPageScript::source();
+    assert!(source.contains(&format!("\"{}\"", CookieNoticeScript::REJECT_EVENT)));
+    assert!(source.contains("guard.rejects_cookie_notices(topAddress()"));
+}
+
+#[test]
+fn should_ask_about_the_top_page_when_it_runs_in_a_frame() {
+    assert!(GuardPageScript::source().contains("location.ancestorOrigins"));
 }

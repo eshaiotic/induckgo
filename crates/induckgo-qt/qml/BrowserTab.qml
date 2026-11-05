@@ -12,6 +12,8 @@ WebEngineView {
     // Qt's web-channel client followed by Guard's page script; empty when the browser has none to give.
     property string guardSource
     property string resourceHintSource
+    // Rejects cookie notices; it waits in the page's own world until Guard says the shield is on for the site.
+    property string cookieNoticeSource
     // A web app keeps to its own site: a link to another site opens in the browser instead.
     property bool keepsToSite: false
     property var appBridge: null
@@ -51,6 +53,7 @@ WebEngineView {
         if (extensionPromptSource !== "") scripts.push(userScript("induckgo-duckduckgo-extension-prompt", extensionPromptSource))
         if (guardSource !== "") scripts.push(userScript("induckgo-guard-page-hiding", guardSource))
         // It changes what the page's own scripts call, so it runs in the page's world (the others in a world of their own).
+        if (cookieNoticeSource !== "") scripts.push(userScript("induckgo-cookie-notices", cookieNoticeSource, WebEngineScript.MainWorld))
         if (resourceHintSource !== "") scripts.push(userScript("induckgo-no-resource-hints", resourceHintSource, WebEngineScript.MainWorld))
         return scripts
     }

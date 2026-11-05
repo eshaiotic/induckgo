@@ -15,6 +15,10 @@ This product includes adblock-rust 0.13.5 by Brave Software, Inc., licensed unde
 License, Version 2.0, compiled in unmodified. Its source code is available at
 https://github.com/brave/adblock-rust and https://crates.io/crates/adblock.
 
+This product includes autoconsent 18.0.0 by Duck Duck Go, Inc., licensed under the Mozilla Public License,
+Version 2.0, bundled together with InDuckGo's own entry point (assets/autoconsent/induckgo-entry.ts). Its
+source code is available at https://github.com/duckduckgo/autoconsent; the licence is in assets/autoconsent/LICENSE.
+
 The Tor window runs tor by The Tor Project, Inc. (BSD-3-Clause, https://gitlab.torproject.org/tpo/core/tor):
 the distribution's own package on Arch Linux and Fedora; inside the Debian package and the AppImage, Debian's
 build of it, unmodified, in usr/lib/induckgo/tor. The AppImage also carries Debian's builds of obfs4proxy

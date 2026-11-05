@@ -14,7 +14,7 @@ jej kod zostaje w tym repozytorium, dopóki edycja Qt nie ma wszystkiego, co mia
 
 [![tests](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml/badge.svg)](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml)
 [![release](https://img.shields.io/github/v/release/eshaiotic/induckgo?color=6A5ACD)](https://github.com/eshaiotic/induckgo/releases/latest)
-![cargo nextest](https://img.shields.io/badge/cargo%20nextest-887%20test%C3%B3w-success)
+![cargo nextest](https://img.shields.io/badge/cargo%20nextest-899%20test%C3%B3w-success)
 ![stack](https://img.shields.io/badge/stack-Rust%20%E2%80%A2%20Qt%206%20%E2%80%A2%20QtWebEngine-8E7FE8)
 ![telemetria](https://img.shields.io/badge/telemetria-brak-FFB300)
 [![licencja](https://img.shields.io/badge/licencja-GPL--3.0--or--later-2E1A87)](LICENSE)
@@ -86,7 +86,7 @@ DuckDuckGo, Brave i Chrome na komputerach i nie testuje InDuckGo.
 | Blokuje wyskakujące okna logowania Google | tak | nie |
 | Blokuje osadzone treści Facebooka | tak | Facebook jest na liście trackerów; brak zastępnika „kliknij, by wczytać” |
 | **Reklamy i wyskakujące okna** | | |
-| Blokuje okna zgody na cookies | zamyka okna z listy, wybierając opcję prywatną | ukrywa je listą filtrów, nie odpowiada na nie; **automatyczne odrzucanie to następna funkcja** |
+| Blokuje okna zgody na cookies | zamyka okna z listy, wybierając opcję prywatną | odrzuca je od razu biblioteką autoconsent DuckDuckGo (także okno Facebooka), resztę ukrywa listą filtrów; zostawia w spokoju serwis z wyłączoną tarczą |
 | Blokuje reklamy ukierunkowane i nieśledzące | mówi, że próbuje blokować wszystkie reklamy, z udokumentowanym wyjątkiem Microsoftu: `bat.bing.com` ładuje się na stronie reklamodawcy po kliknięciu reklamy w wyszukiwarce DuckDuckGo | listy filtrów Guarda (EasyList, uBlock Origin i inne), bez wyjątku dla kliknięć w reklamy |
 | Odtwarza YouTube bez reklam | tak (Duck Player) | nie |
 | **Kontrola** | | |
@@ -121,6 +121,7 @@ zbudowano dla edycji WebKitGTK; ostatnia kolumna mówi, jak daleko ma je edycja 
 | Psucie stron | Konfiguracja prywatności DuckDuckGo dostarcza wyjątki dla serwisów, żeby działały; przycisk tarczy (w aplikacji webowej: *Chroń tę witrynę* w menu) wyłącza ochronę dla jednego serwisu. | działa |
 | Fingerprinting, GPC | Content Scope Scripts DuckDuckGo działają w każdej ramce; InDuckGo Guard włącza obronę canvas, audio, ekranu i referera, którą DuckDuckGo zostawia wyłączoną, i wysyła nagłówek `Sec-GPC: 1`. | jeszcze nie |
 | Reklamy, trackery, komunikaty o cookies | InDuckGo Guard pobiera listy EasyList, EasyPrivacy, uBlock Origin, Petera Lowe'a, polskie i listy komunikatów o cookies, i stosuje je także do własnych zapytań serwisu. | działa; pobierane razem z resztą danych |
+| Okna zgody na cookies | Biblioteka autoconsent DuckDuckGo rozpoznaje okna zgody setek dostawców (także Facebooka) i od razu naciska *odrzuć*; nigdy nie akceptuje. Pomijana dla serwisu z wyłączoną tarczą ([szczegóły](docs/pl/architecture/qt-protection.md)). | działa |
 | Ciasteczka między serwisami | Ciasteczka stron trzecich z listy trackerów są odrzucane; profil *Strict*, który odrzuca wszystkie, istnieje w kodzie, ale nie ma jeszcze interfejsu. | działa |
 | Linki śledzące | Nawigacja z `utm_*`, `fbclid`, `gclid`, ... jest zatrzymywana, zanim opuści komputer, i ładowana od nowa bez nich. | działa |
 | Zwykłe HTTP | Nawigacje są podnoszone do HTTPS. | działa |
@@ -164,7 +165,7 @@ WebKitGTK i edycja Qt; czego edycji Qt jeszcze brakuje, wymienia [tabela ochron]
 |---|---|---|---|
 | Przeglądarka raportuje do producenta | W ogóle nie ma kodu telemetrii: żadnego pingu użycia, raportów awarii, ziarna eksperymentów ani konta. Jedyne połączenia, jakie program sam nawiązuje, to zwykłe `GET` po dane ochronne, bez ciasteczek i bez identyfikatora. | `protection/`, `guard/` (tylko pobieranie) | Ruch bezczynności zmierzony na poziomie nazw hostów: edycja Qt łączy się z 8 hostami: stroną startową DuckDuckGo, jej hostem pingu i sześcioma serwującymi dane ochrony ([raport §4.1](docs/pl/reports/tracking-comparison.md) dla edycji GTK) |
 | Trackery stron trzecich | Tracker Data Set DuckDuckGo rozstrzyga każde żądanie (reguły blokowania treści WebKit w edycji GTK, przechwytywacz żądań w edycji Qt oraz lokalna bramka połączeń odrzucająca podpowiedzi `preconnect`), razem z wyjątkami DuckDuckGo dla poszczególnych witryn, by strony działały. Edycja Qt dodaje ostrzejszą warstwę dla trackerów reklamowych i analitycznych. | `protection/tracker_data_set.rs`, `protection/content_blocker_rules_builder.rs`, `network/content_blocker_request_policy.rs`, `network/advertising_tracker_request_policy.rs`, `network/connection_gate.rs` | Testy scenariuszowe `tracker_data_set`, `content_blocker_rules_builder`, `content_blocker_request_policy`, `advertising_tracker_request_policy`, `connection_gate`, `rule_exceptions`; Qt: `gate_proxy`, `tracker_blocking` ([architektura](docs/pl/architecture/qt-protection.md)) |
-| Reklamy i trackery, których pierwsza lista nie zna | Guard pobiera dziewięć list społeczności (EasyList, EasyPrivacy, uBlock Origin, Petera Lowe'a, polskie i listy komunikatów o ciasteczkach), kompiluje je i stosuje także do żądań własnej witryny. Komunikaty o ciasteczkach są ukrywane. | `guard/guard_engine.rs`, `guard/guard_rule_list.rs`, `network/guard_request_policy.rs` | Testy `guard_engine`, `guard_rule_list`, `guard_request_policy`; edycja GTK: 6 trackerów na 12 stronach wobec 109 w Chrome (wyżej) |
+| Reklamy i trackery, których pierwsza lista nie zna | Guard pobiera dziewięć list społeczności (EasyList, EasyPrivacy, uBlock Origin, Petera Lowe'a, polskie i listy komunikatów o ciasteczkach), kompiluje je i stosuje także do żądań własnej witryny. Komunikaty o ciasteczkach są odrzucane (autoconsent), a gdy to się nie uda, ukrywane. | `guard/guard_engine.rs`, `guard/guard_rule_list.rs`, `network/guard_request_policy.rs` | Testy `guard_engine`, `guard_rule_list`, `guard_request_policy`; edycja GTK: 6 trackerów na 12 stronach wobec 109 w Chrome (wyżej) |
 | Ciasteczka i zapisane identyfikatory | Ciasteczka stron trzecich z listy trackerów są odrzucane (edycja GTK miała też Intelligent Tracking Prevention z WebKit), każdy profil i aplikacja internetowa to osobny proces z własnym magazynem, a Wymaż dane przeglądania kasuje profil jednym kliknięciem. | `storage/cookie_policy.rs`, `storage/tracker_cookie_policy.rs`, `storage/burn_planner.rs` | Testy `cookie_policies`, `burn_planner` |
 | Identyfikatory w linkach | `utm_*`, `fbclid`, `gclid` i inne parametry z listy DuckDuckGo są usuwane z każdej nawigacji najwyższego poziomu, zanim żądanie opuści komputer. | `protection/tracking_parameter_remover.rs`, `network/link_cleaning_request_policy.rs` | Testy `tracking_parameter_remover`, `link_cleaning_request_policy` |
 | Odciski przeglądarki | Content Scope Scripts DuckDuckGo działają w każdej ramce, a Guard włącza zabezpieczenia canvas, dźwięku, ekranu i referera, które konfiguracja DuckDuckGo na macOS zostawia wyłączone. Szum zmienia się z witryną i z sesją. | `guard/fingerprint_hardening.rs`, `protection/content_scope_script.rs` | Testy `fingerprint_hardening`, `content_scope_script`; strona próbkująca w raporcie (§4.3) |
@@ -172,7 +173,7 @@ WebKitGTK i edycja Qt; czego edycji Qt jeszcze brakuje, wymienia [tabela ochron]
 
 Każda lista i zestaw danych jest pobierany, nigdy dołączany, a przed użyciem ograniczany rozmiarem i
 walidowany. Lista filtrów może tylko blokować albo ukrywać: konwersja nie zachowuje skryptletów, więc złośliwa
-lista mogłaby zepsuć stronę, ale nigdy nie uruchomi w niej kodu. Cały zestaw (`./run-tests`, 887 testów razem z testami Qt, oraz
+lista mogłaby zepsuć stronę, ale nigdy nie uruchomi w niej kodu. Cały zestaw (`./run-tests`, 899 testów razem z testami Qt, oraz
 clippy i `cargo audit` w CI) uruchamia się przy każdym wypchnięciu.
 
 ### Dowody
@@ -228,8 +229,7 @@ zakładek i historii. Pełna lista z uzasadnieniem jest w dokumencie architektur
 Zaplanowane, niezaczęte i do zaprojektowania przed budową: usuwanie Twoich danych osobowych z serwisów brokerów
 danych, pomoc w odzyskaniu tożsamości, gdy zostanie skradziona, oraz VPN — wszystko za darmo. DuckDuckGo sprzedaje te
 trzy rzeczy w płatnej subskrypcji; InDuckGo chce je dać bez opłat. Potrzebują serwerów lub partnerów i ustaleń
-prawnych, więc nie ma daty. Wcześniej moduł okien zgody na cookies: wykrywacz, który budzi się po wczytaniu strony
-i sam odrzuca prośbę o zgodę (na przykład Facebooka), gdy tarcza jest włączona.
+prawnych, więc nie ma daty.
 
 W przyszłości InDuckGo będzie częścią nowej dystrybucji Linuksa. Pozostanie samodzielnym projektem i zachowa
 paczki dla innych dystrybucji.
@@ -321,8 +321,8 @@ Zainstalowane aplikacje webowe uruchamia się z menu aplikacji pulpitu (`induckg
 
 ## Testy
 
-Stos: **cargo-nextest** — 887 obiektowych scenariuszy Given/When/Then: 676 dla domeny w
-`crates/induckgo-core/tests/` (81 plików, jeden na typ domenowy), 141 dla edycji Qt i jej adaptera silnika, 61 dla
+Stos: **cargo-nextest** — 899 obiektowych scenariuszy Given/When/Then: 683 dla domeny w
+`crates/induckgo-core/tests/` (82 plików, jeden na typ domenowy), 146 dla edycji Qt i jej adaptera silnika, 61 dla
 narzędzia raportu w `crates/induckgo-test-report/tests/` i 9 dla narzędzia benchmarków w
 `crates/induckgo-bench/tests/`. CI uruchamia je wszystkie w kontenerze Arch z Qt 6, testy Qt pod Xvfb z Mesą (QtWebEngine potrzebuje kontekstu
 OpenGL nawet bez okna); same testy Qt uruchom przez
@@ -368,7 +368,7 @@ crates/induckgo-engine-qt/
 crates/induckgo/         poprzednia edycja: GTK 4 + libadwaita na WebKitGTK (wersje przed 1.2.0)
 crates/induckgo-test-report/
                          narzędzie deweloperskie za ./run-tests: raport testów HTML (nie trafia do paczek)
-assets/                  dołączone Content Scope Scripts (Apache-2.0), skrypt strony Guarda, ikony,
+assets/                  dołączone Content Scope Scripts (Apache-2.0) i autoconsent (MPL-2.0), skrypt strony Guarda, ikony,
                          szablon strony błędu; nigdy Tracker Data Set ani listy filtrów
 packaging/               PKGBUILD, spec rpm, budowa i składanie AppImage, plik .desktop, metadane AppStream
 docs/en, docs/pl         architektura, zasady inżynierskie i raporty (kanoniczny angielski, polskie lustro)
@@ -392,3 +392,5 @@ InDuckGo to wolne oprogramowanie na licencji [GNU General Public License w wersj
 - Listy filtrów InDuckGo Guard — GPL-3.0, CC BY-SA 3.0, CC BY 3.0, CC BY-NC-SA 4.0 lub warunki wydawcy,
   pobierane w czasie działania, nigdy nie commitowane.
 - adblock-rust 0.13.5 — MPL-2.0, wkompilowany bez zmian (źródło: <https://github.com/brave/adblock-rust>).
+- autoconsent 18.0.0 — MPL-2.0, spakowany z własnym punktem wejścia InDuckGo w `assets/autoconsent` (licencja, źródło
+  punktu wejścia i przepis na przebudowę obok; źródło biblioteki: <https://github.com/duckduckgo/autoconsent>).

@@ -4,6 +4,7 @@
 //! (ads, trackers, link-click pings, cookie notices), applied to a site's own requests as well as third parties, and
 //! switches on fingerprinting defences that DuckDuckGo's macOS configuration leaves to Safari.
 
+pub mod cookie_notice_script;
 pub mod filter_list_source;
 pub mod fingerprint_hardening;
 pub mod generic_hiding;

@@ -89,6 +89,10 @@ pub mod ffi {
         #[qinvokable]
         fn resource_hint_blocking_script(self: &BrowserBridge) -> QString;
 
+        /// The script that rejects cookie notices, to run in the page's own world of every frame.
+        #[qinvokable]
+        fn cookie_notice_script(self: &BrowserBridge) -> QString;
+
         /// A notice to show when the window opens, or empty.
         #[qinvokable]
         fn startup_notice(self: &BrowserBridge) -> QString;
@@ -181,6 +185,7 @@ use induckgo_core::download::download_history::DownloadId;
 use induckgo_core::engine::duckduckgo_extension_prompt_script::DuckDuckGoExtensionPromptScript;
 use induckgo_core::engine::resource_hint_blocking_script::ResourceHintBlockingScript;
 use induckgo_core::engine::smooth_wheel_page_script::SmoothWheelPageScript;
+use induckgo_core::guard::cookie_notice_script::CookieNoticeScript;
 use induckgo_core::guard::guard_page_script::GuardPageScript;
 use induckgo_core::language::message_catalogue::MessageCatalogue;
 use induckgo_core::navigation::address_bar_input::AddressBarInput;
@@ -310,6 +315,10 @@ impl ffi::BrowserBridge {
 
     fn resource_hint_blocking_script(&self) -> QString {
         QString::from(ResourceHintBlockingScript::source())
+    }
+
+    fn cookie_notice_script(&self) -> QString {
+        QString::from(CookieNoticeScript::source())
     }
 
     fn guard_page_script(&self) -> QString {

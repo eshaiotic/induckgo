@@ -6,6 +6,11 @@
 #include <QGuiApplication>
 #include <QIcon>
 #include <QImage>
+#include <QEventLoop>
+#include <QNetworkAccessManager>
+#include <QNetworkProxyFactory>
+#include <QNetworkReply>
+#include <QNetworkRequest>
 #include <QQuickWebEngineProfile>
 #include <QWebEngineCookieStore>
 #include <QWebEngineUrlRequestInfo>
@@ -39,7 +44,15 @@ private:
 
 } // namespace
 
-void initialize_web_engine() {
+void initialize_web_engine(rust::Str chromium_flags) {
+    if (!chromium_flags.empty()) {
+        QByteArray flags = qgetenv("QTWEBENGINE_CHROMIUM_FLAGS");
+        if (!flags.isEmpty()) {
+            flags.append(' ');
+        }
+        flags.append(chromium_flags.data(), static_cast<qsizetype>(chromium_flags.size()));
+        qputenv("QTWEBENGINE_CHROMIUM_FLAGS", flags);
+    }
     QtWebEngineQuick::initialize();
 }
 
@@ -94,4 +107,46 @@ rust::Vec<std::uint8_t> reencode_png(rust::Slice<const std::uint8_t> bytes) {
         encoded.push_back(static_cast<std::uint8_t>(byte));
     }
     return encoded;
+}
+
+FetchedBytes fetch_bytes(rust::Str url, rust::Str etag, std::uint64_t max_bytes, std::int32_t timeout_ms) {
+    FetchedBytes answer{0, rust::String(), rust::Vec<std::uint8_t>(), rust::String()};
+    QNetworkProxyFactory::setUseSystemConfiguration(true);
+    // A manager of its own for each download: nothing, not even a cookie, is kept between two of them.
+    QNetworkAccessManager manager;
+    QNetworkRequest request(QUrl(QString::fromUtf8(url.data(), static_cast<int>(url.size()))));
+    request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
+    request.setAttribute(QNetworkRequest::CookieLoadControlAttribute, QNetworkRequest::Manual);
+    request.setAttribute(QNetworkRequest::CookieSaveControlAttribute, QNetworkRequest::Manual);
+    request.setTransferTimeout(timeout_ms);
+    request.setRawHeader("User-Agent", "InDuckGo");
+    if (!etag.empty()) {
+        request.setRawHeader("If-None-Match", QByteArray(etag.data(), static_cast<qsizetype>(etag.size())));
+    }
+    QNetworkReply *reply = manager.get(request);
+    bool too_large = false;
+    QObject::connect(reply, &QNetworkReply::downloadProgress, [&](qint64 received, qint64) {
+        if (static_cast<std::uint64_t>(received) > max_bytes) {
+            too_large = true;
+            reply->abort();
+        }
+    });
+    QEventLoop loop;
+    QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+    loop.exec();
+    answer.status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    if (too_large) {
+        answer.status = 0;
+        answer.error = rust::String("the body is larger than allowed");
+    } else if (reply->error() != QNetworkReply::NoError && answer.status == 0) {
+        answer.error = rust::String(reply->errorString().toStdString());
+    } else {
+        answer.etag = rust::String(reply->rawHeader("ETag").toStdString());
+        const QByteArray body = reply->readAll();
+        for (const char byte : body) {
+            answer.body.push_back(static_cast<std::uint8_t>(byte));
+        }
+    }
+    reply->deleteLater();
+    return answer;
 }

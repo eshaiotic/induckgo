@@ -26,6 +26,7 @@ pub mod profile_policies;
 pub mod profile_preferences;
 pub mod profile_session;
 pub mod protection_documents;
+pub mod protection_updates;
 pub mod single_instance;
 pub mod site_protection;
 pub mod site_zoom_store;

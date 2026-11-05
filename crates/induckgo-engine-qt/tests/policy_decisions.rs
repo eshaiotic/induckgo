@@ -2,6 +2,8 @@
 
 use std::sync::Arc;
 
+use induckgo_core::network::connection_clock::SystemConnectionClock;
+use induckgo_core::network::connection_gate::ConnectionGate;
 use induckgo_core::network::network_request::NetworkRequest;
 use induckgo_core::network::request_decision::RequestDecision;
 use induckgo_core::network::request_policy::RequestPolicy;
@@ -37,11 +39,18 @@ impl CookiePolicy for FirstPartyCookiesOnly {
 
 struct DecisionScenario {
     policies: EnginePolicies,
+    gate: Arc<ConnectionGate>,
 }
 
 impl DecisionScenario {
     fn given_installed_policies() -> Self {
-        Self { policies: EnginePolicies::new(Arc::new(ScriptBlockingPolicy), Arc::new(FirstPartyCookiesOnly)) }
+        let gate = Arc::new(ConnectionGate::new(Arc::new(SystemConnectionClock::started_now())));
+        let policies = EnginePolicies::with_gate(
+            Arc::new(ScriptBlockingPolicy),
+            Arc::new(FirstPartyCookiesOnly),
+            Arc::clone(&gate),
+        );
+        Self { policies, gate }
     }
 
     fn when_chromium_asks_about_request(&self, resource_type: i32) -> HookDecision {
@@ -99,4 +108,18 @@ fn should_block_requests_made_before_policies_are_installed() {
 #[test]
 fn should_refuse_cookies_before_policies_are_installed() {
     assert!(!PolicyDecisions::for_cookie(None, "example.org", "example.org", false));
+}
+
+#[test]
+fn should_approve_the_connection_of_a_request_that_passed() {
+    let scenario = DecisionScenario::given_installed_policies();
+    scenario.when_chromium_asks_about_request(4);
+    assert_eq!(scenario.gate.approval_count(), 1);
+}
+
+#[test]
+fn should_not_approve_the_connection_of_a_request_that_was_blocked() {
+    let scenario = DecisionScenario::given_installed_policies();
+    scenario.when_chromium_asks_about_request(3);
+    assert_eq!(scenario.gate.approval_count(), 0);
 }

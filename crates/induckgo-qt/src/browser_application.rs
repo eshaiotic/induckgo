@@ -16,6 +16,7 @@ use induckgo_core::engine::window_kind::WindowKind;
 use induckgo_core::guard::shared_guard_engine::SharedGuardEngine;
 use induckgo_core::network::site_allow_list::SiteAllowList;
 use induckgo_core::profile::profile_directories::ProfileLocation;
+use induckgo_engine_qt::qt_document_fetcher::QtDocumentFetcher;
 use induckgo_engine_qt::qt_web_engine::QtWebEngine;
 use serde_json::Value;
 
@@ -32,6 +33,7 @@ use crate::profile_policies::ProfileStrictness;
 use crate::profile_preferences::ProfilePreferences;
 use crate::profile_session::ProfileSession;
 use crate::protection_documents::ProtectionDocuments;
+use crate::protection_updates::ProtectionUpdates;
 use crate::single_instance::Instance;
 use crate::single_instance::SingleInstance;
 use crate::site_protection::SiteProtection;
@@ -104,24 +106,37 @@ impl BrowserApplication {
     }
 
     fn install_policies(directories: &InstallationDirectories, profile: &ProfileLocation) {
+        let cache = directories.protection_cache();
+        let updates = Arc::new(ProtectionUpdates::new(cache.clone(), Arc::new(QtDocumentFetcher)));
+        // Nothing cached means the first start: the data is fetched before any page can load.
+        let is_first_start = !updates.has_cached_data();
+        if is_first_start {
+            updates.refresh();
+        }
         let guard = Arc::new(SharedGuardEngine::default());
         let session = Self::open_session(directories, profile, &guard);
-        GuardLists::in_cache(&directories.protection_cache()).build_into(guard);
-        let documents = ProtectionDocuments::from_cache(&directories.protection_cache());
+        GuardLists::in_cache(&cache).build_into(Arc::clone(&guard));
+        let documents = ProtectionDocuments::from_cache(&cache);
         let allow_list = Self::read_json(&profile.data.join("site-allow-list.json"))
             .map(|document| SiteAllowList::from_json(&document))
             .unwrap_or_default();
-        let policies = ProfilePolicies::assemble(
+        let policies = Arc::new(ProfilePolicies::assemble(
             documents.as_ref(),
             session.protection.shared_list(),
             Arc::clone(&session.guard),
             allow_list,
             ProfileStrictness::Standard,
-        );
+        ));
         session.install();
         let engine_directory = profile.data.join("engine");
         let engine_cache = profile.cache.join("engine");
-        QtWebEngine::install_policies(policies.request, policies.cookies, &engine_directory, &engine_cache);
+        QtWebEngine::install_policies(
+            Arc::clone(&policies.request),
+            Arc::clone(&policies.cookies),
+            &engine_directory,
+            &engine_cache,
+        );
+        updates.keep_current(policies, guard, !is_first_start);
     }
 
     /// Finishes a burn the Fire button asked for before anything opens the profile's files, then reads the

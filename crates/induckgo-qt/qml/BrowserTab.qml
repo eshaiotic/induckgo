@@ -11,6 +11,7 @@ WebEngineView {
     property string extensionPromptSource
     // Qt's web-channel client followed by Guard's page script; empty when the browser has none to give.
     property string guardSource
+    property string resourceHintSource
     // A web app keeps to its own site: a link to another site opens in the browser instead.
     property bool keepsToSite: false
     property var appBridge: null
@@ -47,6 +48,8 @@ WebEngineView {
         if (smoothWheelSource !== "") scripts.push(userScript("induckgo-smooth-wheel", smoothWheelSource))
         if (extensionPromptSource !== "") scripts.push(userScript("induckgo-duckduckgo-extension-prompt", extensionPromptSource))
         if (guardSource !== "") scripts.push(userScript("induckgo-guard-page-hiding", guardSource))
+        // It changes what the page's own scripts call, so it runs in the page's world (the others in a world of their own).
+        if (resourceHintSource !== "") scripts.push(userScript("induckgo-no-resource-hints", resourceHintSource, WebEngineScript.MainWorld))
         return scripts
     }
 
@@ -55,12 +58,12 @@ WebEngineView {
     webChannelWorld: WebEngineScript.ApplicationWorld
     GuardBridge { id: guardBridge; WebChannel.id: "guard" }
 
-    function userScript(scriptName, source) {
+    function userScript(scriptName, source, world) {
         return {
             name: scriptName,
             sourceCode: source,
             injectionPoint: WebEngineScript.DocumentCreation,
-            worldId: WebEngineScript.ApplicationWorld,
+            worldId: world === undefined ? WebEngineScript.ApplicationWorld : world,
             runsOnSubFrames: true
         }
     }

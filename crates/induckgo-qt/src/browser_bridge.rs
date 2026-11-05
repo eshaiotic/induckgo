@@ -85,6 +85,10 @@ pub mod ffi {
         #[qinvokable]
         fn guard_page_script(self: &BrowserBridge) -> QString;
 
+        /// The script that removes preconnect, dns-prefetch, prefetch and prerender hints from pages.
+        #[qinvokable]
+        fn resource_hint_blocking_script(self: &BrowserBridge) -> QString;
+
         /// A notice to show when the window opens, or empty.
         #[qinvokable]
         fn startup_notice(self: &BrowserBridge) -> QString;
@@ -175,6 +179,7 @@ use cxx_qt_lib::QString;
 use induckgo_core::download::download_history::DownloadHistory;
 use induckgo_core::download::download_history::DownloadId;
 use induckgo_core::engine::duckduckgo_extension_prompt_script::DuckDuckGoExtensionPromptScript;
+use induckgo_core::engine::resource_hint_blocking_script::ResourceHintBlockingScript;
 use induckgo_core::engine::smooth_wheel_page_script::SmoothWheelPageScript;
 use induckgo_core::guard::guard_page_script::GuardPageScript;
 use induckgo_core::language::message_catalogue::MessageCatalogue;
@@ -301,6 +306,10 @@ impl ffi::BrowserBridge {
 
     fn duckduckgo_extension_prompt_script(&self) -> QString {
         QString::from(DuckDuckGoExtensionPromptScript::source())
+    }
+
+    fn resource_hint_blocking_script(&self) -> QString {
+        QString::from(ResourceHintBlockingScript::source())
     }
 
     fn guard_page_script(&self) -> QString {

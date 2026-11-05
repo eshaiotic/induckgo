@@ -643,6 +643,7 @@ ApplicationWindow {
         BrowserTab {
             smoothWheelSource: bridge.smooth_wheel_script()
             extensionPromptSource: bridge.duckduckgo_extension_prompt_script()
+            resourceHintSource: bridge.resource_hint_blocking_script()
             guardSource: window.guardSource
             appBridge: webApps
             keepsToSite: window.isWebApp

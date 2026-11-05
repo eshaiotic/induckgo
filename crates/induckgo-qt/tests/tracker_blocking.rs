@@ -64,8 +64,8 @@ mod tempdir {
 }
 
 impl BrowsingScenario {
-    /// Given: `tracker.test` is a tracker the data set blocks by default, and a local server answers for every
-    /// `.test` name.
+    /// Given: `tracker.test` is a tracker the data set blocks by default, and a local server, used as the
+    /// browser's upstream HTTP proxy, answers for every `.test` name.
     fn given_a_tracker_listed_in_the_downloaded_data() -> Self {
         let home = tempdir::ScratchDirectory::new("induckgo-qt-test");
         Self::write_protection_cache(&home.path().join("cache/induckgo/protections"));
@@ -125,7 +125,8 @@ impl BrowsingScenario {
         let _ = stream.write_all(page.as_bytes());
     }
 
-    /// Returns the request path and the `Host` header's name (without port).
+    /// Returns the request path and the `Host` header's name (without port). A proxied request names its target
+    /// as an absolute URL (`http://first.test:1234/x`); only the path part is returned.
     fn read_request(stream: &TcpStream) -> (String, String) {
         let mut reader = BufReader::new(stream);
         let mut host = String::new();
@@ -137,13 +138,21 @@ impl BrowsingScenario {
                 break;
             }
             if path.is_empty() {
-                header.split_whitespace().nth(1).unwrap_or_default().clone_into(&mut path);
+                path = Self::path_of(header.split_whitespace().nth(1).unwrap_or_default());
             } else if let Some(value) = header.strip_prefix("host:") {
                 value.trim().split(':').next().unwrap_or_default().clone_into(&mut host);
             }
             line.clear();
         }
         (path, host)
+    }
+
+    /// The path of a request target, whether it is origin-form (`/x`) or an absolute URL (`http://host:1/x`).
+    fn path_of(target: &str) -> String {
+        match target.strip_prefix("http://") {
+            Some(rest) => rest.find('/').map_or("/", |slash| &rest[slash..]).to_owned(),
+            None => target.to_owned(),
+        }
     }
 
     fn when_the_page_is_opened_in_the_browser(&self) -> BrowserProcess {
@@ -153,7 +162,9 @@ impl BrowsingScenario {
             .env("QT_QPA_PLATFORM", "offscreen")
             .env("XDG_DATA_HOME", home.join("data"))
             .env("XDG_CACHE_HOME", home.join("cache"))
-            .env("QTWEBENGINE_CHROMIUM_FLAGS", "--host-resolver-rules=\"MAP *.test 127.0.0.1\"")
+            .env("http_proxy", format!("http://127.0.0.1:{}", self.port))
+            .env_remove("https_proxy")
+            .env_remove("no_proxy")
             .stdout(Stdio::null())
             .stderr(Stdio::null())
             .spawn()

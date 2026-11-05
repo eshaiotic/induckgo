@@ -30,13 +30,16 @@ impl GuardLists {
             .collect()
     }
 
-    /// Builds the engine on a worker thread (a few seconds for the full lists) and installs it in `engine`
-    /// when ready; pages loaded before that are not filtered.
+    /// Builds the engine on a worker thread and installs it in `engine` when ready; pages loaded before that
+    /// are not filtered.
     pub fn build_into(self, engine: Arc<SharedGuardEngine>) {
-        thread::spawn(move || {
-            let lists = self.downloaded();
-            let texts: Vec<&str> = lists.iter().map(String::as_str).collect();
-            engine.install(GuardEngine::from_lists(&texts));
-        });
+        thread::spawn(move || self.install_into(&engine));
+    }
+
+    /// Builds the engine from the lists now and makes it the one in use, replacing the previous one.
+    pub fn install_into(&self, engine: &SharedGuardEngine) {
+        let lists = self.downloaded();
+        let texts: Vec<&str> = lists.iter().map(String::as_str).collect();
+        engine.install(GuardEngine::from_lists(&texts));
     }
 }

@@ -7,6 +7,7 @@ fn main() {
         .cpp_file("cpp/engine_hooks.cpp")
         .qt_module("Quick")
         .qt_module("Gui")
+        .qt_module("Network")
         .qt_module("WebEngineQuick")
         .qt_module("WebEngineCore")
         .build();

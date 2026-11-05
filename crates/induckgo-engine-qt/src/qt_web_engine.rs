@@ -9,13 +9,29 @@ use induckgo_core::storage::cookie_policy::CookiePolicy;
 
 use crate::engine_bridge::ffi;
 use crate::engine_policies::EnginePolicies;
+use crate::gate_proxy::GateProxy;
+use crate::upstream_proxy::UpstreamProxy;
 
 pub struct QtWebEngine;
 
 impl QtWebEngine {
     /// Prepares `QtWebEngine`. Call it before the `QGuiApplication` is created.
+    ///
+    /// Starts the connection proxy first and tells Chromium to use it: connections no request announced
+    /// (`preconnect` hints) can be refused only there. Should the proxy not start, Chromium runs without it
+    /// and the problem is reported, since the request filters still work.
     pub fn initialize() {
-        ffi::initialize_web_engine();
+        let upstream = UpstreamProxy::from_variables(|name| std::env::var(name).ok());
+        let flags = match GateProxy::start(EnginePolicies::process_gate(), upstream) {
+            Ok(proxy) => format!("--proxy-server=http://{}", proxy.address()),
+            Err(error) => {
+                eprintln!(
+                    "induckgo: the connection proxy did not start, so connection hints are not filtered: {error}"
+                );
+                String::new()
+            }
+        };
+        ffi::initialize_web_engine(&flags);
     }
 
     /// Makes Chromium ask these policies about every request and cookie, and keep everything it stores under
@@ -27,7 +43,7 @@ impl QtWebEngine {
         storage: &Path,
         cache: &Path,
     ) -> bool {
-        let is_first = EnginePolicies::new(request, cookies).install();
+        let is_first = EnginePolicies::with_gate(request, cookies, EnginePolicies::process_gate()).install();
         if is_first {
             ffi::install_hooks(&storage.to_string_lossy(), &cache.to_string_lossy());
         }

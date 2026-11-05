@@ -7,5 +7,8 @@
 #[allow(unsafe_code)]
 pub mod engine_bridge;
 pub mod engine_policies;
+pub mod gate_proxy;
+pub mod qt_document_fetcher;
 pub mod qt_web_engine;
 pub mod resource_type_mapping;
+pub mod upstream_proxy;

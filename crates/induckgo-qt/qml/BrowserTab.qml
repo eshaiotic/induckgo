@@ -16,6 +16,8 @@ WebEngineView {
     property var appBridge: null
     // The apps page is loaded from text, so the address bar shows its own address instead of the blank one.
     property string appsAddress
+    // showApps asked for a load that has not been announced yet.
+    property bool loadingApps: false
     readonly property string address: showsApps ? appsAddress : url.toString()
     readonly property bool isLoading: loading
 
@@ -30,6 +32,7 @@ WebEngineView {
     function showApps(html, address) {
         appsAddress = address
         showsApps = true
+        loadingApps = true
         loadHtml(html, address)
     }
 
@@ -76,13 +79,21 @@ WebEngineView {
 
     onNavigationRequested: function(request) {
         const target = request.url.toString()
-        // The apps page's links are not navigations: they are answered here, and only while that page is shown.
+        // The apps page's links are not navigations: they are answered here, and only for a click inside the apps
+        // page's own document.
         if (target.startsWith("induckgo-app-")) {
             request.reject()
-            if (view.showsApps) view.appsLinkClicked(target)
+            const clicked = request.navigationType === WebEngineNavigationRequest.LinkClickedNavigation
+            if (view.showsApps && request.isMainFrame && clicked) view.appsLinkClicked(target)
             return
         }
-        if (request.isMainFrame && /^https?:/.test(target)) view.showsApps = false
+        // Any other navigation of the tab, whatever its scheme, replaces the apps page: its own load (asked for by
+        // showApps) and a reload of it are the only ones that keep it.
+        if (request.isMainFrame) {
+            const reloaded = request.navigationType === WebEngineNavigationRequest.ReloadNavigation
+            if (view.loadingApps) view.loadingApps = false
+            else if (!reloaded) view.showsApps = false
+        }
         if (!view.keepsToSite || !request.isMainFrame) return
         const clicked = request.navigationType === WebEngineNavigationRequest.LinkClickedNavigation
         if (appBridge.leaves_app(target, clicked)) {

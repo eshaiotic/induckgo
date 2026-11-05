@@ -55,9 +55,15 @@ WebEngineView {
         return scripts
     }
     property bool scriptsInstalled: false
-    onPageScriptsChanged: if (scriptsInstalled) userScripts.collection = pageScripts
+    /// Handed the array of `pageScripts` itself, Qt applies only the last script (measured with Qt 6.11: the
+    /// resource-hint script ran, the smooth-wheel, extension-prompt and Guard scripts did not), so the page showed
+    /// DuckDuckGo's offer of an extension and Guard hid nothing. A copy of every script is installed instead.
+    function installScripts() {
+        userScripts.collection = pageScripts.map(script => Object.assign({}, script))
+    }
+    onPageScriptsChanged: if (scriptsInstalled) installScripts()
     Component.onCompleted: {
-        userScripts.collection = pageScripts
+        installScripts()
         scriptsInstalled = true
         url = startAddress
     }

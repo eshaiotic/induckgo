@@ -14,7 +14,7 @@ jej kod zostaje w tym repozytorium, dopóki edycja Qt nie ma wszystkiego, co mia
 
 [![tests](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml/badge.svg)](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml)
 [![release](https://img.shields.io/github/v/release/eshaiotic/induckgo?color=6A5ACD)](https://github.com/eshaiotic/induckgo/releases/latest)
-![cargo nextest](https://img.shields.io/badge/cargo%20nextest-886%20test%C3%B3w-success)
+![cargo nextest](https://img.shields.io/badge/cargo%20nextest-887%20test%C3%B3w-success)
 ![stack](https://img.shields.io/badge/stack-Rust%20%E2%80%A2%20Qt%206%20%E2%80%A2%20QtWebEngine-8E7FE8)
 ![telemetria](https://img.shields.io/badge/telemetria-brak-FFB300)
 [![licencja](https://img.shields.io/badge/licencja-GPL--3.0--or--later-2E1A87)](LICENSE)
@@ -172,7 +172,7 @@ WebKitGTK i edycja Qt; czego edycji Qt jeszcze brakuje, wymienia [tabela ochron]
 
 Każda lista i zestaw danych jest pobierany, nigdy dołączany, a przed użyciem ograniczany rozmiarem i
 walidowany. Lista filtrów może tylko blokować albo ukrywać: konwersja nie zachowuje skryptletów, więc złośliwa
-lista mogłaby zepsuć stronę, ale nigdy nie uruchomi w niej kodu. Cały zestaw (`./run-tests`, 886 testów razem z testami Qt, oraz
+lista mogłaby zepsuć stronę, ale nigdy nie uruchomi w niej kodu. Cały zestaw (`./run-tests`, 887 testów razem z testami Qt, oraz
 clippy i `cargo audit` w CI) uruchamia się przy każdym wypchnięciu.
 
 ### Dowody
@@ -321,8 +321,8 @@ Zainstalowane aplikacje webowe uruchamia się z menu aplikacji pulpitu (`induckg
 
 ## Testy
 
-Stos: **cargo-nextest** — 886 obiektowych scenariuszy Given/When/Then: 676 dla domeny w
-`crates/induckgo-core/tests/` (81 plików, jeden na typ domenowy), 140 dla edycji Qt i jej adaptera silnika, 61 dla
+Stos: **cargo-nextest** — 887 obiektowych scenariuszy Given/When/Then: 676 dla domeny w
+`crates/induckgo-core/tests/` (81 plików, jeden na typ domenowy), 141 dla edycji Qt i jej adaptera silnika, 61 dla
 narzędzia raportu w `crates/induckgo-test-report/tests/` i 9 dla narzędzia benchmarków w
 `crates/induckgo-bench/tests/`. CI uruchamia je wszystkie w kontenerze Arch z Qt 6, testy Qt pod Xvfb z Mesą (QtWebEngine potrzebuje kontekstu
 OpenGL nawet bez okna); same testy Qt uruchom przez

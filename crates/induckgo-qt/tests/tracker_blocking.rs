@@ -1,8 +1,12 @@
-//! The real application, started headless, blocks a tracker that DuckDuckGo's data lists and lets the rest load.
+//! The real application, started headless, protects the page it shows.
 //!
-//! The test serves a page from `first.test` that embeds one image from `tracker.test` (listed as a blocked
-//! tracker in a fixture data set) and one from `other.test`. Chromium resolves every `.test` name to the local
-//! server, which records which names were requested.
+//! Network protection: the test serves a page from `first.test` that embeds one image from `tracker.test` (listed
+//! as a blocked tracker in a fixture data set) and one from `other.test`. Every name is answered by the local
+//! server, which records which ones were requested.
+//!
+//! Page scripts: a page served as `duckduckgo.com` carries DuckDuckGo's offer of its browser extension, which
+//! InDuckGo hides (it has the protections built in and runs no extensions). The page reports whether the offer
+//! is hidden by requesting an image from `hidden.test` or `shown.test`.
 
 use std::fs;
 use std::io::BufRead;
@@ -86,7 +90,10 @@ impl BrowsingScenario {
         });
         // The local server speaks plain HTTP, so the fixture exempts the test names from the HTTPS upgrade.
         let exceptions: Vec<_> =
-            ["first.test", "other.test", "tracker.test"].iter().map(|domain| json!({"domain": domain})).collect();
+            ["first.test", "other.test", "tracker.test", "duckduckgo.com", "hidden.test", "shown.test"]
+                .iter()
+                .map(|domain| json!({"domain": domain}))
+                .collect();
         let configuration = json!({"features": {"https": {"state": "enabled", "exceptions": exceptions}}});
         fs::write(directory.join("tracker-data.json"), tracker_data.to_string()).expect("tracker data");
         fs::write(directory.join("configuration.json"), configuration.to_string()).expect("configuration");
@@ -107,15 +114,15 @@ impl BrowsingScenario {
             return;
         }
         if path != "/favicon.ico" {
-            requested.lock().expect("lock").push(host);
+            requested.lock().expect("lock").push(host.clone());
         }
         let port = stream.local_addr().map_or(0, |address| address.port());
-        let page = if path == "/" {
-            format!(
+        let page = match (path.as_str(), host.as_str()) {
+            ("/", "duckduckgo.com") => Self::extension_offer_page(port),
+            ("/", _) => format!(
                 "<html><body>hi<img src=\"http://tracker.test:{port}/pixel.gif\"><img src=\"http://other.test:{port}/pixel.gif\"></body></html>"
-            )
-        } else {
-            "GIF89a".to_owned()
+            ),
+            _ => "GIF89a".to_owned(),
         };
         let head = format!(
             "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
@@ -123,6 +130,17 @@ impl BrowsingScenario {
         );
         let _ = stream.write_all(head.as_bytes());
         let _ = stream.write_all(page.as_bytes());
+    }
+
+    /// The offer as DuckDuckGo marks it up, and a script that reports, after the page had time to be styled,
+    /// whether the offer is displayed.
+    fn extension_offer_page(port: u16) -> String {
+        const PAGE: &str = "<html><body><a id=\"offer\" data-testid=\"cta-extension-button\" href=\"#\">Add Extension</a>\
+            <script>setTimeout(function () {\
+            var shown = getComputedStyle(document.getElementById('offer')).display !== 'none';\
+            new Image().src = 'http://' + (shown ? 'shown' : 'hidden') + '.test:PORT/report.gif';\
+            }, 1500)</script></body></html>";
+        PAGE.replace("PORT", &port.to_string())
     }
 
     /// Returns the request path and the `Host` header's name (without port). A proxied request names its target
@@ -155,10 +173,10 @@ impl BrowsingScenario {
         }
     }
 
-    fn when_the_page_is_opened_in_the_browser(&self) -> BrowserProcess {
+    fn when_the_page_is_opened_in_the_browser(&self, host: &str) -> BrowserProcess {
         let home = self.home.path();
         let child = Command::new(env!("CARGO_BIN_EXE_induckgo-qt"))
-            .arg(format!("http://first.test:{}/", self.port))
+            .arg(format!("http://{host}:{}/", self.port))
             .env("QT_QPA_PLATFORM", "offscreen")
             .env("XDG_DATA_HOME", home.join("data"))
             .env("XDG_CACHE_HOME", home.join("cache"))
@@ -172,9 +190,11 @@ impl BrowsingScenario {
         BrowserProcess { child }
     }
 
-    fn requested_hosts_after_the_other_image_loaded(&self) -> Vec<String> {
+    /// The hosts requested once one of `awaited` has been (or after a minute), plus a moment for stragglers.
+    fn requested_hosts_after_any_of(&self, awaited: &[&str]) -> Vec<String> {
         let deadline = Instant::now() + Duration::from_secs(60);
-        while Instant::now() < deadline && !self.requested.lock().expect("lock").iter().any(|host| host == "other.test")
+        while Instant::now() < deadline
+            && !self.requested.lock().expect("lock").iter().any(|host| awaited.contains(&host.as_str()))
         {
             thread::sleep(Duration::from_millis(100));
         }
@@ -198,9 +218,17 @@ impl Drop for BrowserProcess {
 #[test]
 fn should_load_the_page_and_the_ordinary_image_but_not_the_tracker_image() {
     let scenario = BrowsingScenario::given_a_tracker_listed_in_the_downloaded_data();
-    let _browser = scenario.when_the_page_is_opened_in_the_browser();
-    let hosts = scenario.requested_hosts_after_the_other_image_loaded();
+    let _browser = scenario.when_the_page_is_opened_in_the_browser("first.test");
+    let hosts = scenario.requested_hosts_after_any_of(&["other.test"]);
     assert!(hosts.contains(&"first.test".to_owned()), "the page itself should load: {hosts:?}");
     assert!(hosts.contains(&"other.test".to_owned()), "an unlisted third party should load: {hosts:?}");
     assert!(!hosts.contains(&"tracker.test".to_owned()), "the tracker should be blocked: {hosts:?}");
+}
+
+#[test]
+fn should_hide_duckduckgos_offer_of_a_browser_extension_because_the_protections_are_built_in() {
+    let scenario = BrowsingScenario::given_a_tracker_listed_in_the_downloaded_data();
+    let _browser = scenario.when_the_page_is_opened_in_the_browser("duckduckgo.com");
+    let hosts = scenario.requested_hosts_after_any_of(&["hidden.test", "shown.test"]);
+    assert!(hosts.contains(&"hidden.test".to_owned()), "the extension offer should be hidden: {hosts:?}");
 }

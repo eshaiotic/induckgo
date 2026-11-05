@@ -14,7 +14,7 @@ repository until the Qt edition has everything that one had (see *Status*).
 
 [![tests](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml/badge.svg)](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml)
 [![release](https://img.shields.io/github/v/release/eshaiotic/induckgo?color=6A5ACD)](https://github.com/eshaiotic/induckgo/releases/latest)
-![cargo nextest](https://img.shields.io/badge/cargo%20nextest-883%20tests-success)
+![cargo nextest](https://img.shields.io/badge/cargo%20nextest-886%20tests-success)
 ![stack](https://img.shields.io/badge/stack-Rust%20%E2%80%A2%20Qt%206%20%E2%80%A2%20QtWebEngine-8E7FE8)
 ![telemetry](https://img.shields.io/badge/telemetry-none-FFB300)
 [![licence](https://img.shields.io/badge/licence-GPL--3.0--or--later-2E1A87)](LICENSE)
@@ -171,7 +171,7 @@ Qt edition still lacks is listed in the [protection table](#what-it-protects-you
 
 Every list and data set is downloaded, never bundled, and size-limited and validated before use. A filter list
 can only block or hide: the conversion keeps no scriptlets, so a hostile list could break a site but never run
-code in it. The whole suite (`./run-tests`, 883 tests including the Qt ones, clippy and `cargo audit`) runs on every push.
+code in it. The whole suite (`./run-tests`, 886 tests including the Qt ones, clippy and `cargo audit`) runs on every push.
 
 ### The evidence
 
@@ -264,7 +264,7 @@ file; start it again after moving the file). The menu entry runs that file later
 resolved) and is written only when that file and every folder above it, up to your home folder, belong to root or to
 you and cannot be written to by the group or others (nothing under `/tmp` or another shared folder qualifies). The
 entry is removed again when its file stops qualifying. An entry you wrote yourself is never touched (the generated one
-carries `X-InDuckGo-AppImage=true`), and nothing is written when the package is installed. The Qt edition has no Tor
+carries `X-InDuckGo-AppImage=<path>`), and nothing is written when the package is installed. The Qt edition has no Tor
 window yet, so no package brings Tor.
 
 From a checkout of this repository:
@@ -319,8 +319,8 @@ Installed web apps start from the desktop's application menu (`induckgo-qt --web
 
 ## Testing
 
-Stack: **cargo-nextest** — 883 object-oriented Given/When/Then scenarios: 674 for the domain in
-`crates/induckgo-core/tests/` (81 files, one per domain type), 139 for the Qt edition and its engine adapter,
+Stack: **cargo-nextest** — 886 object-oriented Given/When/Then scenarios: 676 for the domain in
+`crates/induckgo-core/tests/` (81 files, one per domain type), 140 for the Qt edition and its engine adapter,
 61 for the report tool in `crates/induckgo-test-report/tests/` and 9 for the benchmark tool in
 `crates/induckgo-bench/tests/`. CI runs all of them in an Arch container with Qt 6, the Qt ones under Xvfb with Mesa (QtWebEngine needs an OpenGL
 context even offscreen); run only those with

@@ -10,8 +10,8 @@
 //! and every folder above it up to the person's home folder (to `/` for a file outside it) belong to root or to the
 //! person and are not writable by the group or by others. A shared folder such as `/tmp` never qualifies, sticky
 //! bit or not: after a clean-up anyone could recreate the path and put a file of that name in its place. The entry
-//! is withdrawn when the AppImage it names stops qualifying. An entry the person wrote themselves is never
-//! overwritten or removed.
+//! is withdrawn at the next start when the file it names stops qualifying, whichever AppImage starts then. An entry
+//! the person wrote themselves is never overwritten or removed.
 
 use std::fs;
 use std::io;
@@ -75,31 +75,23 @@ impl AppImageIntegration {
     /// Returns the I/O error when the person's data directory cannot be written.
     pub fn install(&self, appimage: &Path) -> io::Result<()> {
         let entry_file = self.applications.join(Self::ENTRY_FILE);
-        if self.is_installed_system_wide() || Self::is_written_by_hand(&entry_file) {
+        if let Ok(text) = fs::read_to_string(&entry_file) {
+            match AppImageMenuEntry::file_named_by(&text) {
+                // Not ours: the person wrote it.
+                None => return Ok(()),
+                // Ours, but the file it makes the desktop run no longer qualifies: whichever AppImage starts now.
+                Some(named) if self.trusted_file(&named).is_none() => fs::remove_file(&entry_file)?,
+                Some(_) => {}
+            }
+        }
+        if self.is_installed_system_wide() {
             return Ok(());
         }
+        let Some(real) = self.trusted_file(appimage) else { return Ok(()) };
         let icon = self.icons.join(Self::ICON_FILE);
-        let Some(real) = self.trusted_file(appimage) else {
-            return Self::withdraw_entry_of(appimage, &icon, &entry_file);
-        };
         Self::write_when_changed(&icon, Self::ICON)?;
-        Self::write_when_changed(&entry_file, &Self::entry_for(&real, &icon))
-    }
-
-    fn entry_for(appimage: &Path, icon: &Path) -> String {
-        AppImageMenuEntry::new(Self::PACKAGED_ENTRY, appimage, icon).render()
-    }
-
-    /// Removes the entry this AppImage wrote earlier: it names a file that no longer qualifies to be run later.
-    fn withdraw_entry_of(appimage: &Path, icon: &Path, entry_file: &Path) -> io::Result<()> {
-        let real = fs::canonicalize(appimage).unwrap_or_else(|_| appimage.to_path_buf());
-        let is_its_entry = fs::read_to_string(entry_file).is_ok_and(|text| text == Self::entry_for(&real, icon));
-        if is_its_entry { fs::remove_file(entry_file) } else { Ok(()) }
-    }
-
-    /// An existing file that does not carry the marker is the person's own entry.
-    fn is_written_by_hand(entry_file: &Path) -> bool {
-        fs::read_to_string(entry_file).is_ok_and(|text| !text.lines().any(|line| line == AppImageMenuEntry::MARKER))
+        let entry = AppImageMenuEntry::new(Self::PACKAGED_ENTRY, &real, &icon).render();
+        Self::write_when_changed(&entry_file, &entry)
     }
 
     /// The real path of `appimage` when nobody but root and the person could replace it, else nothing.

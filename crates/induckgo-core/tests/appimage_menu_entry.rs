@@ -5,6 +5,7 @@
 //! one with the program and the icon pointed at the files that exist on this machine.
 
 use std::path::Path;
+use std::path::PathBuf;
 
 use induckgo_core::launch::appimage_menu_entry::AppImageMenuEntry;
 
@@ -75,8 +76,21 @@ fn should_keep_every_other_line_of_the_packaged_entry() {
 }
 
 #[test]
-fn should_mark_the_entry_as_written_by_the_appimage_so_that_a_hand_written_one_is_never_replaced() {
+fn should_mark_the_entry_with_the_file_it_names_so_that_a_hand_written_one_is_never_replaced() {
     let lines = MenuEntryScenario::given_appimage_at("/home/ola/Apps/InDuckGo.AppImage").when_rendered();
 
-    assert_eq!(lines[..2], ["[Desktop Entry]", AppImageMenuEntry::MARKER]);
+    assert_eq!(lines[..2], ["[Desktop Entry]", "X-InDuckGo-AppImage=/home/ola/Apps/InDuckGo.AppImage"]);
+}
+
+#[test]
+fn should_read_back_the_file_a_rendered_entry_names_even_when_its_path_needs_escaping() {
+    let appimage = "/home/ola/My Apps/back\\slash/InDuckGo.AppImage";
+    let rendered = AppImageMenuEntry::new(PACKAGED_ENTRY, Path::new(appimage), Path::new("/icon.svg")).render();
+
+    assert_eq!(AppImageMenuEntry::file_named_by(&rendered), Some(PathBuf::from(appimage)));
+}
+
+#[test]
+fn should_not_find_a_file_in_an_entry_the_person_wrote() {
+    assert_eq!(AppImageMenuEntry::file_named_by(PACKAGED_ENTRY), None);
 }

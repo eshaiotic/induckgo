@@ -118,6 +118,19 @@ impl IntegrationScenario {
         self
     }
 
+    /// The entry names this copy; it is then made unsafe, and a different copy, itself unsafe, is started.
+    fn when_another_unsafe_copy_is_started_after_the_one_the_entry_names_became_unsafe(mut self) -> Self {
+        self.integrate();
+        fs::set_permissions(&self.appimage, fs::Permissions::from_mode(0o757)).expect("appimage mode");
+        let shared = self.roots.path().join("Shared");
+        fs::create_dir_all(&shared).expect("shared");
+        fs::set_permissions(&shared, fs::Permissions::from_mode(0o1777)).expect("shared mode");
+        self.appimage = Self::appimage_in(&shared, "InDuckGo-copy.AppImage");
+        fs::set_permissions(&shared, fs::Permissions::from_mode(0o1777)).expect("shared mode");
+        self.integrate();
+        self
+    }
+
     fn data_home(&self) -> PathBuf {
         self.roots.path().join("data")
     }
@@ -286,4 +299,12 @@ fn should_never_withdraw_an_entry_the_person_wrote_themselves() {
         .when_started();
 
     assert_eq!(scenario.entry_text(), "[Desktop Entry]\nName=My browser\n");
+}
+
+#[test]
+fn should_withdraw_the_entry_even_when_a_different_unsafe_appimage_is_the_one_started() {
+    let scenario = IntegrationScenario::given_an_appimage_on_a_machine_without_an_installed_package()
+        .when_another_unsafe_copy_is_started_after_the_one_the_entry_names_became_unsafe();
+
+    assert!(!scenario.user_file(IntegrationScenario::ENTRY).exists());
 }

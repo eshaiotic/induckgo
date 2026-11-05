@@ -1,5 +1,13 @@
 #!/bin/sh
-# AppImage entry point. InDuckGo uses the system's WebKitGTK 6.0, GTK 4 and libadwaita: a browser engine frozen
-# inside the image would stop receiving the engine's security updates.
+# AppImage entry point of the Qt build: points Qt and QtWebEngine at the copies inside the image.
 here=$(dirname "$(readlink -f "$0")")
+export LD_LIBRARY_PATH="$here/usr/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+export QT_PLUGIN_PATH="$here/usr/lib/qt6/plugins"
+export QML_IMPORT_PATH="$here/usr/lib/qt6/qml"
+export QML2_IMPORT_PATH="$here/usr/lib/qt6/qml"
+export QTWEBENGINEPROCESS_PATH="$here/usr/lib/qt6/QtWebEngineProcess"
+export QTWEBENGINE_RESOURCES_PATH="$here/usr/share/qt6/resources"
+export QTWEBENGINE_LOCALES_PATH="$here/usr/share/qt6/translations/qtwebengine_locales"
+export QT_QUICK_CONTROLS_STYLE="${QT_QUICK_CONTROLS_STYLE:-Fusion}"
+export QT_QPA_PLATFORMTHEME="${QT_QPA_PLATFORMTHEME:-xdgdesktopportal}"
 exec "$here/usr/bin/induckgo" "$@"

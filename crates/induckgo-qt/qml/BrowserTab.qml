@@ -37,13 +37,15 @@ WebEngineView {
         loadHtml(html, address)
     }
 
-    url: startAddress
     settings.javascriptCanOpenWindows: false
     // A page loaded from file:// must not read other local files, and a local page must not reach the network.
     settings.localContentCanAccessFileUrls: false
     settings.localContentCanAccessRemoteUrls: false
 
-    userScripts.collection: {
+    /// The page scripts the sources describe. Binding them to `userScripts.collection` while the view is being
+    /// created crashes Qt 6.8 (Debian 13), so they are installed once the view exists, and the first page loads
+    /// only after them: it must never start without its scripts.
+    readonly property var pageScripts: {
         const scripts = []
         if (smoothWheelSource !== "") scripts.push(userScript("induckgo-smooth-wheel", smoothWheelSource))
         if (extensionPromptSource !== "") scripts.push(userScript("induckgo-duckduckgo-extension-prompt", extensionPromptSource))
@@ -51,6 +53,13 @@ WebEngineView {
         // It changes what the page's own scripts call, so it runs in the page's world (the others in a world of their own).
         if (resourceHintSource !== "") scripts.push(userScript("induckgo-no-resource-hints", resourceHintSource, WebEngineScript.MainWorld))
         return scripts
+    }
+    property bool scriptsInstalled: false
+    onPageScriptsChanged: if (scriptsInstalled) userScripts.collection = pageScripts
+    Component.onCompleted: {
+        userScripts.collection = pageScripts
+        scriptsInstalled = true
+        url = startAddress
     }
 
     // The page script reaches Rust through a channel of its own isolated world, which the page cannot see.

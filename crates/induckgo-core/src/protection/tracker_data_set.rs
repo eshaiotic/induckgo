@@ -74,6 +74,8 @@ pub struct KnownTracker {
     pub domain: Option<String>,
     pub default_action: Option<TrackerAction>,
     pub owner_name: Option<String>,
+    /// What the tracker is for (`Advertising`, `Analytics`, `Online Payment`, ...), as DuckDuckGo labels it.
+    pub categories: Vec<String>,
     pub rules: Vec<TrackerRule>,
 }
 
@@ -83,6 +85,7 @@ impl KnownTracker {
             domain: node.field("domain").as_str().map(str::to_owned),
             default_action: TrackerAction::parse(node.field("default")),
             owner_name: node.field("owner").field("name").as_str().map(str::to_owned),
+            categories: node.field("categories").strings().unwrap_or_default(),
             rules: node.field("rules").items().filter_map(TrackerRule::parse).collect(),
         })
     }

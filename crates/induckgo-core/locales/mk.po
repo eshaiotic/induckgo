@@ -836,3 +836,12 @@ msgstr "Стандардно"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Add Profile"
+msgstr "Додај профил"
+
+msgid "Delete profile {name}?"
+msgstr "Да се избрише профилот {name}?"
+
+msgid "Deletes the profile with its cookies, logins, history and cache. This cannot be undone."
+msgstr "Го брише профилот заедно со неговите колачиња, најави, историја и кеш. Ова не може да се врати."

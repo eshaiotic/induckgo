@@ -836,3 +836,12 @@ msgstr "Әдепкі"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Add Profile"
+msgstr "Профиль қосу"
+
+msgid "Delete profile {name}?"
+msgstr "{name} профилін жою керек пе?"
+
+msgid "Deletes the profile with its cookies, logins, history and cache. This cannot be undone."
+msgstr "Профильді оның cookie файлдарымен, кіру деректерімен, тарихымен және кэшімен бірге жояды. Мұны қайтару мүмкін емес."

@@ -836,3 +836,12 @@ msgstr "Bawaan"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Add Profile"
+msgstr "Tambah profil"
+
+msgid "Delete profile {name}?"
+msgstr "Hapus profil {name}?"
+
+msgid "Deletes the profile with its cookies, logins, history and cache. This cannot be undone."
+msgstr "Menghapus profil beserta cookie, login, riwayat, dan cache-nya. Tindakan ini tidak dapat dibatalkan."

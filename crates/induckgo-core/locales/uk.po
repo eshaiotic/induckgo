@@ -836,3 +836,12 @@ msgstr "Типово"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Add Profile"
+msgstr "Додати профіль"
+
+msgid "Delete profile {name}?"
+msgstr "Видалити профіль {name}?"
+
+msgid "Deletes the profile with its cookies, logins, history and cache. This cannot be undone."
+msgstr "Видаляє профіль разом з його файлами cookie, входами, історією та кешем. Цю дію неможливо скасувати."

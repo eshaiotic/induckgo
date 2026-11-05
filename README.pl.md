@@ -14,7 +14,7 @@ jej kod i paczki 1.2.0 zostają w tym repozytorium, dopóki edycja Qt jej nie do
 
 [![tests](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml/badge.svg)](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml)
 [![release](https://img.shields.io/github/v/release/eshaiotic/induckgo?color=6A5ACD)](https://github.com/eshaiotic/induckgo/releases/latest)
-![cargo nextest](https://img.shields.io/badge/cargo%20nextest-781%20test%C3%B3w-success)
+![cargo nextest](https://img.shields.io/badge/cargo%20nextest-801%20test%C3%B3w-success)
 ![stack](https://img.shields.io/badge/stack-Rust%20%E2%80%A2%20Qt%206%20%E2%80%A2%20QtWebEngine-8E7FE8)
 ![telemetria](https://img.shields.io/badge/telemetria-brak-FFB300)
 [![licencja](https://img.shields.io/badge/licencja-GPL--3.0--or--later-2E1A87)](LICENSE)
@@ -167,7 +167,7 @@ WebKitGTK i edycja Qt; czego edycji Qt jeszcze brakuje, wymienia [tabela ochron]
 
 Każda lista i zestaw danych jest pobierany, nigdy dołączany, a przed użyciem ograniczany rozmiarem i
 walidowany. Lista filtrów może tylko blokować albo ukrywać: konwersja nie zachowuje skryptletów, więc złośliwa
-lista mogłaby zepsuć stronę, ale nigdy nie uruchomi w niej kodu. Cały zestaw (`./run-tests`, 682 testy w CI i 99 testów Qt uruchamianych lokalnie oraz
+lista mogłaby zepsuć stronę, ale nigdy nie uruchomi w niej kodu. Cały zestaw (`./run-tests`, 694 testy w CI i 107 testów Qt uruchamianych lokalnie oraz
 clippy i `cargo audit` w CI) uruchamia się przy każdym wypchnięciu.
 
 ### Dowody
@@ -211,10 +211,9 @@ tego nie twierdzi.
 ## Stan
 
 Projekt w toku, ale używalny, na QtWebEngine: karty (u góry, na dole, z lewej lub z prawej), profile z odizolowanymi
-danymi, aplikacje webowe z kafelkową stroną, pobieranie do wybranego folderu, powiększenie osobno dla witryny,
+danymi i kafelkowym oknem wyboru jak w Chrome, aplikacje webowe z kafelkową stroną, pobieranie do wybranego folderu, powiększenie osobno dla witryny,
 wyszukiwanie na stronie, przełącznik ochrony dla witryny, Wymaż dane przeglądania, 68 języków interfejsu. Jeszcze
-nie ma w edycji Qt: pobierania danych ochrony, ochrony przed odciskiem przeglądarki i GPC, okna Tor, przełącznika
-profili z kafelkami, automatycznego odrzucania okien zgody na cookies, pytań o uprawnienia, przywracania sesji,
+nie ma w edycji Qt: pobierania danych ochrony, ochrony przed odciskiem przeglądarki i GPC, okna Tor, automatycznego odrzucania okien zgody na cookies, pytań o uprawnienia, przywracania sesji,
 zakładek i historii. Pełna lista z uzasadnieniem jest w dokumencie architektury i w planie migracji.
 
 ### Następne wydanie
@@ -307,10 +306,10 @@ Zainstalowane aplikacje webowe uruchamia się z menu aplikacji pulpitu (`induckg
 
 ## Testy
 
-Stos: **cargo-nextest** — 781 obiektowych scenariuszy Given/When/Then: 612 dla domeny w
-`crates/induckgo-core/tests/` (74 pliki, jeden na typ domenowy), 99 dla edycji Qt i jej adaptera silnika, 61 dla
+Stos: **cargo-nextest** — 801 obiektowych scenariuszy Given/When/Then: 624 dla domeny w
+`crates/induckgo-core/tests/` (75 plików, jeden na typ domenowy), 107 dla edycji Qt i jej adaptera silnika, 61 dla
 narzędzia raportu w `crates/induckgo-test-report/tests/` i 9 dla narzędzia benchmarków w
-`crates/induckgo-bench/tests/`. Crate'y Qt potrzebują Qt 6, więc CI uruchamia pozostałe 682; testy Qt uruchom
+`crates/induckgo-bench/tests/`. Crate'y Qt potrzebują Qt 6, więc CI uruchamia pozostałe 694; testy Qt uruchom
 przez `QT_QPA_PLATFORM=offscreen cargo test -p induckgo-qt -p induckgo-engine-qt`.
 
 ```sh

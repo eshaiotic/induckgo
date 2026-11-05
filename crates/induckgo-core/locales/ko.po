@@ -836,3 +836,12 @@ msgstr "기본값"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Add Profile"
+msgstr "프로필 추가"
+
+msgid "Delete profile {name}?"
+msgstr "프로필 {name}을(를) 삭제하시겠습니까?"
+
+msgid "Deletes the profile with its cookies, logins, history and cache. This cannot be undone."
+msgstr "프로필을 쿠키, 로그인 정보, 기록 및 캐시와 함께 삭제합니다. 이 작업은 되돌릴 수 없습니다."

@@ -836,3 +836,12 @@ msgstr "Lalai"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Add Profile"
+msgstr "Tambah profil"
+
+msgid "Delete profile {name}?"
+msgstr "Padam profil {name}?"
+
+msgid "Deletes the profile with its cookies, logins, history and cache. This cannot be undone."
+msgstr "Memadam profil bersama kuki, log masuk, sejarah dan cache-nya. Ini tidak boleh dibatalkan."

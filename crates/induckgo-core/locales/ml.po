@@ -836,3 +836,12 @@ msgstr "സ്ഥിരം"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Add Profile"
+msgstr "പ്രൊഫൈൽ ചേർക്കുക"
+
+msgid "Delete profile {name}?"
+msgstr "പ്രൊഫൈൽ {name} ഇല്ലാതാക്കണോ?"
+
+msgid "Deletes the profile with its cookies, logins, history and cache. This cannot be undone."
+msgstr "പ്രൊഫൈലിനെ അതിന്റെ കുക്കികൾ, ലോഗിനുകൾ, ചരിത്രം, കാഷെ എന്നിവയോടൊപ്പം ഇല്ലാതാക്കുന്നു. ഇത് പഴയപടിയാക്കാൻ കഴിയില്ല."

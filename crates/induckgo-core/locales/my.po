@@ -836,3 +836,12 @@ msgstr "မူလ"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Add Profile"
+msgstr "ပရိုဖိုင် ထည့်ရန်"
+
+msgid "Delete profile {name}?"
+msgstr "ပရိုဖိုင် {name} ကို ဖျက်မလား။"
+
+msgid "Deletes the profile with its cookies, logins, history and cache. This cannot be undone."
+msgstr "ပရိုဖိုင်ကို ၎င်း၏ ကွတ်ကီးများ၊ လော့ဂ်အင်များ၊ မှတ်တမ်းနှင့် ကက်ရှ်တို့နှင့်အတူ ဖျက်ပစ်သည်။ ၎င်းကို ပြန်ပြင်၍ မရပါ။"

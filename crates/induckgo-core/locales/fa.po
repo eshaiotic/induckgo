@@ -836,3 +836,12 @@ msgstr "پیش‌فرض"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Add Profile"
+msgstr "افزودن نمایه"
+
+msgid "Delete profile {name}?"
+msgstr "نمایه {name} حذف شود؟"
+
+msgid "Deletes the profile with its cookies, logins, history and cache. This cannot be undone."
+msgstr "نمایه را همراه با کوکی‌ها، ورودها، تاریخچه و حافظه نهان آن حذف می‌کند. این کار قابل بازگشت نیست."

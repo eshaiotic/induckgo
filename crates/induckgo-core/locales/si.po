@@ -836,3 +836,12 @@ msgstr "පෙරනිමි"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Add Profile"
+msgstr "පැතිකඩක් එක් කරන්න"
+
+msgid "Delete profile {name}?"
+msgstr "{name} පැතිකඩ මකන්නද?"
+
+msgid "Deletes the profile with its cookies, logins, history and cache. This cannot be undone."
+msgstr "පැතිකඩ එහි කුකී, පිවිසුම්, ඉතිහාසය සහ හැඹිලිය සමඟ මකා දමයි. මෙය ආපසු හැරවිය නොහැක."

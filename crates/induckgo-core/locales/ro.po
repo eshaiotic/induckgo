@@ -836,3 +836,12 @@ msgstr "Implicit"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Add Profile"
+msgstr "Adaugă profil"
+
+msgid "Delete profile {name}?"
+msgstr "Ștergi profilul {name}?"
+
+msgid "Deletes the profile with its cookies, logins, history and cache. This cannot be undone."
+msgstr "Șterge profilul împreună cu cookie-urile, autentificările, istoricul și memoria cache. Acțiunea nu poate fi anulată."

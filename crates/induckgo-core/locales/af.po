@@ -836,3 +836,12 @@ msgstr "Verstek"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Add Profile"
+msgstr "Voeg profiel by"
+
+msgid "Delete profile {name}?"
+msgstr "Vee profiel {name} uit?"
+
+msgid "Deletes the profile with its cookies, logins, history and cache. This cannot be undone."
+msgstr "Vee die profiel saam met sy koekies, aanmeldings, geskiedenis en kas uit. Dit kan nie ongedaan gemaak word nie."

@@ -836,3 +836,12 @@ msgstr "ברירת מחדל"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Add Profile"
+msgstr "הוספת פרופיל"
+
+msgid "Delete profile {name}?"
+msgstr "למחוק את הפרופיל {name}?"
+
+msgid "Deletes the profile with its cookies, logins, history and cache. This cannot be undone."
+msgstr "מוחק את הפרופיל יחד עם העוגיות, ההתחברויות, ההיסטוריה והמטמון שלו. אי אפשר לבטל פעולה זו."

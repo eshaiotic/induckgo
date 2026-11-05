@@ -836,3 +836,12 @@ msgstr "Chaguomsingi"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Add Profile"
+msgstr "Ongeza wasifu"
+
+msgid "Delete profile {name}?"
+msgstr "Futa wasifu {name}?"
+
+msgid "Deletes the profile with its cookies, logins, history and cache. This cannot be undone."
+msgstr "Hufuta wasifu pamoja na vidakuzi, kuingia, historia na akiba yake. Haiwezi kutenduliwa."

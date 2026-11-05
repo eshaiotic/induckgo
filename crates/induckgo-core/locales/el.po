@@ -836,3 +836,12 @@ msgstr "Προεπιλογή"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Add Profile"
+msgstr "Προσθήκη προφίλ"
+
+msgid "Delete profile {name}?"
+msgstr "Διαγραφή του προφίλ {name};"
+
+msgid "Deletes the profile with its cookies, logins, history and cache. This cannot be undone."
+msgstr "Διαγράφει το προφίλ μαζί με τα cookies, τις συνδέσεις, το ιστορικό και την προσωρινή μνήμη του. Δεν μπορεί να αναιρεθεί."

@@ -836,3 +836,12 @@ msgstr "Vaikimisi"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Add Profile"
+msgstr "Lisa profiil"
+
+msgid "Delete profile {name}?"
+msgstr "Kas kustutada profiil {name}?"
+
+msgid "Deletes the profile with its cookies, logins, history and cache. This cannot be undone."
+msgstr "Kustutab profiili koos selle küpsiste, sisselogimiste, ajaloo ja vahemäluga. Seda ei saa tagasi võtta."

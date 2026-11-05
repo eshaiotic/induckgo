@@ -836,3 +836,12 @@ msgstr "Standaard"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Add Profile"
+msgstr "Profiel toevoegen"
+
+msgid "Delete profile {name}?"
+msgstr "Profiel {name} verwijderen?"
+
+msgid "Deletes the profile with its cookies, logins, history and cache. This cannot be undone."
+msgstr "Verwijdert het profiel met zijn cookies, aanmeldingen, geschiedenis en cache. Dit kan niet ongedaan worden gemaakt."

@@ -836,3 +836,12 @@ msgstr "الافتراضي"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Add Profile"
+msgstr "إضافة ملف شخصي"
+
+msgid "Delete profile {name}?"
+msgstr "حذف الملف الشخصي {name}؟"
+
+msgid "Deletes the profile with its cookies, logins, history and cache. This cannot be undone."
+msgstr "يحذف الملف الشخصي مع ملفات تعريف الارتباط وتسجيلات الدخول والسجل والذاكرة المؤقتة الخاصة به. لا يمكن التراجع عن ذلك."

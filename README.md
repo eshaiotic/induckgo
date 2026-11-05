@@ -14,7 +14,7 @@ repository while the Qt edition catches up.
 
 [![tests](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml/badge.svg)](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml)
 [![release](https://img.shields.io/github/v/release/eshaiotic/induckgo?color=6A5ACD)](https://github.com/eshaiotic/induckgo/releases/latest)
-![cargo nextest](https://img.shields.io/badge/cargo%20nextest-781%20tests-success)
+![cargo nextest](https://img.shields.io/badge/cargo%20nextest-801%20tests-success)
 ![stack](https://img.shields.io/badge/stack-Rust%20%E2%80%A2%20Qt%206%20%E2%80%A2%20QtWebEngine-8E7FE8)
 ![telemetry](https://img.shields.io/badge/telemetry-none-FFB300)
 [![licence](https://img.shields.io/badge/licence-GPL--3.0--or--later-2E1A87)](LICENSE)
@@ -166,7 +166,7 @@ Qt edition still lacks is listed in the [protection table](#what-it-protects-you
 
 Every list and data set is downloaded, never bundled, and size-limited and validated before use. A filter list
 can only block or hide: the conversion keeps no scriptlets, so a hostile list could break a site but never run
-code in it. The whole suite (`./run-tests`, 682 tests in CI plus the 99 Qt tests run locally, clippy and `cargo audit`) runs on every push.
+code in it. The whole suite (`./run-tests`, 694 tests in CI plus the 107 Qt tests run locally, clippy and `cargo audit`) runs on every push.
 
 ### The evidence
 
@@ -207,9 +207,9 @@ project does not claim it.
 ## Status
 
 Usable work in progress, on QtWebEngine: browsing with tabs (placed top, bottom, left or right), profiles of
-isolated data, installed web apps and their tile page, downloads with a folder of your choice, zoom per site,
+isolated data with a Chrome-like popup of tiles, installed web apps and their tile page, downloads with a folder of your choice, zoom per site,
 find-in-page, per-site protection switch, Burn, 68 interface languages. Not built yet in the Qt edition: the
-protection-data downloader, fingerprint and GPC protection, the Tor window, the profile switcher with tiles,
+protection-data downloader, fingerprint and GPC protection, the Tor window,
 automatic rejection of cookie pop-ups, permission prompts, session restore, bookmarks and history. The full list
 with reasons is in the architecture document and the migration plan.
 
@@ -304,10 +304,10 @@ Installed web apps start from the desktop's application menu (`induckgo-qt --web
 
 ## Testing
 
-Stack: **cargo-nextest** — 781 object-oriented Given/When/Then scenarios: 612 for the domain in
-`crates/induckgo-core/tests/` (74 files, one per domain type), 99 for the Qt edition and its engine adapter,
+Stack: **cargo-nextest** — 801 object-oriented Given/When/Then scenarios: 624 for the domain in
+`crates/induckgo-core/tests/` (75 files, one per domain type), 107 for the Qt edition and its engine adapter,
 61 for the report tool in `crates/induckgo-test-report/tests/` and 9 for the benchmark tool in
-`crates/induckgo-bench/tests/`. The Qt crates need Qt 6, so CI runs the other 682; run the Qt ones with
+`crates/induckgo-bench/tests/`. The Qt crates need Qt 6, so CI runs the other 694; run the Qt ones with
 `QT_QPA_PLATFORM=offscreen cargo test -p induckgo-qt -p induckgo-engine-qt`.
 
 ```sh

@@ -836,3 +836,12 @@ msgstr "Výchozí"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Add Profile"
+msgstr "Přidat profil"
+
+msgid "Delete profile {name}?"
+msgstr "Smazat profil {name}?"
+
+msgid "Deletes the profile with its cookies, logins, history and cache. This cannot be undone."
+msgstr "Smaže profil spolu s jeho cookies, přihlášeními, historií a mezipamětí. Tuto akci nelze vrátit zpět."

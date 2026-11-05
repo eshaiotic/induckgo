@@ -836,3 +836,12 @@ msgstr "ಡೀಫಾಲ್ಟ್"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Add Profile"
+msgstr "ಪ್ರೊಫೈಲ್ ಸೇರಿಸಿ"
+
+msgid "Delete profile {name}?"
+msgstr "ಪ್ರೊಫೈಲ್ {name} ಅನ್ನು ಅಳಿಸಬೇಕೆ?"
+
+msgid "Deletes the profile with its cookies, logins, history and cache. This cannot be undone."
+msgstr "ಪ್ರೊಫೈಲ್ ಅನ್ನು ಅದರ ಕುಕೀಗಳು, ಲಾಗಿನ್‌ಗಳು, ಇತಿಹಾಸ ಮತ್ತು ಕ್ಯಾಶ್‌ನೊಂದಿಗೆ ಅಳಿಸುತ್ತದೆ. ಇದನ್ನು ಹಿಂತಿರುಗಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ."

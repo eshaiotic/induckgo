@@ -836,3 +836,12 @@ msgstr "ნაგულისხმევი"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Add Profile"
+msgstr "პროფილის დამატება"
+
+msgid "Delete profile {name}?"
+msgstr "წაიშალოს პროფილი {name}?"
+
+msgid "Deletes the profile with its cookies, logins, history and cache. This cannot be undone."
+msgstr "წაშლის პროფილს მისი ქუქიებით, ავტორიზაციებით, ისტორიითა და ქეშით. ამის გაუქმება შეუძლებელია."

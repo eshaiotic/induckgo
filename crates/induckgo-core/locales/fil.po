@@ -836,3 +836,12 @@ msgstr "Default"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Add Profile"
+msgstr "Magdagdag ng profile"
+
+msgid "Delete profile {name}?"
+msgstr "Burahin ang profile na {name}?"
+
+msgid "Deletes the profile with its cookies, logins, history and cache. This cannot be undone."
+msgstr "Binubura ang profile kasama ang mga cookie, login, history at cache nito. Hindi na ito mababawi."

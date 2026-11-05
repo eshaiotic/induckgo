@@ -836,3 +836,12 @@ msgstr "ነባሪ"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Add Profile"
+msgstr "መገለጫ ጨምር"
+
+msgid "Delete profile {name}?"
+msgstr "መገለጫ {name} ይሰረዝ?"
+
+msgid "Deletes the profile with its cookies, logins, history and cache. This cannot be undone."
+msgstr "መገለጫውን ከኩኪዎቹ፣ ከመግቢያዎቹ፣ ከታሪኩ እና ከመሸጎጫው ጋር ይሰርዛል። ይህ መመለስ አይችልም።"

@@ -836,3 +836,12 @@ msgstr "Alapértelmezett"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Add Profile"
+msgstr "Profil hozzáadása"
+
+msgid "Delete profile {name}?"
+msgstr "Törli a(z) {name} profilt?"
+
+msgid "Deletes the profile with its cookies, logins, history and cache. This cannot be undone."
+msgstr "Törli a profilt a sütikkel, bejelentkezésekkel, előzményekkel és gyorsítótárral együtt. Ez nem vonható vissza."

@@ -19,6 +19,7 @@ ApplicationWindow {
 
     BrowserBridge { id: bridge }
     WebAppBridge { id: webApps }
+    ProfileBridge { id: profileBridge }
 
     // How this process was launched: the browser, or one installed web app with its own window and profile.
     readonly property var launch: JSON.parse(webApps.launch_json()) || ({ webApp: null, addresses: [] })
@@ -38,6 +39,12 @@ ApplicationWindow {
     property int toolbarVersion: 0
     function shows(button) { return toolbarVersion >= 0 && bridge.toolbar_shows(button) }
     property string downloadFolder: bridge.download_folder()
+    // The profile this window belongs to, for the avatar in the header bar; the popup reloads the full list.
+    property var currentProfile: ({ initial: "?", colourIndex: 0, name: "" })
+    function refreshCurrentProfile() {
+        const tile = JSON.parse(profileBridge.tiles_json()).find(function(candidate) { return candidate.isCurrent })
+        if (tile) currentProfile = tile
+    }
     // Where the tabs sit and how the window buttons look, re-read whenever the preferences change.
     readonly property string tabPlacement: toolbarVersion >= 0 ? bridge.tab_placement() : "top"
     readonly property bool macosControls: toolbarVersion >= 0 && bridge.window_controls_style() === "macos"
@@ -510,6 +517,42 @@ ApplicationWindow {
                     tip: bridge.message("Downloads")
                     onClicked: showDownloads.trigger()
                 }
+                AbstractButton {
+                    id: profileButton
+                    visible: !window.isWebApp
+                    implicitWidth: 34
+                    implicitHeight: 34
+                    onClicked: {
+                        if (profilesPopup.opened) profilesPopup.close()
+                        else if (Date.now() - profilesPopup.closedAt > 250) profilesPopup.open()
+                    }
+                    Accessible.name: window.currentProfile.name
+                    ToolTip.visible: hovered && !profilesPopup.opened
+                    ToolTip.delay: 500
+                    ToolTip.text: window.currentProfile.name
+                    background: Rectangle {
+                        radius: 9
+                        color: profileButton.down ? Qt.alpha(palette.windowText, 0.19)
+                             : profileButton.hovered || profilesPopup.opened ? Qt.alpha(palette.windowText, 0.08) : "transparent"
+                    }
+                    contentItem: Item {
+                        Rectangle {
+                            anchors.centerIn: parent
+                            width: 24
+                            height: 24
+                            radius: 12
+                            color: profilesPopup.colours[window.currentProfile.colourIndex % profilesPopup.colours.length]
+                            Label {
+                                anchors.centerIn: parent
+                                text: window.currentProfile.initial
+                                textFormat: Text.PlainText
+                                color: "#ffffff"
+                                font.bold: true
+                                font.pixelSize: 13
+                            }
+                        }
+                    }
+                }
                 IconButton {
                     iconName: "menu"
                     tip: bridge.message("Main Menu")
@@ -723,6 +766,32 @@ ApplicationWindow {
         }
     }
 
+    ProfilesPopup {
+        id: profilesPopup
+        bridge: bridge
+        profiles: profileBridge
+        onDeleteRequested: function(id, name) {
+            window.pendingProfileId = id
+            window.pendingProfileName = name
+            profilesPopup.close()
+            deleteProfileDialog.open()
+        }
+    }
+
+    property string pendingProfileId
+    property string pendingProfileName
+    ConfirmDialog {
+        id: deleteProfileDialog
+        bridge: bridge
+        heading: bridge.message("Delete profile {name}?").replace("{name}", window.pendingProfileName)
+        body: bridge.message("Deletes the profile with its cookies, logins, history and cache. This cannot be undone.")
+        confirmLabel: "Delete"
+        onConfirmed: {
+            const problem = profileBridge.delete_profile(window.pendingProfileId)
+            if (problem !== "") window.toast(problem)
+        }
+    }
+
     DownloadsPopover {
         id: downloadsPopover
         hub: downloads
@@ -775,6 +844,7 @@ ApplicationWindow {
     Timer { id: toastTimer; interval: 4000; onTriggered: toastPopup.close() }
 
     Component.onCompleted: {
+        refreshCurrentProfile()
         if (window.isWebApp) { window.openTab(window.launch.webApp.startUrl); return }
         if (window.launch.addresses.length === 0) { window.openTab(""); return }
         window.launch.addresses.forEach(function(typed) { window.openTab(bridge.destination(typed)) })

@@ -836,3 +836,12 @@ msgstr "Per defecte"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Add Profile"
+msgstr "Afegeix un perfil"
+
+msgid "Delete profile {name}?"
+msgstr "Voleu suprimir el perfil {name}?"
+
+msgid "Deletes the profile with its cookies, logins, history and cache. This cannot be undone."
+msgstr "Suprimeix el perfil amb les seves galetes, inicis de sessió, historial i memòria cau. Aquesta acció no es pot desfer."

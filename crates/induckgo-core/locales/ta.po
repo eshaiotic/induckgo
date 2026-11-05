@@ -836,3 +836,12 @@ msgstr "இயல்புநிலை"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Add Profile"
+msgstr "சுயவிவரத்தைச் சேர்"
+
+msgid "Delete profile {name}?"
+msgstr "சுயவிவரம் {name} ஐ நீக்கவா?"
+
+msgid "Deletes the profile with its cookies, logins, history and cache. This cannot be undone."
+msgstr "சுயவிவரத்தை அதன் குக்கீகள், உள்நுழைவுகள், வரலாறு மற்றும் தற்காலிக சேமிப்புடன் நீக்குகிறது. இதைத் திரும்பப் பெற முடியாது."

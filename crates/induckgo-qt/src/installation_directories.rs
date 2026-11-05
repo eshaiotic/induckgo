@@ -66,6 +66,12 @@ impl InstallationDirectories {
             .map_or_else(|| self.cache_root.join("run"), |runtime| runtime.join(Self::DIRECTORY))
     }
 
+    /// The browsing profiles the person created, shared with the GTK edition.
+    #[must_use]
+    pub fn profile_catalog(&self) -> PathBuf {
+        self.data_root.join("profiles.json")
+    }
+
     /// The sites installed as web apps, shared with the GTK edition.
     #[must_use]
     pub fn web_app_catalog(&self) -> PathBuf {

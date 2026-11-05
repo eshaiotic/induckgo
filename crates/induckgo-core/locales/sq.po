@@ -836,3 +836,12 @@ msgstr "Parazgjedhja"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Add Profile"
+msgstr "Shto profil"
+
+msgid "Delete profile {name}?"
+msgstr "Të fshihet profili {name}?"
+
+msgid "Deletes the profile with its cookies, logins, history and cache. This cannot be undone."
+msgstr "Fshin profilin me cookie-t, hyrjet, historikun dhe memorien e tij. Kjo nuk mund të zhbëhet."

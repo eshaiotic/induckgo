@@ -836,3 +836,12 @@ msgstr "Noklusējums"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Add Profile"
+msgstr "Pievienot profilu"
+
+msgid "Delete profile {name}?"
+msgstr "Dzēst profilu {name}?"
+
+msgid "Deletes the profile with its cookies, logins, history and cache. This cannot be undone."
+msgstr "Izdzēš profilu kopā ar tā sīkdatnēm, pieteikšanās datiem, vēsturi un kešatmiņu. To nevar atsaukt."

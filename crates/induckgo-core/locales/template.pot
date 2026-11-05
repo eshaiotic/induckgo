@@ -10,6 +10,9 @@ msgstr ""
 msgid "Access denied"
 msgstr ""
 
+msgid "Add Profile"
+msgstr ""
+
 msgid "Allow {requesting} to use its cookies and data while you are on {current}?"
 msgstr ""
 
@@ -226,10 +229,16 @@ msgstr ""
 msgid "Delete"
 msgstr ""
 
+msgid "Delete profile {name}?"
+msgstr ""
+
 msgid "Delete this profile's cookies, site data and cache"
 msgstr ""
 
 msgid "Deletes the app with its cookies, logins and data. This cannot be undone."
+msgstr ""
+
+msgid "Deletes the profile with its cookies, logins, history and cache. This cannot be undone."
 msgstr ""
 
 msgid "Details"

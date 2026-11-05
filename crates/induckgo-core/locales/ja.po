@@ -836,3 +836,12 @@ msgstr "デフォルト"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Add Profile"
+msgstr "プロフィールを追加"
+
+msgid "Delete profile {name}?"
+msgstr "プロフィール {name} を削除しますか？"
+
+msgid "Deletes the profile with its cookies, logins, history and cache. This cannot be undone."
+msgstr "プロフィールをそのクッキー、ログイン情報、履歴、キャッシュとともに削除します。この操作は元に戻せません。"

@@ -836,3 +836,12 @@ msgstr "Numatytasis"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Add Profile"
+msgstr "Pridėti profilį"
+
+msgid "Delete profile {name}?"
+msgstr "Ištrinti profilį „{name}“?"
+
+msgid "Deletes the profile with its cookies, logins, history and cache. This cannot be undone."
+msgstr "Ištrina profilį kartu su jo slapukais, prisijungimais, istorija ir talpykla. Šio veiksmo negalima atšaukti."

@@ -14,10 +14,14 @@ pub mod guard_bridge;
 pub mod guard_lists;
 pub mod guard_page_hiding;
 pub mod installation_directories;
+pub mod installed_profiles;
 pub mod installed_web_apps;
 pub mod interface_catalogue;
 pub mod interface_language_setting;
 pub mod launch_context;
+// `cxx-qt` bridge, like `browser_bridge`.
+#[allow(unsafe_code, clippy::unnecessary_box_returns)]
+pub mod profile_bridge;
 pub mod profile_policies;
 pub mod profile_preferences;
 pub mod profile_session;

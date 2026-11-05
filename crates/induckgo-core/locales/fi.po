@@ -836,3 +836,12 @@ msgstr "Oletus"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Add Profile"
+msgstr "Lisää profiili"
+
+msgid "Delete profile {name}?"
+msgstr "Poistetaanko profiili {name}?"
+
+msgid "Deletes the profile with its cookies, logins, history and cache. This cannot be undone."
+msgstr "Poistaa profiilin evästeineen, kirjautumisineen, historiineen ja välimuisteineen. Toimintoa ei voi peruuttaa."

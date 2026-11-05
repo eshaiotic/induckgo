@@ -836,3 +836,12 @@ msgstr "លំនាំដើម"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Add Profile"
+msgstr "បន្ថែមប្រូហ្វាល់"
+
+msgid "Delete profile {name}?"
+msgstr "លុបប្រូហ្វាល់ {name} ចេញ?"
+
+msgid "Deletes the profile with its cookies, logins, history and cache. This cannot be undone."
+msgstr "លុបប្រូហ្វាល់ជាមួយខូគី ការចូលគណនី ប្រវត្តិ និងឃ្លាំងសម្ងាត់របស់វា។ សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។"

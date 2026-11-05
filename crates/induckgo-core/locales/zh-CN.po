@@ -836,3 +836,12 @@ msgstr "默认"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Add Profile"
+msgstr "添加个人资料"
+
+msgid "Delete profile {name}?"
+msgstr "要删除个人资料 {name} 吗？"
+
+msgid "Deletes the profile with its cookies, logins, history and cache. This cannot be undone."
+msgstr "将删除该个人资料及其 Cookie、登录信息、历史记录和缓存。此操作无法撤销。"

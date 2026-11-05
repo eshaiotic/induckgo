@@ -836,3 +836,12 @@ msgstr "Үндсэн"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Add Profile"
+msgstr "Профайл нэмэх"
+
+msgid "Delete profile {name}?"
+msgstr "{name} профайлыг устгах уу?"
+
+msgid "Deletes the profile with its cookies, logins, history and cache. This cannot be undone."
+msgstr "Профайлыг түүний күүки, нэвтрэлт, түүх, кэшийн хамт устгана. Үүнийг буцаах боломжгүй."

@@ -836,3 +836,12 @@ msgstr "Mặc định"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Add Profile"
+msgstr "Thêm hồ sơ"
+
+msgid "Delete profile {name}?"
+msgstr "Xóa hồ sơ {name}?"
+
+msgid "Deletes the profile with its cookies, logins, history and cache. This cannot be undone."
+msgstr "Xóa hồ sơ cùng cookie, thông tin đăng nhập, lịch sử và bộ nhớ đệm của nó. Không thể hoàn tác."

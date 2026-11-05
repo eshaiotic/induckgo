@@ -836,3 +836,12 @@ msgstr "ডিফল্ট"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Add Profile"
+msgstr "প্রোফাইল যোগ করুন"
+
+msgid "Delete profile {name}?"
+msgstr "প্রোফাইল {name} মুছবেন?"
+
+msgid "Deletes the profile with its cookies, logins, history and cache. This cannot be undone."
+msgstr "প্রোফাইলটি তার কুকি, লগইন, ইতিহাস ও ক্যাশসহ মুছে ফেলা হবে। এটি আর ফেরানো যাবে না।"

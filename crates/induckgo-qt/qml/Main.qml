@@ -61,7 +61,9 @@ ApplicationWindow {
     property int currentIndex: 0
     readonly property var currentTab: tabList[currentIndex] || null
     readonly property string currentHost: currentTab ? bridge.host_of(currentTab.address) : ""
-    readonly property int currentZoom: currentTab ? bridge.zoom_percent(currentTab.address) : 100
+    // What the page is shown at now, so the badge and the menu follow every change (the stored level is applied to the
+    // tab's zoom factor whenever it changes).
+    readonly property int currentZoom: currentTab ? Math.round(currentTab.zoomFactor * 100) : 100
 
     // "_Burn" in the catalogue marks the button's keyboard letter; the dialog's own buttons need none.
     function plain(text) { return bridge.message(text).replace("_", "") }

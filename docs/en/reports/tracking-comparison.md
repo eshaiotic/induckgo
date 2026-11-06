@@ -252,6 +252,40 @@ and with the data already on disk.
   within the variation of two runs. Fingerprinting was not measured for the Qt edition, which has no protection
   against it yet.
 
+### 4.5 InDuckGo 1.2.3 and Brave, 6 November 2026
+
+The same 12 sites, 20 seconds each, with a host-name-logging proxy and the same judge (Disconnect's list, each server
+counted once per site). Brave 1.98 (Chromium 156) and InDuckGo 1.2.3 (the release AppImage) ran at the same time, each
+with a fresh profile, a window of its own on a virtual display and a private home; InDuckGo ran twice, with a fresh
+profile and with the protection data already on disk. Each site was opened by launching the browser again with its
+address, which opens a new tab; earlier tabs stayed open. Idle traffic was measured separately for InDuckGo on its own
+start page (5 minutes, both profiles). Chrome 157 was not run again; its column in the README is the run of 2026-11-05.
+
+| Site | Brave | InDuckGo (both profiles) |
+|---|---|---|
+| onet.pl | 1 (`onet.hit.gemius.pl`) | 0 |
+| gazeta.pl | 1 (`gazeta.hit.gemius.pl`) | 0 |
+| olx.pl | 1 (`securepubads.g.doubleclick.net`) | 0 |
+| edition.cnn.com | 1 (`m.stripe.network`) | 1 (`m.stripe.network`) |
+| bbc.com | 1 (`pub.doubleverify.com`) | 0 |
+| weather.com | 2 (`micro.rubiconproject.com`, `securepubads.g.doubleclick.net`) | 0 |
+| forbes.com | 1 (`dev.visualwebsiteoptimizer.com`) | 0 |
+| wp.pl, interia.pl, o2.pl, allegro.pl, theguardian.com | 0 | 0 |
+| **Total trackers** | **8** | **1** |
+| … of which ad servers (Disconnect's *Advertising*) | 3 | 0 |
+| All hosts contacted | 165 | 132 |
+| Idle, 5 minutes | 46 connections to 12 hosts | 13 connections to 8 hosts |
+
+- **The 1:** `m.stripe.network`, which DuckDuckGo's rules allow on purpose because blocking it breaks paying.
+- **Google's sign-in prompt** (`accounts.google.com`, `www.google.com`), which appeared on edition.cnn.com and
+  weather.com in the run of 2026-11-05, did not appear in this one. Two InDuckGo builds run side by side on those two
+  sites gave identical hosts, so the difference is in the sites, not in the browser.
+- **Idle traffic of InDuckGo** is the DuckDuckGo start page, its ping host (`improving.duckduckgo.com`) and the six hosts
+  that serve the protection data; the numbers are the same with a fresh profile and with the data on disk, because the
+  first start downloads the data before the window opens.
+- **Limits.** One run, one machine, one network; Chrome's column is a day older than the others; the tabs of earlier
+  sites stay open while the next one loads. Fingerprinting was not measured: InDuckGo has no fingerprint protection yet.
+
 ## 5. Defaults and policies
 
 | | Chrome | Brave | InDuckGo |

@@ -261,6 +261,42 @@ uruchomieniu) i z danymi już na dysku.
   się w rozrzucie dwóch przebiegów. Odcisku przeglądarki nie mierzono dla edycji Qt, która nie ma jeszcze ochrony przed
   nim.
 
+### 4.5 InDuckGo 1.2.3 i Brave, 6 listopada 2026
+
+Te same 12 serwisów, po 20 sekund, z proxy zapisującym nazwy hostów i tym samym sędzią (lista Disconnect, każdy serwer
+liczony raz na serwis). Brave 1.98 (Chromium 156) i InDuckGo 1.2.3 (wydany AppImage) działały jednocześnie, każdy ze
+świeżym profilem, własnym oknem na wirtualnym ekranie i prywatnym katalogiem domowym; InDuckGo uruchomiono dwa razy, ze
+świeżym profilem i z danymi ochrony już na dysku. Każdy serwis otwierano, uruchamiając przeglądarkę ponownie z jego
+adresem, co otwiera nową kartę; wcześniejsze karty zostawały otwarte. Ruch bezczynności InDuckGo zmierzono osobno na
+jego stronie startowej (5 minut, oba profile). Chrome 157 nie był uruchamiany ponownie; jego kolumna w README to
+przebieg z 2026-11-05.
+
+| Serwis | Brave | InDuckGo (oba profile) |
+|---|---|---|
+| onet.pl | 1 (`onet.hit.gemius.pl`) | 0 |
+| gazeta.pl | 1 (`gazeta.hit.gemius.pl`) | 0 |
+| olx.pl | 1 (`securepubads.g.doubleclick.net`) | 0 |
+| edition.cnn.com | 1 (`m.stripe.network`) | 1 (`m.stripe.network`) |
+| bbc.com | 1 (`pub.doubleverify.com`) | 0 |
+| weather.com | 2 (`micro.rubiconproject.com`, `securepubads.g.doubleclick.net`) | 0 |
+| forbes.com | 1 (`dev.visualwebsiteoptimizer.com`) | 0 |
+| wp.pl, interia.pl, o2.pl, allegro.pl, theguardian.com | 0 | 0 |
+| **Trackery razem** | **8** | **1** |
+| … w tym serwery reklamowe (*Advertising* według Disconnect) | 3 | 0 |
+| Wszystkie kontaktowane hosty | 165 | 132 |
+| Bezczynność, 5 minut | 46 połączeń z 12 hostami | 13 połączeń z 8 hostami |
+
+- **Ten jeden:** `m.stripe.network`, które reguły DuckDuckGo dopuszczają celowo, bo jego zablokowanie psuje płacenie.
+- **Okno logowania Google** (`accounts.google.com`, `www.google.com`), które na edition.cnn.com i weather.com
+  pojawiło się w przebiegu z 2026-11-05, w tym przebiegu się nie pojawiło. Dwa buildy InDuckGo uruchomione obok siebie
+  na tych dwóch serwisach dały identyczne hosty, więc różnica leży w serwisach, nie w przeglądarce.
+- **Ruch bezczynności InDuckGo** to strona startowa DuckDuckGo, jej host pingu (`improving.duckduckgo.com`) i sześć
+  hostów serwujących dane ochrony; liczby są takie same ze świeżym profilem i z danymi na dysku, bo pierwsze
+  uruchomienie pobiera dane, zanim otworzy się okno.
+- **Ograniczenia.** Jeden przebieg, jedna maszyna, jedna sieć; kolumna Chrome jest o dzień starsza od pozostałych;
+  karty wcześniejszych serwisów zostają otwarte, gdy ładuje się następny. Odcisku przeglądarki nie zmierzono:
+  InDuckGo nie ma jeszcze ochrony przed fingerprintingiem.
+
 ## 5. Ustawienia domyślne i polityki
 
 | | Chrome | Brave | InDuckGo |

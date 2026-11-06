@@ -9,8 +9,7 @@
 **Przeglądarka dla Linuksa, w której prywatność jest na pierwszym miejscu.** Odtwarza ochronę z otwartej
 przeglądarki DuckDuckGo dla macOS na silniku **QtWebEngine** (Chromium, silnik Chrome i Brave), z interfejsem
 **Qt 6 Quick** i rdzeniem domenowym napisanym w **Rust**. Bez telemetrii, bez rozszerzeń do pilnowania, każdy
-profil i każda zainstalowana aplikacja webowa są od siebie odizolowane. Pierwsza generacja działała na WebKitGTK (wersje przed 1.2.0);
-jej kod zostaje w tym repozytorium, dopóki edycja Qt nie ma wszystkiego, co miała tamta (zob. *Status*).
+profil i każda zainstalowana aplikacja webowa są od siebie odizolowane.
 
 [![tests](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml/badge.svg)](https://github.com/eshaiotic/induckgo/actions/workflows/tests.yml)
 [![release](https://img.shields.io/github/v/release/eshaiotic/induckgo?color=6A5ACD)](https://github.com/eshaiotic/induckgo/releases/latest)
@@ -25,41 +24,34 @@ InDuckGo to niezależny projekt. Nie jest powiązany z Duck Duck Go, Inc. ani pr
 
 ## Zmierzone wobec Chrome i Brave, porównane z DuckDuckGo
 
-2026-11-05 świeże profile Google Chrome 157, Brave 1.98 (Chromium 156) i InDuckGo działały jednocześnie, każdy
-we własnym oknie, za proxy zapisującym wyłącznie nazwy hostów: 5 minut bezczynności, potem po 20 sekund na każdym
-z 12 popularnych serwisów. Trackery ocenia neutralna lista (Disconnect), każdy serwer liczony raz na serwis.
-Pomiar wykonano dwa razy (Chrome i Brave w obu, więc dwa przebiegi pokazują, jak bardzo wynik waha się między
-uruchomieniami). Dwie kolumny Qt zmierzono ponownie tego samego dnia, tym samym zestawem, po pracach opisanych w
-[Ochronie przed trackerami w edycji Qt](docs/pl/architecture/qt-protection.md); pozostałe kolumny pochodzą z
-wcześniejszego przebiegu.
+2026-11-06 świeże profile Brave 1.98 (Chromium 156) i InDuckGo 1.2.3 działały jednocześnie, każdy we własnym oknie,
+za proxy zapisującym wyłącznie nazwy hostów: 5 minut bezczynności, potem po 20 sekund na każdym z 12 popularnych
+serwisów. Trackery ocenia neutralna lista (Disconnect), każdy serwer liczony raz na serwis. InDuckGo uruchomiono dwa
+razy: ze świeżym profilem (bez danych ochrony, więc pobiera je przy pierwszym uruchomieniu) i z danymi już na dysku.
+Google Chrome 157 zmierzono tak samo 2026-11-05, w dwóch przebiegach, które pokazują, jak bardzo wynik waha się
+między uruchomieniami.
 
-| | Chrome | Brave | InDuckGo Qt, świeży profil | InDuckGo Qt, dane ochrony na dysku | InDuckGo GTK (wersje przed 1.2.0) |
-|---|---|---|---|---|---|
-| Trackery przepuszczone na 12 serwisach | 111 / 109 | 9 / 8 | **5** | **5** | 6 |
-| … w tym serwery reklam | 90 / 88 | 7 / 7 | **5** | **5** | 5 |
-| Połączenia w pierwszych 5 minutach | 35 / 36 do 14 hostów | 47 / 53 do 12 hostów | 13 do 8 hostów | 13 do 8 hostów | 27 do 8 hostów |
+| | Chrome 157 | Brave 1.98 | InDuckGo, świeży profil | InDuckGo, dane ochrony na dysku |
+|---|---|---|---|---|
+| Trackery przepuszczone na 12 serwisach | 111 / 109 | 8 | **1** | **1** |
+| … w tym serwery reklamowe | 90 / 88 | 3 | **0** | **0** |
+| Połączenia w pierwszych 5 minutach | 35 / 36 z 14 hostami | 46 z 12 hostami | 13 z 8 hostami | 13 z 8 hostami |
 
-Dwie liczby w komórkach Chrome i Brave to pierwszy i drugi przebieg.
+Dwie liczby w komórce Chrome to jego pierwszy i drugi przebieg.
 
-**Jak to czytać.** Edycja Qt, na której InDuckGo jest teraz zbudowany, przepuszcza najmniej trackerów z pięciu
-kolumn, zarówno na świeżym profilu, jak i z danymi ochrony już na dysku: 5 na 12 serwisach, wobec 6 w zastępowanej
-edycji WebKitGTK, 8 lub 9 w Brave i 109 lub 111 w Chrome. Strony nadal się wczytują (allegro.pl i forbes.com, które
-zepsuła pierwsza, grubsza wersja, działają). Osiąga to dzięki własnym regułom DuckDuckGo ocenianym tak, jak ocenia je
-DuckDuckGo, ostrzejszej warstwie dla trackerów reklamowych i analitycznych, lokalnej bramce, która odrzuca połączenia
-otwierane przez stronę, zanim wyśle jakiekolwiek żądanie (`preconnect`, którego filtry żądań nie widzą), oraz
-pobieraniu reguł przy pierwszym uruchomieniu. Pięć, które zostają, to okno logowania Google (`accounts.google.com`,
-`www.google.com`) i `m.stripe.network`, które DuckDuckGo dopuszcza, bo ich zablokowanie psuje logowanie i płatności.
-Koszt pobierania widać w ruchu bezczynności: edycja Qt łączyła się ze stroną startową DuckDuckGo, jej hostem pingu
-i sześcioma hostami serwującymi dane ochrony (13 połączeń z 8 hostami); Chrome z Google, a Brave z własnymi serwerami
-(ping użycia, P3A). 27 połączeń edycji GTK to jej pierwsze pobrania. Odcisku przeglądarki nie zmierzono ponownie:
-edycja Qt nie ma jeszcze ochrony przed fingerprintingiem, a wynik edycji GTK (szum inny na każdym serwisie i w
-każdej sesji, pomiar z 2026-11-02) jest w [porównaniu śledzenia](docs/pl/reports/tracking-comparison.md). Chrome 157
-i Brave 1.98 to różne wersje Chromium, 157 i 156. Jedno uruchomienie z jednego kraju w jednej sieci to nie ranking,
-a 5 wobec 6 mieści się w tym, czym różnią się dwa przebiegi tej samej przeglądarki; metoda i ograniczenia są
-w raporcie.
-
-[tracking-summary.html](docs/pl/reports/tracking-summary.html) to jednostronicowe podsumowanie dla osób spoza
-branży (pobierz i otwórz w przeglądarce).
+**Jak to czytać.** InDuckGo przepuszcza najmniej trackerów, zarówno na świeżym profilu, jak i z danymi ochrony już na
+dysku: 1 na 12 serwisach, wobec 8 w Brave i 109 lub 111 w Chrome. Tym jednym jest `m.stripe.network` (płatności),
+które reguły DuckDuckGo dopuszczają, bo jego zablokowanie psuje płacenie; z tego samego powodu dopuszczone jest okno
+logowania Google (`accounts.google.com`, `www.google.com`), gdy serwis je pokazuje. Strony nadal się wczytują.
+Osiąga to dzięki własnym regułom DuckDuckGo ocenianym tak, jak ocenia je DuckDuckGo, ostrzejszej warstwie dla
+trackerów reklamowych i analitycznych, lokalnej bramce, która odrzuca połączenia otwierane przez stronę, zanim wyśle
+jakiekolwiek żądanie (`preconnect`, którego filtry żądań nie widzą), oraz pobieraniu reguł przy pierwszym
+uruchomieniu. Koszt pobierania widać w ruchu bezczynności: InDuckGo łączył się ze stroną startową DuckDuckGo, jej
+hostem pingu i sześcioma hostami serwującymi dane ochrony (13 połączeń z 8 hostami); Chrome z Google, a Brave z
+własnymi serwerami (ping użycia, P3A). Odcisku przeglądarki nie zmierzono: InDuckGo nie ma jeszcze ochrony przed
+fingerprintingiem. Chrome 157 i Brave 1.98 to różne wersje Chromium, 157 i 156, a Chrome zmierzono 2026-11-05.
+Jedno uruchomienie z jednego kraju w jednej sieci to nie ranking; metoda i ograniczenia są w
+[porównaniu śledzenia](docs/pl/reports/tracking-comparison.md).
 
 ### Porównanie z przeglądarką DuckDuckGo
 
@@ -68,17 +60,17 @@ mierzono**. Tabela zestawia InDuckGo z tym, co DuckDuckGo mówi o własnej przeg
 [strony porównania](https://duckduckgo.com/compare-privacy) („See how DuckDuckGo compares”) i na
 [stronie pomocy o ochronie przed śledzeniem](https://duckduckgo.com/duckduckgo-help-pages/privacy/web-tracking-protections),
 obie czytane w listopadzie 2026. Kolumna DuckDuckGo to jego własne twierdzenia, dla aplikacji na Windows i macOS
-(gdzie się różnią, nazwano macOS); kolumna InDuckGo to to, co edycja Qt robi dziś, sprawdzone w kodzie.
+(gdzie się różnią, nazwano macOS); kolumna InDuckGo to to, co InDuckGo robi, sprawdzone w kodzie.
 Niezależne liczby o przeglądarce DuckDuckGo są na [privacytests.org](https://privacytests.org/), które testuje
 DuckDuckGo, Brave i Chrome na komputerach i nie testuje InDuckGo.
 
-| | Przeglądarka DuckDuckGo mówi | InDuckGo (Qt) dziś |
+| | Przeglądarka DuckDuckGo mówi | InDuckGo |
 |---|---|---|
 | **Skrypty śledzące** | | |
 | Blokuje trackery stron trzecich, zanim się wczytają | tak, według swojej listy trackerów | tak, według tej samej listy i list filtrów Guarda, także w żądaniach do domeny samego serwisu; reguły są pobierane przy pierwszym uruchomieniu i odświeżane (okno raz na nie czeka) |
 | Blokuje ciasteczka trackerów stron trzecich | tak | ciasteczka z listy trackerów są odrzucane; profil *Strict* (jeszcze bez interfejsu) odrzuca wszystkie |
 | Wygasza ciasteczka własne | macOS: po 24 godzinach lub 7 dniach; Windows: w planach | nie |
-| Chroni przed odciskiem przeglądarki | listowane skrypty blokowane, listowane API nadpisywane; obrona canvas i audio wyłączona na macOS | **jeszcze nie** w edycji Qt (edycja GTK to miała, z szumem na serwis i sesję) |
+| Chroni przed odciskiem przeglądarki | listowane skrypty blokowane, listowane API nadpisywane; obrona canvas i audio wyłączona na macOS | **jeszcze nie** |
 | Chroni przed maskowaniem CNAME | podzbiór swojej listy na macOS | według nazw hostów zamaskowanych trackerów z listy |
 | Chroni przed śledzeniem przez referer | referer skracany do nazwy hosta | tylko domyślne ustawienie Chromium |
 | Blokuje śledzenie w linkach | tylko pierwsza nawigacja na macOS; Windows: w planach | każda nawigacja najwyższego poziomu |
@@ -90,7 +82,7 @@ DuckDuckGo, Brave i Chrome na komputerach i nie testuje InDuckGo.
 | Blokuje reklamy ukierunkowane i nieśledzące | mówi, że próbuje blokować wszystkie reklamy, z udokumentowanym wyjątkiem Microsoftu: `bat.bing.com` ładuje się na stronie reklamodawcy po kliknięciu reklamy w wyszukiwarce DuckDuckGo | listy filtrów Guarda (EasyList, uBlock Origin i inne), bez wyjątku dla kliknięć w reklamy |
 | Odtwarza YouTube bez reklam | tak (Duck Player) | nie |
 | **Kontrola** | | |
-| Global Privacy Control | tak (macOS: nagłówek tylko do serwisów, o których wiadomo, że go respektują) | **jeszcze nie** w edycji Qt (edycja GTK wysyłała go do każdego serwisu) |
+| Global Privacy Control | tak (macOS: nagłówek tylko do serwisów, o których wiadomo, że go respektują) | **jeszcze nie** |
 | Usuwa dane przeglądania jednym przyciskiem | przycisk Fire | przycisk Wymaż dane przeglądania |
 | Podnosi do HTTPS | serwisy z jego listy (około 90 % kliknięć w wyszukiwarce) | każda nawigacja, poza serwisami wyłączonymi w konfiguracji DuckDuckGo |
 | Szyfruje zapytania DNS | tak | jeszcze nie (bezpieczny DNS Chromium nie jest skonfigurowany) |
@@ -100,11 +92,11 @@ DuckDuckGo, Brave i Chrome na komputerach i nie testuje InDuckGo.
 | Prywatne wyszukiwanie domyślnie | tak | DuckDuckGo jest domyślną wyszukiwarką |
 | Ochrona przed oszustwami i phishingiem | Scam Blocker, lista Netcraft sprawdzana na urządzeniu | nie |
 | Ochrona poczty | darmowe aliasy `@duck.com`, wymaga rejestracji | nie |
-| VPN | w płatnej subskrypcji | jeszcze nie w edycji Qt; edycja GTK ma okno Tor |
+| VPN | w płatnej subskrypcji | jeszcze nie; okno Tor jest planowane |
 | Usuwa dane osobowe z serwisów brokerów danych, pomaga odzyskać tożsamość | w płatnej subskrypcji (usługa tożsamości dla mieszkańców USA) | nie; zaplanowane, zob. *Następne wydanie* niżej |
 | Działa na Linuksie | nie | tak |
 
-W skrócie: przeglądarka DuckDuckGo wygrywa dziś gotowymi ochronami, a InDuckGo tym, czego nie zrobi (telemetria,
+W skrócie: przeglądarka DuckDuckGo wygrywa gotowymi ochronami, a InDuckGo tym, czego nie zrobi (telemetria,
 wyjątki dla kliknięć w reklamy, płatne poziomy) i działaniem na Linuksie; luka w gotowych ochronach to praca, która
 stoi przed tym projektem, a nie coś, co powyższe liczby ukrywają.
 
@@ -112,10 +104,10 @@ stoi przed tym projektem, a nie coś, co powyższe liczby ukrywają.
 
 ## Przed czym chroni
 
-Silnikiem InDuckGo jest teraz **QtWebEngine** (Chromium), a interfejs jest w Qt Quick. Poniższe zabezpieczenia
-zbudowano dla edycji WebKitGTK; ostatnia kolumna mówi, jak daleko ma je edycja Qt.
+InDuckGo działa na **QtWebEngine** (Chromium), a interfejs jest w Qt Quick. Ostatnia kolumna mówi, czy dana
+ochrona jest wdrożona.
 
-| Ochrona | Jak działa | W edycji Qt |
+| Ochrona | Jak działa | Stan |
 |---|---|---|
 | Trackery stron trzecich | Tracker Data Set DuckDuckGo rozstrzyga, żądanie po żądaniu, które żądania stron trzecich są odrzucane (port `TrackerRadarKit`). | działa; pobierane przy pierwszym uruchomieniu, odświeżane co 6 godzin |
 | Psucie stron | Konfiguracja prywatności DuckDuckGo dostarcza wyjątki dla serwisów, żeby działały; przycisk tarczy (w aplikacji webowej: *Chroń tę witrynę* w menu) wyłącza ochronę dla jednego serwisu. | działa |
@@ -127,7 +119,7 @@ zbudowano dla edycji WebKitGTK; ostatnia kolumna mówi, jak daleko ma je edycja 
 | Zwykłe HTTP | Nawigacje są podnoszone do HTTPS. | działa |
 | Pozostawione dane | Przycisk Wymaż dane przeglądania jednym kliknięciem kasuje ciasteczka, magazyn, pamięć podręczną i favikony profilu. | działa |
 | Mieszanie tożsamości | Każdy profil i każda zainstalowana aplikacja webowa działa jako osobny proces z własnymi ciasteczkami i danymi. | działa |
-| Twój adres IP | Okno Tor wysyła wszystko przez własnego Tora InDuckGo; jego sesja żyje tylko w pamięci. | jeszcze nie (ma je edycja GTK) |
+| Twój adres IP | Okno Tor wysyła wszystko przez własnego Tora InDuckGo; jego sesja żyje tylko w pamięci. | jeszcze nie |
 
 Rozszerzeń nie ma — celowo.
 
@@ -137,14 +129,10 @@ odizolowaną sesję; link do innego serwisu kliknięty w aplikacji otwiera się 
 aplikacji nigdy nie spotyka obcych stron. *Zainstalowane aplikacje…* w menu pokazuje je jako kafelki z przyciskami
 Otwórz i Odinstaluj.
 
-**Okno Tor (edycja GTK; w drodze do edycji Qt).** Przycisk z cebulą na pasku narzędzi, *Nowe okno Tor*
-(`Alt+Shift+N`) albo `induckgo --tor` otwiera okno, którego każde żądanie idzie przez Tora, więc serwisy widzą
-przekaźnik wyjściowy Tora zamiast Twojego adresu. InDuckGo uruchamia dla niego własny `tor`, nigdy ogólnosystemową
-usługę Tor, i pokazuje postęp łączenia, aż Tor będzie gotowy; do tego czasu żadna strona się nie wczytuje i nic
-nigdy nie przechodzi na połączenie bezpośrednie. Ciasteczka, pamięć podręczna i ustawienia okna żyją tylko w
-pamięci, WebRTC jest wyłączone, wyszukiwanie idzie przez usługę onion DuckDuckGo, a strony `.onion` się otwierają.
-Tam, gdzie Tor jest blokowany, *Połączenie z Tor…* oferuje Snowflake, obfs4 albo własne mosty. Okno ukrywa Twój
-adres, ale nie to, że używasz InDuckGo: gdy liczy się nieodróżnialność wśród użytkowników Tora, używaj Tor Browsera.
+**Okno Tor (jeszcze niedostępne).** Jest planowane jako okno, którego każde żądanie idzie przez Tora, więc serwisy
+widzą przekaźnik wyjściowy Tora zamiast Twojego adresu, przez własnego `tora` InDuckGo, a nie ogólnosystemową
+usługę, bez powrotu do połączenia bezpośredniego i bez zapisu czegokolwiek na dysku. Ukryje Twój adres, ale nie to,
+że używasz InDuckGo: gdy liczy się nieodróżnialność wśród użytkowników Tora, używaj Tor Browsera.
 
 **Preferencje** (`Ctrl+,`), osobno w każdym profilu: które przyciski pokazuje pasek narzędzi, czy pasek adresu
 jest szeroki, czy krótki i wyśrodkowany, **gdzie są karty** (*Położenie kart*: góra, dół, lewo lub prawo; domyślnie
@@ -157,19 +145,19 @@ lewej jak w macOS), płynne przewijanie kółkiem, folder pobierania i język in
 
 Strona, reklamodawca albo sam producent przeglądarki mogą Cię śledzić na siedem sposobów. Tabela nazywa każdy
 z nich, mechanizm użyty przeciwko niemu przez InDuckGo, miejsce tego mechanizmu w kodzie i test lub pomiar,
-który go sprawdza. Decyzje mieszkają w niezależnej od silnika bibliotece domenowej, więc współdzielą je edycja
-WebKitGTK i edycja Qt; czego edycji Qt jeszcze brakuje, wymienia [tabela ochron](#przed-czym-chroni) wyżej i
+który go sprawdza. Decyzje mieszkają w niezależnej od silnika bibliotece domenowej; czego jeszcze brakuje,
+wymienia [tabela ochron](#przed-czym-chroni) wyżej i
 [plan migracji](docs/pl/plans/2026-11-04-qtwebengine-migration-plan.md).
 
 | Sposób śledzenia | Co robi InDuckGo | Kod (`crates/induckgo-core/src`) | Sprawdza to |
 |---|---|---|---|
-| Przeglądarka raportuje do producenta | W ogóle nie ma kodu telemetrii: żadnego pingu użycia, raportów awarii, ziarna eksperymentów ani konta. Jedyne połączenia, jakie program sam nawiązuje, to zwykłe `GET` po dane ochronne, bez ciasteczek i bez identyfikatora. | `protection/`, `guard/` (tylko pobieranie) | Ruch bezczynności zmierzony na poziomie nazw hostów: edycja Qt łączy się z 8 hostami: stroną startową DuckDuckGo, jej hostem pingu i sześcioma serwującymi dane ochrony ([raport §4.1](docs/pl/reports/tracking-comparison.md) dla edycji GTK) |
-| Trackery stron trzecich | Tracker Data Set DuckDuckGo rozstrzyga każde żądanie (reguły blokowania treści WebKit w edycji GTK, przechwytywacz żądań w edycji Qt oraz lokalna bramka połączeń odrzucająca podpowiedzi `preconnect`), razem z wyjątkami DuckDuckGo dla poszczególnych witryn, by strony działały. Edycja Qt dodaje ostrzejszą warstwę dla trackerów reklamowych i analitycznych. | `protection/tracker_data_set.rs`, `protection/content_blocker_rules_builder.rs`, `network/content_blocker_request_policy.rs`, `network/advertising_tracker_request_policy.rs`, `network/connection_gate.rs` | Testy scenariuszowe `tracker_data_set`, `content_blocker_rules_builder`, `content_blocker_request_policy`, `advertising_tracker_request_policy`, `connection_gate`, `rule_exceptions`; Qt: `gate_proxy`, `tracker_blocking` ([architektura](docs/pl/architecture/qt-protection.md)) |
-| Reklamy i trackery, których pierwsza lista nie zna | Guard pobiera dziewięć list społeczności (EasyList, EasyPrivacy, uBlock Origin, Petera Lowe'a, polskie i listy komunikatów o ciasteczkach), kompiluje je i stosuje także do żądań własnej witryny. Komunikaty o ciasteczkach są odrzucane (autoconsent), a gdy to się nie uda, ukrywane. | `guard/guard_engine.rs`, `guard/guard_rule_list.rs`, `network/guard_request_policy.rs` | Testy `guard_engine`, `guard_rule_list`, `guard_request_policy`; edycja GTK: 6 trackerów na 12 stronach wobec 109 w Chrome (wyżej) |
-| Ciasteczka i zapisane identyfikatory | Ciasteczka stron trzecich z listy trackerów są odrzucane (edycja GTK miała też Intelligent Tracking Prevention z WebKit), każdy profil i aplikacja internetowa to osobny proces z własnym magazynem, a Wymaż dane przeglądania kasuje profil jednym kliknięciem. | `storage/cookie_policy.rs`, `storage/tracker_cookie_policy.rs`, `storage/burn_planner.rs` | Testy `cookie_policies`, `burn_planner` |
+| Przeglądarka raportuje do producenta | W ogóle nie ma kodu telemetrii: żadnego pingu użycia, raportów awarii, ziarna eksperymentów ani konta. Jedyne połączenia, jakie program sam nawiązuje, to zwykłe `GET` po dane ochronne, bez ciasteczek i bez identyfikatora. | `protection/`, `guard/` (tylko pobieranie) | Ruch bezczynności zmierzony na poziomie nazw hostów: InDuckGo łączy się z 8 hostami: stroną startową DuckDuckGo, jej hostem pingu i sześcioma serwującymi dane ochrony ([raport §4.5](docs/pl/reports/tracking-comparison.md)) |
+| Trackery stron trzecich | Tracker Data Set DuckDuckGo rozstrzyga każde żądanie (przechwytywacz żądań w QtWebEngine oraz lokalna bramka połączeń odrzucająca podpowiedzi `preconnect`), razem z wyjątkami DuckDuckGo dla poszczególnych witryn, by strony działały. Ostrzejsza warstwa obejmuje trackery reklamowe i analityczne. | `protection/tracker_data_set.rs`, `protection/content_blocker_rules_builder.rs`, `network/content_blocker_request_policy.rs`, `network/advertising_tracker_request_policy.rs`, `network/connection_gate.rs` | Testy scenariuszowe `tracker_data_set`, `content_blocker_rules_builder`, `content_blocker_request_policy`, `advertising_tracker_request_policy`, `connection_gate`, `rule_exceptions`, `gate_proxy`, `tracker_blocking` ([architektura](docs/pl/architecture/qt-protection.md)) |
+| Reklamy i trackery, których pierwsza lista nie zna | Guard pobiera dziewięć list społeczności (EasyList, EasyPrivacy, uBlock Origin, Petera Lowe'a, polskie i listy komunikatów o ciasteczkach), kompiluje je i stosuje także do żądań własnej witryny. Komunikaty o ciasteczkach są odrzucane (autoconsent), a gdy to się nie uda, ukrywane. | `guard/guard_engine.rs`, `guard/guard_rule_list.rs`, `network/guard_request_policy.rs` | Testy `guard_engine`, `guard_rule_list`, `guard_request_policy`, `cookie_notice_script`, `tracker_blocking`; trackery na 12 stronach zmierzone wyżej |
+| Ciasteczka i zapisane identyfikatory | Ciasteczka stron trzecich z listy trackerów są odrzucane, każdy profil i aplikacja internetowa to osobny proces z własnym magazynem, a Wymaż dane przeglądania kasuje profil jednym kliknięciem. | `storage/cookie_policy.rs`, `storage/tracker_cookie_policy.rs`, `storage/burn_planner.rs` | Testy `cookie_policies`, `burn_planner` |
 | Identyfikatory w linkach | `utm_*`, `fbclid`, `gclid` i inne parametry z listy DuckDuckGo są usuwane z każdej nawigacji najwyższego poziomu, zanim żądanie opuści komputer. | `protection/tracking_parameter_remover.rs`, `network/link_cleaning_request_policy.rs` | Testy `tracking_parameter_remover`, `link_cleaning_request_policy` |
-| Odciski przeglądarki | Content Scope Scripts DuckDuckGo działają w każdej ramce, a Guard włącza zabezpieczenia canvas, dźwięku, ekranu i referera, które konfiguracja DuckDuckGo na macOS zostawia wyłączone. Szum zmienia się z witryną i z sesją. | `guard/fingerprint_hardening.rs`, `protection/content_scope_script.rs` | Testy `fingerprint_hardening`, `content_scope_script`; strona próbkująca w raporcie (§4.3) |
-| Co widzi sieć i serwer strony | Nawigacje są podnoszone do HTTPS, a baner pyta, zanim wczyta się strona bez HTTPS; `Sec-GPC: 1` trafia do każdej witryny. Dla adresu IP okno Tor kieruje wszystko przez własny Tor InDuckGo, nigdy nie wraca do połączenia bezpośredniego, nic nie zapisuje na dysku, wyłącza WebRTC i prosi o angielski jak Tor Browser. | `navigation/https_upgrade_policy.rs`, `network/https_upgrade_request_policy.rs`, `tor/` | Testy `https_upgrade_policy`, `https_upgrade_request_policy`, `tor_configuration`, `tor_endpoint`; [architektura §4.1](docs/pl/architecture/overview.md) |
+| Odciski przeglądarki | Jeszcze niewdrożone. Biblioteka domenowa ma klocki (konfigurację Content Scope Scripts DuckDuckGo i zabezpieczenia Guarda: canvas, dźwięk, ekran, referer), ale przeglądarka ich jeszcze nie uruchamia, więc serwis odczytuje to, co wydaje Chromium. | `guard/fingerprint_hardening.rs`, `protection/content_scope_script.rs` | Testy `fingerprint_hardening`, `content_scope_script` |
+| Co widzi sieć i serwer strony | Nawigacje są podnoszone do HTTPS. Nagłówek `Sec-GPC: 1` i okno Tor ukrywające adres IP nie są jeszcze wdrożone. | `navigation/https_upgrade_policy.rs`, `network/https_upgrade_request_policy.rs` | Testy `https_upgrade_policy`, `https_upgrade_request_policy` |
 
 Każda lista i zestaw danych jest pobierany, nigdy dołączany, a przed użyciem ograniczany rozmiarem i
 walidowany. Lista filtrów może tylko blokować albo ukrywać: konwersja nie zachowuje skryptletów, więc złośliwa
@@ -178,18 +166,15 @@ clippy i `cargo audit` w CI) uruchamia się przy każdym wypchnięciu.
 
 ### Dowody
 
-Pomiar stojący za [pierwszą tabelą](#zmierzone-wobec-chrome-i-brave-porównane-z-duckduckgo) uruchomił 2026-11-05
-obok siebie Chrome 157, Brave 1.98 i InDuckGo, na świeżych profilach, każdy we własnym oknie, przez proxy
-zapisujące wyłącznie nazwy hostów. Liczby, powtórzone tu obok mechanizmów:
+Pomiar stojący za [pierwszą tabelą](#zmierzone-wobec-chrome-i-brave-porównane-z-duckduckgo) uruchomił 2026-11-06
+obok siebie Brave 1.98 i InDuckGo 1.2.3 (Chrome 157 — 2026-11-05), na świeżych profilach, każdy we własnym oknie,
+przez proxy zapisujące wyłącznie nazwy hostów. Liczby, powtórzone tu obok mechanizmów:
 
-- **Trackery osiągnięte na 12 stronach:** Chrome 111 i 109 w dwóch przebiegach, Brave 9 i 8, edycja Qt InDuckGo 90
-  na świeżym profilu i 5 z danymi ochrony na dysku, jego edycja GTK 6, według listy Disconnect, której żadna z
-  nich nie używa.
+- **Trackery osiągnięte na 12 stronach:** Chrome 111 i 109 w dwóch przebiegach, Brave 8, InDuckGo 1 na świeżym
+  profilu i 1 z danymi ochrony na dysku, według listy Disconnect, której żadna z nich nie używa.
 - **Wysłane do producenta w 5 minut bezczynności:** Chrome łączył się wyłącznie z Google (14 hostów), Brave
-  głównie z własnymi serwerami (ping użycia, P3A), edycja Qt ze stroną startową DuckDuckGo, jej hostem
+  głównie z własnymi serwerami (ping użycia, P3A; 12 hostów), InDuckGo ze stroną startową DuckDuckGo, jej hostem
   pingu i sześcioma hostami serwującymi dane ochrony (8 hostów).
-- **Odcisk przeglądarki (edycja GTK, 2026-11-02):** te same wartości canvas i dźwięku na każdej stronie w Chrome;
-  różne dla witryn, ale takie same po restarcie w Brave; różne dla witryny *i* sesji w InDuckGo.
 - **Metoda, ograniczenia i przepis na powtórzenie pomiaru:** [porównanie śledzenia](docs/pl/reports/tracking-comparison.md), §3 i §8.
 
 ### Czego to nie dowodzi
@@ -198,19 +183,19 @@ Pomiar potwierdza, że „InDuckGo nie daje własnemu producentowi nic do roboty
 daje trackerom niewiele”. Nie potwierdza, że „InDuckGo jest bardziej anonimowy niż Brave lub DuckDuckGo”, i projekt
 tego nie twierdzi.
 
-- **5 wobec 8 to przewaga na jednej próbce, nie prawo.** Edycja Qt blokuje tu mocniej niż Brave, bo stosuje ostrzejszą
+- **Przewaga na jednej próbce to nie prawo.** InDuckGo blokuje tu mocniej niż Brave, bo stosuje ostrzejszą
   warstwę dla trackerów reklamowych i analitycznych oraz odrzuca `preconnect`; ta sama ostrość może zepsuć stronę,
   którą łagodniejsze tarcze Brave zostawiają działającą, a lekarstwem jest przełącznik tarczy dla witryny. Okna
   logowania i trackery płatności są celowo zostawione wyjątkom DuckDuckGo.
-- **Jedno uruchomienie na 12 stronach to nie ranking.** Dwa przebiegi Chrome różnią się o 2, Brave o 1; strony
-  zmieniają się między wczytaniami.
+- **Jedno uruchomienie na 12 stronach to nie ranking.** Dwa przebiegi Chrome różnią się o 2; strony zmieniają się
+  między wczytaniami, a okno logowania Google serwis pokazuje w jednych przebiegach, w innych nie.
 - **Przeglądarki DuckDuckGo nie zmierzono**, bo nie istnieje na Linuksa.
   [Tabela funkcji](#porównanie-z-przeglądarką-duckduckgo) porównuje udokumentowane zachowanie, nie ruch.
 - **Blokowanie to nie anonimowość.** InDuckGo to silnik Chromium jak Brave i Chrome, co dobrze robi na wtapianie się
-  w tłum, ale edycja Qt nie zmienia jeszcze tego, co serwis może odczytać o przeglądarce: brak szumu odcisku, brak
+  w tłum, ale InDuckGo nie zmienia jeszcze tego, co serwis może odczytać o przeglądarce: brak szumu odcisku, brak
   GPC. Zainstalowane czcionki pozostają widoczne, tak jak w Brave i Chrome.
 - **Brak ostrzeżeń przed phishingiem i złośliwym oprogramowaniem** (brak Safe Browsing), brak aliasów e-mail i
-  VPN na razie. Okno Tor, gdy wróci do edycji Qt, ukrywa Twój adres, nie fakt używania InDuckGo; gdy liczy się
+  VPN na razie. Planowane okno Tor ukryje Twój adres, nie fakt używania InDuckGo; gdy liczy się
   nieodróżnialność, użyj Tor Browser.
 - **Brakuje niezależnej weryfikacji:** [privacytests.org](https://privacytests.org/) nie testuje InDuckGo.
 
@@ -219,10 +204,10 @@ tego nie twierdzi.
 ## Stan
 
 Projekt w toku, ale używalny, na QtWebEngine: karty (u góry, na dole, z lewej lub z prawej), profile z odizolowanymi
-danymi i kafelkowym oknem wyboru jak w Chrome, aplikacje webowe z kafelkową stroną, pobieranie do wybranego folderu, powiększenie osobno dla witryny,
-wyszukiwanie na stronie, przełącznik ochrony dla witryny, Wymaż dane przeglądania, 68 języków interfejsu. Jeszcze
-nie ma w edycji Qt: ochrony przed odciskiem przeglądarki i GPC, okna Tor, automatycznego odrzucania okien zgody na cookies, pytań o uprawnienia, przywracania sesji,
-zakładek i historii. Pełna lista z uzasadnieniem jest w dokumencie architektury i w planie migracji.
+danymi i kafelkowym oknem wyboru jak w Chrome, aplikacje webowe z kafelkową stroną, pobieranie do wybranego folderu,
+powiększenie osobno dla witryny, wyszukiwanie na stronie, przełącznik ochrony dla witryny, automatyczne odrzucanie
+okien zgody na cookies, Wymaż dane przeglądania, 68 języków interfejsu. Jeszcze nie ma: ochrony przed odciskiem
+przeglądarki i GPC, okna Tor, pytań o uprawnienia, przywracania sesji, zakładek i historii. Pełna lista z uzasadnieniem jest w dokumencie architektury i w planie migracji.
 
 ### Następne wydanie
 
@@ -238,8 +223,7 @@ paczki dla innych dystrybucji.
 
 ## Instalacja
 
-Pobierz paczkę z [najnowszego wydania](https://github.com/eshaiotic/induckgo/releases/latest). Paczki wersji
-1.2.2 i nowszych zawierają edycję Qt (QtWebEngine); wydania przed 1.2.0 zawierały edycję na WebKitGTK.
+Pobierz paczkę z [najnowszego wydania](https://github.com/eshaiotic/induckgo/releases/latest).
 
 | Plik | Dla |
 |---|---|
@@ -266,7 +250,7 @@ przeniesieniu pliku uruchom go jeszcze raz). Wpis menu uruchamia ten plik późn
 (po rozwiązaniu dowiązań) i powstaje tylko wtedy, gdy ten plik i każdy katalog nad nim, aż do Twojego katalogu
 domowego, należą do roota lub do Ciebie, a grupa ani inni nie mogą do nich pisać (nic pod `/tmp` ani innym katalogiem
 współdzielonym nie spełnia tego warunku). Wpis znika, gdy jego plik przestaje spełniać warunek. Wpisu napisanego przez
-Ciebie nigdy nie ruszamy (wygenerowany ma `X-InDuckGo-AppImage=<path>`), a przy zainstalowanej paczce nic nie powstaje. Edycja Qt nie ma jeszcze okna
+Ciebie nigdy nie ruszamy (wygenerowany ma `X-InDuckGo-AppImage=<path>`), a przy zainstalowanej paczce nic nie powstaje. Nie ma jeszcze okna
 Tor, więc żadna paczka nie dociąga Tora.
 
 Z kopii tego repozytorium:
@@ -302,7 +286,7 @@ atestacjami. Tag musi zgadzać się z wersją w `Cargo.toml`.
 
 ## Uruchamianie ze źródeł
 
-Edycja Qt potrzebuje Qt 6 z QtWebEngine, QtWebChannel i Quick Controls (na Archu: `qt6-base qt6-declarative
+InDuckGo potrzebuje Qt 6 z QtWebEngine, QtWebChannel i Quick Controls (na Archu: `qt6-base qt6-declarative
 qt6-webengine qt6-webchannel qt6-svg`), kompilatora C++ i Rusta.
 
 ```sh
@@ -312,9 +296,6 @@ cargo run --release -p induckgo-qt -- --profile work        # przeglądarka, pro
 cargo run --release -p induckgo-qt -- https://example.com/  # otwórz stronę
 ```
 
-Poprzednia edycja nadal się buduje i działa: `sudo pacman -S --needed webkitgtk-6.0 gtk4 libadwaita tor`, potem
-`cargo run -p induckgo` (ma też `--tor` dla okna Tor).
-
 Zainstalowane aplikacje webowe uruchamia się z menu aplikacji pulpitu (`induckgo-qt --web-app <id>`).
 
 ---
@@ -322,7 +303,7 @@ Zainstalowane aplikacje webowe uruchamia się z menu aplikacji pulpitu (`induckg
 ## Testy
 
 Stos: **cargo-nextest** — 899 obiektowych scenariuszy Given/When/Then: 683 dla domeny w
-`crates/induckgo-core/tests/` (82 plików, jeden na typ domenowy), 146 dla edycji Qt i jej adaptera silnika, 61 dla
+`crates/induckgo-core/tests/` (82 plików, jeden na typ domenowy), 146 dla interfejsu Qt i jego adaptera silnika, 61 dla
 narzędzia raportu w `crates/induckgo-test-report/tests/` i 9 dla narzędzia benchmarków w
 `crates/induckgo-bench/tests/`. CI uruchamia je wszystkie w kontenerze Arch z Qt 6, testy Qt pod Xvfb z Mesą (QtWebEngine potrzebuje kontekstu
 OpenGL nawet bez okna); same testy Qt uruchom przez
@@ -330,7 +311,7 @@ OpenGL nawet bez okna); same testy Qt uruchom przez
 
 ```sh
 ./run-tests                     # wszystkie testy + raport HTML w tests/reports/ (otwiera się w przeglądarce)
-cargo test -p induckgo-core     # tylko testy domeny (szybkie, bez Qt, GTK i WebKita)
+cargo test -p induckgo-core     # tylko testy domeny (szybkie, bez Qt)
 cargo clippy --all-targets      # linty (pedantic, unsafe zabroniony)
 cargo fmt --check               # formatowanie
 cargo audit                     # podatności zależności (polityka zero podatności)
@@ -342,7 +323,7 @@ najwolniejszymi testami, a gdy zainstalowany jest `cargo-llvm-cov`, także z pok
 [Raport testów HTML](docs/pl/tests/test-report.md).
 
 **Architektura testów:**
-- Domena (`induckgo-core`) nie zależy od Qt, GTK ani WebKita, więc każda decyzja ochrony — budowanie reguł,
+- Domena (`induckgo-core`) nie zależy od Qt, więc każda decyzja ochrony — budowanie reguł,
   konwersja list filtrów, podnoszenie do HTTPS, czyszczenie linków, profile, aplikacje webowe, zoom — jest
   testowana bez ekranu.
 - Każdy scenariusz to obiekt: `given_…` go buduje, `when_…` wykonuje akcję i zwraca wynik, `then_…` sprawdza
@@ -358,14 +339,14 @@ najwolniejszymi testami, a gdy zainstalowany jest `cargo-llvm-cov`, także z pok
 ## Struktura projektu
 
 ```
-crates/induckgo-core/    logika domeny bez Qt/GTK/WebKita: reguły ochrony, listy filtrów Guarda,
+crates/induckgo-core/    logika domeny bez Qt: reguły ochrony, listy filtrów Guarda,
                          profile, aplikacje webowe, zoom, uruchamianie, położenie kart i styl przycisków okna
 crates/induckgo-core/tests/
                          jeden plik scenariuszy OO na typ domenowy
 crates/induckgo-qt/      przeglądarka: interfejs Qt Quick (QML) na QtWebEngine, spięty z Rustem przez cxx-qt
 crates/induckgo-engine-qt/
                          adapter QtWebEngine: polityki żądań i ciasteczek, przekładka w C++
-crates/induckgo/         poprzednia edycja: GTK 4 + libadwaita na WebKitGTK (wersje przed 1.2.0)
+crates/induckgo/         aplikacja GTK 4 + libadwaita na WebKitGTK, zostaje, dopóki okno Tor i ochrona przed odciskiem przeglądarki nie powstaną w wersji Qt
 crates/induckgo-test-report/
                          narzędzie deweloperskie za ./run-tests: raport testów HTML (nie trafia do paczek)
 assets/                  dołączone Content Scope Scripts (Apache-2.0) i autoconsent (MPL-2.0), skrypt strony Guarda, ikony,

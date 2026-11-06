@@ -41,7 +41,7 @@ This file is an index; the content lives in the linked documents.
 - `crates/induckgo-core/tests` — one OO scenario test file per domain type.
 - `crates/induckgo-test-report` — dev tool behind `./run-tests`: nextest JUnit + llvm-cov → HTML test report (not packaged).
 - `crates/induckgo` — GTK 4 + libadwaita app: adapters that carry out core decisions in WebKitGTK/libsoup/GIO.
-- `assets/` — vendored Content Scope Scripts (Apache-2.0), Guard's page script, app icons and the error page template; never the TDS or filter lists.
+- `assets/` — vendored Content Scope Scripts (Apache-2.0) and autoconsent (MPL-2.0, rebuild recipe in its README), Guard's page script, app icons and the error page template; never the TDS or filter lists.
 - `packaging/` — PKGBUILD, rpm spec, AppImage build and assembly (Fedora container), desktop entry and AppStream metadata.
 
 ## Commands

@@ -26,7 +26,6 @@ use crate::appimage_integration::AppImageIntegration;
 use crate::burn_restart::BurnRestart;
 use crate::desktop_font::DesktopFont;
 use crate::download_center::DownloadCenter;
-use crate::guard_lists::GuardLists;
 use crate::installation_directories::InstallationDirectories;
 use crate::interface_catalogue::InterfaceCatalogue;
 use crate::interface_language_setting::InterfaceLanguageSetting;
@@ -129,19 +128,20 @@ impl BrowserApplication {
         let updates = Arc::new(ProtectionUpdates::new(cache.clone(), Arc::new(QtDocumentFetcher)));
         let guard = Arc::new(SharedGuardEngine::default());
         let session = Self::open_session(directories, profile, &guard);
-        GuardLists::in_cache(&cache).build_into(Arc::clone(&guard));
         let allow_list = Self::read_json(&profile.data.join("site-allow-list.json"))
             .map(|document| SiteAllowList::from_json(&document))
             .unwrap_or_default();
         // The rules are put together on a worker thread while this thread starts Chromium's profile: neither
         // needs the other, and they are the two longest parts of the start-up. The first start downloads the
-        // data on that thread too; the window still opens only after both finish, so no page loads unprotected.
+        // data on that thread too, and Guard's engine is built from the lists only after that download; the
+        // window still opens only after both finish, so no page loads unprotected.
         let assembly = {
             let updates = Arc::clone(&updates);
             let unprotected_sites = session.protection.shared_list();
             let session_guard = Arc::clone(&session.guard);
+            let engine = Arc::clone(&guard);
             thread::spawn(move || {
-                let starting = updates.starting_protection();
+                let starting = updates.starting_protection(&engine);
                 let policies = ProfilePolicies::assemble(
                     starting.documents.as_ref(),
                     unprotected_sites,

@@ -45,13 +45,20 @@ impl ProtectionUpdates {
 
     /// The cached documents, read once. With nothing cached (the first start) they are downloaded first, so
     /// the caller waits for the network only then.
+    ///
+    /// Guard's engine is built from the lists only after that download, so on the first start it is built from
+    /// the lists just fetched and not from an empty cache; the build itself runs on its own thread, and pages
+    /// loaded before it finishes are not filtered.
     #[must_use]
-    pub fn starting_protection(&self) -> StartingProtection {
-        if let Some(documents) = ProtectionDocuments::from_cache(&self.cache) {
-            return StartingProtection { documents: Some(documents), is_first_start: false };
+    pub fn starting_protection(&self, guard: &Arc<SharedGuardEngine>) -> StartingProtection {
+        let cached = ProtectionDocuments::from_cache(&self.cache);
+        let is_first_start = cached.is_none();
+        if is_first_start {
+            self.refresh();
         }
-        self.refresh();
-        StartingProtection { documents: ProtectionDocuments::from_cache(&self.cache), is_first_start: true }
+        GuardLists::in_cache(&self.cache).build_into(Arc::clone(guard));
+        let documents = if is_first_start { ProtectionDocuments::from_cache(&self.cache) } else { cached };
+        StartingProtection { documents, is_first_start }
     }
 
     /// Downloads what is missing or newer. Failures are reported on the error stream; the copies already held

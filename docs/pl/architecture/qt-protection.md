@@ -141,8 +141,9 @@ egzekwuje bramka, a podpowiedzi zapisane w HTML, które parser czyta przed każd
 | Pobieranie | `QtDocumentFetcher` implementuje `DocumentFetcher` z rdzenia na QtNetwork: nowy menedżer dla każdego pobrania, bez ciasteczek, systemowe proxy, przekierowania tylko na równie bezpieczne adresy, limit transferu 20 sekund i limit rozmiaru. |
 | Pamięć podręczna | `CachedDocument` wysyła zapisany ETag, przyjmuje `304 Not Modified`, sprawdza treść przed zachowaniem i zapisuje do pliku `.partial`, który zastępuje starą kopię jednym przemianowaniem — nieudane pobranie nigdy nie uszkodzi dobrej kopii. |
 | Odświeżanie | `ProtectionFeed::refresh` pobiera dokumenty równolegle; błędy są zbierane i zgłaszane, pozostałe dokumenty i tak się aktualizują. |
-| Pierwszy start | Nic nie jest w pamięci podręcznej, więc `BrowserApplication` pobiera dane **przed otwarciem okna**: strona nigdy nie może wczytać się bez ochrony dlatego, że reguły jeszcze nadchodziły. |
-| Kolejne starty | Kopie z pamięci podręcznej są używane od razu; `ProtectionUpdates::keep_current` sprawdza w tle (od razu, potem co 6 godzin). |
+| Pierwszy start | Nic nie jest w pamięci podręcznej, więc `ProtectionUpdates::starting_protection` pobiera dane **przed otwarciem okna**: strona nigdy nie może wczytać się bez ochrony dlatego, że reguły jeszcze nadchodziły. |
+| Kolejne starty | Kopie z pamięci podręcznej są czytane raz i używane od razu; `ProtectionUpdates::keep_current` sprawdza w tle (od razu, potem co 6 godzin). |
+| Kolejność startu | `BrowserApplication` składa reguły (a przy pierwszym starcie także je pobiera) w wątku roboczym, podczas gdy wątek główny otwiera profil Chromium (`QtWebEngine::open_profile`); przed wczytaniem okna wątek roboczy jest dołączany. Dopóki nie wykona się `QtWebEngine::install_policies`, Chromium odrzuca każde żądanie i każde ciasteczko, więc nakładanie się tych kroków nie pozwoli żadnemu żądaniu ominąć ochrony. |
 | Zastosowanie | `ProfilePolicies::use_documents` przebudowuje reguły i silnik Guard i podmienia je przez `ReplaceableRequestPolicy`, `ReplaceableCookiePolicy` i `SharedGuardEngine` (wskaźnik za blokadą trzymaną tylko na czas skopiowania wskaźnika), bez restartu. |
 
 Ruch bezczynnej przeglądarki zatem się zmienił: oprócz strony startowej DuckDuckGo i jej hosta pingu przeglądarka

@@ -140,8 +140,9 @@ script, are only ever stopped by the gate.
 | Download | `QtDocumentFetcher` implements the core's `DocumentFetcher` over QtNetwork: a new manager per download, no cookies, the system proxy, redirects only to equally safe addresses, a 20-second transfer limit and a size limit. |
 | Cache | `CachedDocument` sends the stored ETag, accepts `304 Not Modified`, checks the body before keeping it, and writes to a `.partial` file that replaces the old copy with a single rename — a failed download never damages a good copy. |
 | Refresh | `ProtectionFeed::refresh` fetches the documents concurrently; failures are collected and reported, the others still update. |
-| First start | There is nothing cached, so `BrowserApplication` downloads **before the window opens**: a page must never load unprotected because the rules were still on their way. |
-| Later starts | The cached copies are used at once; `ProtectionUpdates::keep_current` checks in the background (now, then every 6 hours). |
+| First start | There is nothing cached, so `ProtectionUpdates::starting_protection` downloads **before the window opens**: a page must never load unprotected because the rules were still on their way. |
+| Later starts | The cached copies are read once and used at once; `ProtectionUpdates::keep_current` checks in the background (now, then every 6 hours). |
+| Start-up order | `BrowserApplication` puts the rules together (and, on the first start, downloads them) on a worker thread while the main thread opens Chromium's profile (`QtWebEngine::open_profile`), then joins the worker before the window loads. Until `QtWebEngine::install_policies` runs, Chromium refuses every request and cookie, so the overlap cannot let a request skip protection. |
 | Applying | `ProfilePolicies::use_documents` rebuilds the rules and the Guard engine and swaps them in through `ReplaceableRequestPolicy`, `ReplaceableCookiePolicy` and `SharedGuardEngine` (a pointer behind a lock held only to copy the pointer), without a restart. |
 
 Idle traffic therefore changed: besides the DuckDuckGo start page and its ping host, the browser contacts the six hosts

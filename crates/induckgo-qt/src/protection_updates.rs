@@ -25,6 +25,15 @@ pub struct ProtectionUpdates {
     cache: PathBuf,
 }
 
+/// The protection data a start begins with.
+pub struct StartingProtection {
+    /// `None` when there was nothing cached and the download failed: the policies then run without tracker
+    /// blocking until a later refresh succeeds.
+    pub documents: Option<ProtectionDocuments>,
+    /// Nothing was cached, so the data was downloaded just now.
+    pub is_first_start: bool,
+}
+
 impl ProtectionUpdates {
     /// How long the browser runs between two checks for newer data.
     const CHECK_INTERVAL: Duration = Duration::from_hours(6);
@@ -34,10 +43,15 @@ impl ProtectionUpdates {
         Self { feed: ProtectionFeed::new(&cache), fetcher, cache }
     }
 
-    /// Whether the protection data was ever downloaded.
+    /// The cached documents, read once. With nothing cached (the first start) they are downloaded first, so
+    /// the caller waits for the network only then.
     #[must_use]
-    pub fn has_cached_data(&self) -> bool {
-        ProtectionDocuments::from_cache(&self.cache).is_some()
+    pub fn starting_protection(&self) -> StartingProtection {
+        if let Some(documents) = ProtectionDocuments::from_cache(&self.cache) {
+            return StartingProtection { documents: Some(documents), is_first_start: false };
+        }
+        self.refresh();
+        StartingProtection { documents: ProtectionDocuments::from_cache(&self.cache), is_first_start: true }
     }
 
     /// Downloads what is missing or newer. Failures are reported on the error stream; the copies already held

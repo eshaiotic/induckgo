@@ -4,6 +4,7 @@ use std::fs;
 use std::path::Path;
 use std::process::ExitCode;
 use std::sync::Arc;
+use std::thread;
 
 use cxx_qt_lib::QFont;
 use cxx_qt_lib::QGuiApplication;
@@ -34,7 +35,6 @@ use crate::profile_policies::ProfilePolicies;
 use crate::profile_policies::ProfileStrictness;
 use crate::profile_preferences::ProfilePreferences;
 use crate::profile_session::ProfileSession;
-use crate::protection_documents::ProtectionDocuments;
 use crate::protection_updates::ProtectionUpdates;
 use crate::single_instance::Instance;
 use crate::single_instance::SingleInstance;
@@ -127,34 +127,35 @@ impl BrowserApplication {
     fn install_policies(directories: &InstallationDirectories, profile: &ProfileLocation) {
         let cache = directories.protection_cache();
         let updates = Arc::new(ProtectionUpdates::new(cache.clone(), Arc::new(QtDocumentFetcher)));
-        // Nothing cached means the first start: the data is fetched before any page can load.
-        let is_first_start = !updates.has_cached_data();
-        if is_first_start {
-            updates.refresh();
-        }
         let guard = Arc::new(SharedGuardEngine::default());
         let session = Self::open_session(directories, profile, &guard);
         GuardLists::in_cache(&cache).build_into(Arc::clone(&guard));
-        let documents = ProtectionDocuments::from_cache(&cache);
         let allow_list = Self::read_json(&profile.data.join("site-allow-list.json"))
             .map(|document| SiteAllowList::from_json(&document))
             .unwrap_or_default();
-        let policies = Arc::new(ProfilePolicies::assemble(
-            documents.as_ref(),
-            session.protection.shared_list(),
-            Arc::clone(&session.guard),
-            allow_list,
-            ProfileStrictness::Standard,
-        ));
+        // The rules are put together on a worker thread while this thread starts Chromium's profile: neither
+        // needs the other, and they are the two longest parts of the start-up. The first start downloads the
+        // data on that thread too; the window still opens only after both finish, so no page loads unprotected.
+        let assembly = {
+            let updates = Arc::clone(&updates);
+            let unprotected_sites = session.protection.shared_list();
+            let session_guard = Arc::clone(&session.guard);
+            thread::spawn(move || {
+                let starting = updates.starting_protection();
+                let policies = ProfilePolicies::assemble(
+                    starting.documents.as_ref(),
+                    unprotected_sites,
+                    session_guard,
+                    allow_list,
+                    ProfileStrictness::Standard,
+                );
+                (Arc::new(policies), starting.is_first_start)
+            })
+        };
+        QtWebEngine::open_profile(&profile.data.join("engine"), &profile.cache.join("engine"));
+        let (policies, is_first_start) = assembly.join().unwrap_or_else(|panic| std::panic::resume_unwind(panic));
         session.install();
-        let engine_directory = profile.data.join("engine");
-        let engine_cache = profile.cache.join("engine");
-        QtWebEngine::install_policies(
-            Arc::clone(&policies.request),
-            Arc::clone(&policies.cookies),
-            &engine_directory,
-            &engine_cache,
-        );
+        QtWebEngine::install_policies(Arc::clone(&policies.request), Arc::clone(&policies.cookies));
         updates.keep_current(policies, guard, !is_first_start);
     }
 

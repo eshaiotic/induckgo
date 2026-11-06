@@ -34,20 +34,18 @@ impl QtWebEngine {
         ffi::initialize_web_engine(&flags);
     }
 
-    /// Makes Chromium ask these policies about every request and cookie, and keep everything it stores under
-    /// `storage` and `cache`. Call it once the application exists; a second call changes nothing and returns
-    /// `false`.
-    pub fn install_policies(
-        request: Arc<dyn RequestPolicy>,
-        cookies: Arc<dyn CookiePolicy>,
-        storage: &Path,
-        cache: &Path,
-    ) -> bool {
-        let is_first = EnginePolicies::with_gate(request, cookies, EnginePolicies::process_gate()).install();
-        if is_first {
-            ffi::install_hooks(&storage.to_string_lossy(), &cache.to_string_lossy());
-        }
-        is_first
+    /// Keeps everything Chromium stores under `storage` and `cache`, and has it ask the policies installed by
+    /// [`Self::install_policies`] about every request and cookie. Call it once, after the application exists
+    /// and before the first window. Until the policies are installed Chromium refuses every request and
+    /// cookie, so a request can never skip protection because it came first.
+    pub fn open_profile(storage: &Path, cache: &Path) {
+        ffi::install_hooks(&storage.to_string_lossy(), &cache.to_string_lossy());
+    }
+
+    /// Makes `request` and `cookies` the policies Chromium consults. A second call changes nothing and
+    /// returns `false`.
+    pub fn install_policies(request: Arc<dyn RequestPolicy>, cookies: Arc<dyn CookiePolicy>) -> bool {
+        EnginePolicies::with_gate(request, cookies, EnginePolicies::process_gate()).install()
     }
 
     /// Gives every window the icon stored at `resource_path` in the Qt resources. Call it once the application

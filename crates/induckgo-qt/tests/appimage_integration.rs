@@ -159,6 +159,12 @@ impl IntegrationScenario {
         self
     }
 
+    /// The AppImage wrote its entry; a package is installed later, and the AppImage is started again.
+    fn when_started_again_after_the_package_was_installed_system_wide(self) -> Self {
+        self.integrate();
+        self.with_the_package_installed_system_wide().when_started()
+    }
+
     fn user_file(&self, relative: &str) -> PathBuf {
         self.data_home().join(relative)
     }
@@ -200,6 +206,24 @@ fn should_leave_the_installed_package_alone() {
         .when_started();
 
     assert!(!scenario.user_file(IntegrationScenario::ENTRY).exists());
+}
+
+#[test]
+fn should_withdraw_its_entry_when_a_package_is_installed_afterwards_so_the_menu_starts_the_package() {
+    let scenario = IntegrationScenario::given_an_appimage_on_a_machine_without_an_installed_package()
+        .when_started_again_after_the_package_was_installed_system_wide();
+
+    assert!(!scenario.user_file(IntegrationScenario::ENTRY).exists());
+}
+
+#[test]
+fn should_keep_an_entry_the_person_wrote_themselves_when_a_package_is_installed() {
+    let scenario = IntegrationScenario::given_an_appimage_on_a_machine_without_an_installed_package()
+        .with_the_package_installed_system_wide()
+        .with_an_entry_the_person_wrote("[Desktop Entry]\nName=My browser\n")
+        .when_started();
+
+    assert_eq!(scenario.entry_text(), "[Desktop Entry]\nName=My browser\n");
 }
 
 #[test]

@@ -244,7 +244,9 @@ installed `.desktop` file, which an AppImage does not have, so on start it write
 file; start it again after moving the file). The menu entry runs that file later, so it names the real file (links
 resolved) and is written only when that file and every folder above it, up to your home folder, belong to root or to
 you and cannot be written to by the group or others (nothing under `/tmp` or another shared folder qualifies). The
-entry is removed again when its file stops qualifying. An entry you wrote yourself is never touched (the generated one
+entry is removed again when its file stops qualifying or when you install the package (your entry wins over the system
+one, so without this the menu would keep starting the AppImage instead of the package; the entry goes at the AppImage's
+next start, until then delete it by hand). An entry you wrote yourself is never touched (the generated one
 carries `X-InDuckGo-AppImage=<path>`), and nothing is written when the package is installed. There is no Tor
 window yet, so no package brings Tor.
 

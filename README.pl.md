@@ -249,8 +249,10 @@ zainstalowanego pliku `.desktop`, którego AppImage nie ma, więc przy starcie z
 przeniesieniu pliku uruchom go jeszcze raz). Wpis menu uruchamia ten plik później, więc wskazuje prawdziwy plik
 (po rozwiązaniu dowiązań) i powstaje tylko wtedy, gdy ten plik i każdy katalog nad nim, aż do Twojego katalogu
 domowego, należą do roota lub do Ciebie, a grupa ani inni nie mogą do nich pisać (nic pod `/tmp` ani innym katalogiem
-współdzielonym nie spełnia tego warunku). Wpis znika, gdy jego plik przestaje spełniać warunek. Wpisu napisanego przez
-Ciebie nigdy nie ruszamy (wygenerowany ma `X-InDuckGo-AppImage=<path>`), a przy zainstalowanej paczce nic nie powstaje. Nie ma jeszcze okna
+współdzielonym nie spełnia tego warunku). Wpis znika, gdy jego plik przestaje spełniać warunek albo gdy zainstalujesz
+paczkę (Twój wpis ma pierwszeństwo przed systemowym, więc bez tego menu dalej uruchamiałoby AppImage zamiast paczki; wpis
+znika przy następnym starcie AppImage, a do tego czasu usuń go ręcznie). Wpisu napisanego przez Ciebie nigdy nie
+ruszamy (wygenerowany ma `X-InDuckGo-AppImage=<path>`), a przy zainstalowanej paczce nic nie powstaje. Nie ma jeszcze okna
 Tor, więc żadna paczka nie dociąga Tora.
 
 Z kopii tego repozytorium:

@@ -3,7 +3,9 @@
 //! A Wayland desktop gives a window the icon of the `.desktop` file named like the window's `app_id`; a package
 //! installs that file, an AppImage does not. Without it the window shows a generic Wayland icon. The entry lives in
 //! the person's own data directory and names the AppImage file, so moving the file only needs one more start.
-//! A packaged InDuckGo already owns the entry system-wide and is left alone.
+//! A packaged InDuckGo already owns the entry system-wide and is left alone; an entry the AppImage wrote earlier is
+//! withdrawn once a package is installed, because the person's entry wins over the system one and would keep
+//! starting the AppImage instead of the package.
 //!
 //! The entry makes the desktop run the AppImage file whenever the person clicks it, so it is written only for a
 //! file that nobody else can replace: the path is resolved first (the entry names the real file), and the file
@@ -79,8 +81,11 @@ impl AppImageIntegration {
             match AppImageMenuEntry::file_named_by(&text) {
                 // Not ours: the person wrote it.
                 None => return Ok(()),
-                // Ours, but the file it makes the desktop run no longer qualifies: whichever AppImage starts now.
-                Some(named) if self.trusted_file(&named).is_none() => fs::remove_file(&entry_file)?,
+                // Ours, but a package owns the entry now (ours would shadow it and keep starting the AppImage),
+                // or the file it makes the desktop run no longer qualifies: whichever AppImage starts now.
+                Some(named) if self.is_installed_system_wide() || self.trusted_file(&named).is_none() => {
+                    fs::remove_file(&entry_file)?;
+                }
                 Some(_) => {}
             }
         }

@@ -24,6 +24,11 @@ This file is an index; the content lives in the linked documents.
 - [Ochrona przed trackerami (Qt, PL)](docs/pl/architecture/qt-protection.md) — polish mirror of the Qt tracker-protection document.
 - `docs/assets/diagrams/` — SVG + PNG diagrams, one file per language (`.en` / `.pl`).
 
+## Plans
+
+- [Window start-up optimizations](docs/en/plans/2026-11-06-window-startup-optimizations-plan.md) — measured start times, what is done, six candidate optimizations (not approved), measurement protocol. New start-up ideas are added here.
+- [Optymalizacje startu okna (PL)](docs/pl/plans/2026-11-06-window-startup-optimizations-plan.md) — polish mirror of the start-up plan.
+
 ## Reports
 
 - [Tracking comparison](docs/en/reports/tracking-comparison.md) — InDuckGo vs Chrome vs Brave: telemetry, trackers, fingerprinting (measured).

@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="600" viewBox="0 0 1120 600" font-family="DejaVu Sans, Helvetica, Arial, sans-serif">
+<title>Start okna InDuckGo: ścieżka krytyczna i miejsca, w których działają planowane prace</title>
+<defs><marker id="head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#5b6270"/></marker></defs>
+<rect width="1120" height="600" fill="#fbfbfd"/>
+<text x="24" y="34" font-size="17" font-weight="700" fill="#1f2430">Start okna InDuckGo: ścieżka krytyczna i miejsca, w których działają planowane prace</text>
+<text x="24" y="58" font-size="12.5" fill="#5b6270">Zmierzone do pierwszej klatki Wayland: pakiet 0,72 s (mediana z 4), AppImage 1,73 s. Szerokości pól są poglądowe, nie w skali.</text>
+<rect x="16" y="80" width="1088" height="144" rx="10" fill="#f2f3f8" stroke="#e1e3ec"/>
+<text x="28" y="100" font-size="12" font-weight="700" fill="#5b6270">Wątek główny</text>
+<rect x="16" y="240" width="1088" height="124" rx="10" fill="#f2f3f8" stroke="#e1e3ec"/>
+<text x="28" y="260" font-size="12" font-weight="700" fill="#5b6270">Wątek roboczy (reguły ochrony)</text>
+<rect x="16" y="380" width="1088" height="104" rx="10" fill="#f2f3f8" stroke="#e1e3ec"/>
+<text x="28" y="400" font-size="12" font-weight="700" fill="#5b6270">Procesy Chromium</text>
+<rect x="30" y="118" width="125" height="76" rx="8" fill="#dbe7fb" stroke="#8b93a5" stroke-width="1.4"/>
+<text x="92.5" y="151.0" text-anchor="middle" font-size="13" fill="#1f2430">exec +</text>
+<text x="92.5" y="169.0" text-anchor="middle" font-size="13" fill="#1f2430">biblioteki</text>
+<rect x="170" y="118" width="150" height="76" rx="8" fill="#dbe7fb" stroke="#8b93a5" stroke-width="1.4"/>
+<text x="245.0" y="142.0" text-anchor="middle" font-size="13" fill="#1f2430">Aplikacja Qt,</text>
+<text x="245.0" y="160.0" text-anchor="middle" font-size="13" fill="#1f2430">jedna instancja,</text>
+<text x="245.0" y="178.0" text-anchor="middle" font-size="13" fill="#1f2430">ścieżki profilu</text>
+<rect x="335" y="118" width="125" height="76" rx="8" fill="#dbe7fb" stroke="#8b93a5" stroke-width="1.4"/>
+<text x="397.5" y="151.0" text-anchor="middle" font-size="13" fill="#1f2430">otwarcie</text>
+<text x="397.5" y="169.0" text-anchor="middle" font-size="13" fill="#1f2430">sesji</text>
+<rect x="480" y="118" width="250" height="76" rx="8" fill="#dbe7fb" stroke="#2e9e5b" stroke-width="2.2" stroke-dasharray="6 4"/>
+<text x="605.0" y="151.0" text-anchor="middle" font-size="13" fill="#1f2430">otwarcie profilu Chromium</text>
+<text x="605.0" y="169.0" text-anchor="middle" font-size="13" fill="#1f2430">(QtWebEngine::open_profile)</text>
+<rect x="750" y="118" width="150" height="76" rx="8" fill="#dbe7fb" stroke="#8b93a5" stroke-width="1.4"/>
+<text x="825.0" y="151.0" text-anchor="middle" font-size="13" fill="#1f2430">złączenie, potem</text>
+<text x="825.0" y="169.0" text-anchor="middle" font-size="13" fill="#1f2430">instalacja polityk</text>
+<rect x="920" y="118" width="170" height="76" rx="8" fill="#dbe7fb" stroke="#8b93a5" stroke-width="1.4"/>
+<text x="1005.0" y="151.0" text-anchor="middle" font-size="13" fill="#1f2430">okno + QML +</text>
+<text x="1005.0" y="169.0" text-anchor="middle" font-size="13" fill="#1f2430">pierwsza strona</text>
+<rect x="415" y="268" width="145" height="76" rx="8" fill="#d3efe9" stroke="#2e9e5b" stroke-width="2.2" stroke-dasharray="6 4"/>
+<text x="487.5" y="301.0" text-anchor="middle" font-size="13" fill="#1f2430">odczyt lub pobranie</text>
+<text x="487.5" y="319.0" text-anchor="middle" font-size="13" fill="#1f2430">dokumentów</text>
+<rect x="574" y="268" width="165" height="76" rx="8" fill="#d3efe9" stroke="#2e9e5b" stroke-width="2.2" stroke-dasharray="6 4"/>
+<text x="656.5" y="301.0" text-anchor="middle" font-size="13" fill="#1f2430">start budowy silnika</text>
+<text x="656.5" y="319.0" text-anchor="middle" font-size="13" fill="#1f2430">Guard (własny wątek)</text>
+<rect x="753" y="268" width="80" height="76" rx="8" fill="#d3efe9" stroke="#2e9e5b" stroke-width="2.2" stroke-dasharray="6 4"/>
+<text x="793.0" y="301.0" text-anchor="middle" font-size="13" fill="#1f2430">składanie</text>
+<text x="793.0" y="319.0" text-anchor="middle" font-size="13" fill="#1f2430">reguł</text>
+<rect x="920" y="410" width="170" height="66" rx="8" fill="#e6e6ea" stroke="#8b93a5" stroke-width="1.4"/>
+<text x="1005.0" y="438.0" text-anchor="middle" font-size="13" fill="#1f2430">start procesów</text>
+<text x="1005.0" y="456.0" text-anchor="middle" font-size="13" fill="#1f2430">renderera i GPU</text>
+<line x1="155" y1="156" x2="168" y2="156" stroke="#5b6270" stroke-width="1.8" marker-end="url(#head)"/>
+<line x1="320" y1="156" x2="333" y2="156" stroke="#5b6270" stroke-width="1.8" marker-end="url(#head)"/>
+<line x1="460" y1="156" x2="478" y2="156" stroke="#5b6270" stroke-width="1.8" marker-end="url(#head)"/>
+<line x1="730" y1="156" x2="748" y2="156" stroke="#5b6270" stroke-width="1.8" marker-end="url(#head)"/>
+<line x1="900" y1="156" x2="918" y2="156" stroke="#5b6270" stroke-width="1.8" marker-end="url(#head)"/>
+<line x1="1005" y1="194" x2="1005" y2="408" stroke="#5b6270" stroke-width="1.8" marker-end="url(#head)"/>
+<line x1="560" y1="306" x2="572" y2="306" stroke="#5b6270" stroke-width="1.8" marker-end="url(#head)"/>
+<line x1="739" y1="306" x2="751" y2="306" stroke="#5b6270" stroke-width="1.8" marker-end="url(#head)"/>
+<line x1="793" y1="268" x2="793" y2="196" stroke="#5b6270" stroke-width="1.8" marker-end="url(#head)"/>
+<path d="M 397 194 L 397 306 L 413 306" fill="none" stroke="#5b6270" stroke-width="1.8" marker-end="url(#head)"/>
+<text x="405" y="258" font-size="12" fill="#5b6270">start wątku</text>
+<text x="803" y="240" font-size="12" fill="#5b6270">złączenie</text>
+<circle cx="162" cy="96" r="12" fill="#f08c2e" stroke="white" stroke-width="2"/><text x="162" y="101" text-anchor="middle" font-size="13" font-weight="700" fill="white">1</text>
+<circle cx="318" cy="120" r="12" fill="#f08c2e" stroke="white" stroke-width="2"/><text x="318" y="125" text-anchor="middle" font-size="13" font-weight="700" fill="white">6</text>
+<circle cx="458" cy="120" r="12" fill="#f08c2e" stroke="white" stroke-width="2"/><text x="458" y="125" text-anchor="middle" font-size="13" font-weight="700" fill="white">2</text>
+<circle cx="1088" cy="120" r="12" fill="#f08c2e" stroke="white" stroke-width="2"/><text x="1088" y="125" text-anchor="middle" font-size="13" font-weight="700" fill="white">3</text>
+<circle cx="1088" cy="196" r="12" fill="#f08c2e" stroke="white" stroke-width="2"/><text x="1088" y="201" text-anchor="middle" font-size="13" font-weight="700" fill="white">4</text>
+<circle cx="153" cy="196" r="12" fill="#f08c2e" stroke="white" stroke-width="2"/><text x="153" y="201" text-anchor="middle" font-size="13" font-weight="700" fill="white">5</text>
+<rect x="24" y="514" width="22" height="16" rx="3" fill="#dbe7fb" stroke="#8b93a5"/>
+<text x="54" y="527" font-size="12.5" fill="#1f2430">Krok wątku głównego</text>
+<rect x="246" y="514" width="22" height="16" rx="3" fill="#d3efe9" stroke="#8b93a5"/>
+<text x="276" y="527" font-size="12.5" fill="#1f2430">Krok wątku roboczego</text>
+<rect x="476" y="514" width="22" height="16" rx="3" fill="#e6e6ea" stroke="#8b93a5"/>
+<text x="506" y="527" font-size="12.5" fill="#1f2430">Proces Chromium</text>
+<rect x="666" y="514" width="22" height="16" rx="3" fill="#ffffff" stroke="#2e9e5b" stroke-width="2.2" stroke-dasharray="6 4"/>
+<text x="696" y="527" font-size="12.5" fill="#1f2430">Nakładanie już zrobione</text>
+<circle cx="36" cy="560" r="12" fill="#f08c2e" stroke="white" stroke-width="2"/><text x="36" y="565" text-anchor="middle" font-size="13" font-weight="700" fill="white">n</text>
+<text x="58" y="565" font-size="12.5" fill="#1f2430">Planowany kandydat; numer to sekcja planu, która go opisuje</text>
+</svg>
